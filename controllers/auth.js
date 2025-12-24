@@ -21,9 +21,7 @@ exports.register = async(req, res)=>{
 
         const hashPassword = await bcrypt.hash(password, 10)
 
-        const query = 'INSERT INTO users(name, email, phone, password) VALUES($1, $2, $3, $4)';
-
-        await db.query(query, [name, email, phone, hashPassword])
+        await db.query('INSERT INTO users(name, email, phone, password) VALUES($1, $2, $3, $4)', [name, email, phone, hashPassword])
         res.json({ msg: 'ลงทะเบียนสำเร็จ' })
     } catch (err) {
         console.log(err)
@@ -40,8 +38,6 @@ exports.login = async(req, res) => {
         }
 
         const result  = await db.query('SELECT * FROM users WHERE email = $1', [email]);
-
-        const [rows] = await db.query(query, [email])
 
         if(result.rows.length === 0) {
             return res.status(400).json({ message: 'ไม่พบอีเมลผู้ใช้' })
