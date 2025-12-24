@@ -2,11 +2,11 @@ const db = require('../config/database')
 
 exports.create = async(req, res) => {
     try {
-        const { nameType, description } = req.body
+        const { nametype, description } = req.body
 
         const query = 'INSERT INTO insurance_type(nametype, description) VALUES($1, $2)';
 
-        await db.query(query, [nameType, description])
+        await db.query(query, [nametype, description])
         res.json({ msg: 'เพิ่มข้อมูลสำเร็จ' })
     } catch (err) {
         console.log(err)
@@ -52,7 +52,7 @@ exports.read = async(req, res) => {
 
 exports.update = async(req, res) => {
     const {id} = req.params
-    const { nameType, description } = req.body;
+    const { nametype, description } = req.body;
 
     try {
         const result = await db.query('SELECT * FROM  insurance_type WHERE id = $1',[id])
@@ -65,7 +65,7 @@ exports.update = async(req, res) => {
 
         await db.query('UPDATE insurance_type SET nametype = $1, description=$2 WHERE id = $3', 
             [
-                nameType     !== undefined ? nameType     : old.nameType,  
+                nametype     !== undefined ? nametype     : old.nametype,  
                 description  !== undefined ? description  : old.description,  
                 id
             ])
