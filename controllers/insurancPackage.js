@@ -31,7 +31,7 @@ exports.list = async(req, res) => {
 exports.listSelect = async(req, res) => {
     try {
         const result = await db.query(
-            'SELECT id, package_name FROM insurance.insurance_package' 
+            'SELECT id, package_name FROM insurance_package' 
         )
 
          res.json({ data: result.rows })
