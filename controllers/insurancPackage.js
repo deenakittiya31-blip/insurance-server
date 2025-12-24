@@ -88,7 +88,7 @@ exports.remove = async(req, res) => {
     try {
          const {id} = req.params
 
-         await db.query('DELETE FROM insurance_company WHERE id = $1', [id])
+         await db.query('DELETE FROM insurance_package WHERE id = $1', [id])
 
          res.json({msg: 'ลบข้อมูลแพ็กเกจสำเร็จ'})
     } catch (err) {
