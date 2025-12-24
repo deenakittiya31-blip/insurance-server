@@ -6,7 +6,7 @@ exports.create = async(req, res) => {
 
         const query = 'INSERT INTO insurance_premium(package_id, car_usage_id, car_year, premium_price, compulsory_price) VALUES($1, $2, $3, $4, $5)';
 
-        await db.query(query, [package_id, car_usage_id, car_year, premium_price, compulsory_price])
+        await db.query(query, [package_id, car_usage_id, car_year, Number(premium_price), Number(compulsory_price)])
 
         res.json({ msg: 'เพิ่มข้อมูลเบี้ยประกันสำเร็จ' })
     } catch (err) {
@@ -17,7 +17,7 @@ exports.create = async(req, res) => {
 
 exports.list = async(req, res) => {
     try {
-        const query = 'SELECT ip.id, ipk.package_name as package, cu.usage_name, ip.car_year as year, ip.premium_price as premium, ip.compulsory_price as compulsory FROM insurance_premium as ip INNER JOIN insurance_package as ipk ON ip.package_id = ipk.id INNER JOIN car_usage as cu ON ip.car_usage_id = cu.id'
+        const query = 'SELECT ip.id, ipk.package_name as package, cu.usage_name, ip.car_year as year, ip.premium_price as premium, ip.compulsory_price as compulsory, (ip.premium_price + ip.compulsory_price) as total FROM insurance_premium as ip INNER JOIN insurance_package as ipk ON ip.package_id = ipk.id INNER JOIN car_usage as cu ON ip.car_usage_id = cu.id'
         const result = await db.query(query)
 
          res.json({ data: result.rows })
