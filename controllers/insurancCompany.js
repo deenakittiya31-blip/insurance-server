@@ -40,9 +40,9 @@ exports.read = async(req, res) => {
     try {  
         const {id} = req.params
         
-        const query = 'SELECT id, namecompany, code, logo_url, phone, logo_public_id FROM insurance.insurance_company WHERE id = $1'
+        const query = 'SELECT id, namecompany, code, logo_url, phone, logo_public_id FROM insurance_company WHERE id = $1'
 
-        const result  = await db.query(query, [parseInt(id)])
+        const result  = await db.query(query, [Number(id)])
 
          res.json({ data: result.rows[0] })
     } catch (err) {
