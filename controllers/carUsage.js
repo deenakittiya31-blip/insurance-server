@@ -6,7 +6,7 @@ exports.create = async(req, res) => {
 
         await db.query('INSERT INTO car_usage (usage_name) VALUES ($1)', [usage]);
 
-        res.json({ msg: 'เพิ่มประเภทรถสำเร็จ' })
+        res.json({ msg: 'เพิ่มประเภทการใช้งานรถสำเร็จ' })
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
@@ -42,7 +42,7 @@ exports.update = async(req, res) => {
 
         await db.query('UPDATE car_usage SET usage_name = $1 WHERE id = $2', [usage, id])
 
-        res.json({message: 'แก้ไขประเภทรถสำเร็จ'})  
+        res.json({msg: 'แก้ไขประเภทการใช้งานรถสำเร็จ'})  
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
@@ -53,10 +53,9 @@ exports.remove = async(req, res) => {
     try {
         const {id} = req.params
 
-        console.log(id)
         await db.query('DELETE FROM car_usage WHERE id = $1', [id])
 
-        res.json({message: 'ลบประเภทรถสำเร็จ'})
+        res.json({msg: 'ลบประเภทการใช้งานรถสำเร็จ'})
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 

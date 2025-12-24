@@ -75,7 +75,7 @@ exports.remove = async(req, res) => {
         console.log(id)
         await db.query('DELETE FROM car_model WHERE id = $1', [id])
 
-        res.json({message: 'ลบรุ่นรถสำเร็จ'})
+        res.json({msg: 'ลบรุ่นรถสำเร็จ'})
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 

@@ -1,11 +1,11 @@
 const db = require('../config/database')
 
 exports.create = async(req, res) => {
-    const { nameCompany, code, logo_url, phone, logo_public_id } = req.body
+    const { namecompany, code, logo_url, phone, logo_public_id } = req.body
     try {
         const query = 'INSERT INTO insurance_company(namecompany, code, logo_url, phone, logo_public_id) VALUES($1, $2, $3, $4, $5)';
 
-        await db.query(query, [nameCompany, code, logo_url, phone, logo_public_id])
+        await db.query(query, [namecompany, code, logo_url, phone, logo_public_id])
 
         res.json({ msg: 'เพิ่มข้อมูลบริษัทสำเร็จ' })
     } catch (err) {
@@ -53,7 +53,7 @@ exports.read = async(req, res) => {
 
 exports.update = async(req, res) => {
     const {id} = req.params
-    const {nameCompany, code, logo_url, phone} = req.body
+    const {namecompany, code, logo_url, phone} = req.body
 
     try {
         const result = await db.query('SELECT * FROM  insurance_company WHERE id = $1',[id])
@@ -67,7 +67,7 @@ exports.update = async(req, res) => {
 
         await db.query('UPDATE insurance_company SET namecompany = $1, code = $2, logo_url = $3, phone = $4 WHERE id = $5', 
             [
-                nameCompany     ?? old.nameCompany,
+                namecompany     ?? old.namecompany,
                 code            ?? old.code,
                 logo_url        ?? old.logo_url,
                 phone           ?? old.phone,
@@ -87,7 +87,7 @@ exports.remove = async(req, res) => {
 
         await db.query('DELETE FROM insurance_company WHERE id = $1', [id])
 
-        res.json({message: 'ลบข้อมูลบริษัทสำเร็จ'})
+        res.json({msg: 'ลบข้อมูลบริษัทสำเร็จ'})
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 

@@ -38,7 +38,7 @@ exports.update = async(req, res) => {
 
         await db.query('UPDATE car_year SET year = $1 WHERE id = $2', [year, id])
 
-        res.json({message: 'แก้ไขปีสำเร็จ'})  
+        res.json({msg: 'แก้ไขปีสำเร็จ'})  
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
@@ -52,7 +52,7 @@ exports.remove = async(req, res) => {
         console.log(id)
         await db.query('DELETE FROM car_year WHERE id = $1', [id])
 
-        res.json({message: 'ลบปีสำเร็จ'})
+        res.json({msg: 'ลบปีสำเร็จ'})
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
