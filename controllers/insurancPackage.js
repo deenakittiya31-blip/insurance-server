@@ -18,7 +18,7 @@ exports.create = async(req, res) => {
 exports.list = async(req, res) => {
     try {
         const result = await db.query(
-            'SELECT ip.id, ic.nameCompany as company, it.nameType as type, package_name, coverage_amount FROM insurance_package as ip INNER JOIN insurance_company as ic ON ip.company_id = ic.id INNER JOIN insurance_type as it ON ip.insurance_type_id = it.id'
+            'SELECT ip.id, ic.namecompany as company, it.nametype as type, package_name, coverage_amount FROM insurance_package as ip INNER JOIN insurance_company as ic ON ip.company_id = ic.id INNER JOIN insurance_type as it ON ip.insurance_type_id = it.id'
         )
 
          res.json({ data: result.rows })
@@ -45,7 +45,7 @@ exports.read = async(req, res) => {
     const {id} = req.params
 
     try {
-         const query = 'SELECT id, company_id, insurance_type_id, package_name, coverage_amount FROM insurance.insurance_package WHERE id = $1'
+         const query = 'SELECT id, company_id, insurance_type_id, package_name, coverage_amount FROM insurance_package WHERE id = $1'
         const result = await db.query(query, [Number(id)])
 
          res.json({ data: result.rows[0] })

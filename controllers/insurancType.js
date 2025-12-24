@@ -4,7 +4,7 @@ exports.create = async(req, res) => {
     try {
         const { nameType, description } = req.body
 
-        const query = 'INSERT INTO insurance_type(nameType, description) VALUES($1, $2)';
+        const query = 'INSERT INTO insurance_type(nametype, description) VALUES($1, $2)';
 
         await db.query(query, [nameType, description])
         res.json({ msg: 'เพิ่มข้อมูลสำเร็จ' })
@@ -16,7 +16,7 @@ exports.create = async(req, res) => {
 
 exports.list = async(req, res) => {
     try {
-        const result = await db.query('SELECT id, nameType, description FROM insurance_type')
+        const result = await db.query('SELECT id, nametype, description FROM insurance_type')
 
         res.json({ data: result.rows })
     } catch (err) {
@@ -27,7 +27,7 @@ exports.list = async(req, res) => {
 
 exports.listSelect = async(req, res) => {
     try {
-        const result = await db.query('SELECT id, nameType FROM insurance_type')
+        const result = await db.query('SELECT id, nametype FROM insurance_type')
 
         res.json({ data: result.rows })
     } catch (err) {
@@ -40,7 +40,7 @@ exports.read = async(req, res) => {
     const {id} = req.params
 
     try {
-         const query = 'SELECT id, nameType, description FROM insurance.insurance_type WHERE id = $1'
+         const query = 'SELECT id, nametype, description FROM insurance_type WHERE id = $1'
         const result = await db.query(query, [Number(id)])
 
          res.json({ data: result.rows[0] })
@@ -63,7 +63,7 @@ exports.update = async(req, res) => {
 
         const old = result.rows[0]
 
-        await db.query('UPDATE insurance_type SET nameType = $1, description=$2 WHERE id = $3', 
+        await db.query('UPDATE insurance_type SET nametype = $1, description=$2 WHERE id = $3', 
             [
                 nameType     !== undefined ? nameType     : old.nameType,  
                 description  !== undefined ? description  : old.description,  
