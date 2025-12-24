@@ -1,4 +1,4 @@
-const connection = require('../config/database')
+const db = require('../config/database')
 const { OAuth2Client } = require('google-auth-library')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
@@ -12,20 +12,18 @@ exports.register = async(req, res)=>{
         if(!name || !email || !phone || !password){
             return res.status(400).json({msg: 'กรุณากรอกข้อมูลให้ครบ'})
         }
-        
-        const queryEmail = 'SELECT email FROM users WHERE email = ?';
 
-        const [rows] = await connection.query(queryEmail, [email])
+        const emailCheck = await db.query('SELECT email FROM users WHERE email = $1', [email])
 
-        if(rows.length > 0) {
+        if(emailCheck.length > 0) {
             return res.status(409).json({ message: 'มีบัญชีผู้ใช้อยู่แล้ว' })
         }
 
         const hashPassword = await bcrypt.hash(password, 10)
 
-        const query = 'INSERT INTO users(name, email, phone, password) VALUES(?, ?, ?, ?)';
+        const query = 'INSERT INTO users(name, email, phone, password) VALUES($1, $2, $3, $4)';
 
-        await connection.query(query, [name, email, phone, hashPassword])
+        await db.query(query, [name, email, phone, hashPassword])
         res.json({ msg: 'ลงทะเบียนสำเร็จ' })
     } catch (err) {
         console.log(err)
@@ -41,15 +39,15 @@ exports.login = async(req, res) => {
             return res.status(400).json({msg: 'อีเมลล์หรือรหัสผ่านไม่ถูกต้อง'})
         }
 
-        const query = 'SELECT * FROM users WHERE email = ?';
+        const result  = await db.query('SELECT * FROM users WHERE email = $1', [email]);
 
-        const [rows] = await connection.query(query, [email])
+        const [rows] = await db.query(query, [email])
 
-        if(rows.length === 0) {
+        if(result.rows.length === 0) {
             return res.status(400).json({ message: 'ไม่พบอีเมลผู้ใช้' })
         }
 
-        const user = rows[0]
+        const user = result.rows[0]
 
         const isMatch = await bcrypt.compare(password, user.password)
         if(!isMatch){
@@ -81,31 +79,33 @@ exports.loginLine = async(req, res) => {
     try {
         const { displayName, email, pictureUrl } = req.body
 
-        let rows;
+        let result
+
         if(email){
-            [rows] = connection.query('SELECT * FROM users WHERE email = ?', [email]);
+            result = await db.query('SELECT * FROM users WHERE email = $1', [email])
         }else {
-            [rows] = await connection.query('SELECT * FROM users WHERE name = ?',[displayName]);
+            result = await db.query('SELECT * FROM users WHERE name = $1', [displayName])
         }
         
 
-        let user;
+        let user
 
-        if (rows.length === 0) {
-            const [result] = await connection.query(`INSERT INTO users (name, email, image, role) VALUES (?, ?, ?, ?)`,
-                [
-                    displayName,
-                    email || null,
-                    pictureUrl || null,
-                    'user'
-                ]);
+        if (result.rows.length === 0) {
+            const insertResult = await db.query(
+        `INSERT INTO users (name, email, image, role)
+         VALUES ($1, $2, $3, $4)
+         RETURNING *`,
+        [
+          displayName,
+          email || null,
+          pictureUrl || null,
+          'user'
+        ]
+      )
 
-            // 3. ดึง user ที่เพิ่งสร้าง
-            const [newUser] = await connection.query('SELECT * FROM users WHERE user_id = ?',[result.insertId]);
-
-            user = newUser[0];
+            user = insertResult.rows[0]
         } else {
-            user = rows[0];
+             user = result.rows[0]
         }
 
         const payload ={
@@ -145,30 +145,27 @@ exports.loginGoogle = async (req, res) => {
 
     const payloadGoogle = ticket.getPayload()
 
-    const {
-        email,
-        name,
-        picture,
-    } = payloadGoogle
+    const { email, name, picture} = payloadGoogle
 
-    // 2. เช็ก user ใน DB
-    const [rows] = await connection.query('SELECT * FROM users WHERE email = ?', [email])
+    const result = await db.query(
+      'SELECT * FROM users WHERE email = $1',
+      [email]
+    )
 
     let user
 
-    if (rows.length === 0) {
+    if (result.rows.length === 0) {
       // 3. ถ้าไม่มี → สร้าง user ใหม่
-      const [result] = await connection.query(`INSERT INTO users (name, email, image) VALUES (?, ?, ?, ?)`, [name, email, picture, 'user'])
+      const insertResult = await db.query(
+        `INSERT INTO users (name, email, image, role)
+         VALUES ($1, $2, $3, $4)
+         RETURNING *`,
+        [name, email, picture, 'user']
+      )
 
-      user = {
-            user_id: result.insertId,
-            name,
-            email,
-            image,
-            role: 'user',
-      }
+      user = insertResult.rows[0]
     } else {
-      user = rows[0]
+      user = result.rows[0]
     }
 
     const payload = {

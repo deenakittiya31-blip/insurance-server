@@ -1,10 +1,10 @@
-const connection = require('../config/database')
+const db = require('../config/database')
 
 exports.create = async(req, res) => {
     try {
         const { type } = req.body
 
-        await connection.query('INSERT INTO car_type(type) VALUES(?)', [type])
+        await db.query('INSERT INTO car_type(type) VALUES($1)', [type])
 
         res.json({ msg: 'เพิ่มประเภทรถสำเร็จ' })
     } catch (err) {
@@ -15,9 +15,9 @@ exports.create = async(req, res) => {
 
 exports.list = async(req, res) => {
     try {
-        const [rows] = await connection.query('SELECT id, type FROM car_type')
+        const result = await db.query('SELECT id, type FROM car_type')
 
-        res.json({ data: rows })
+        res.json({ data: result.rows })
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
@@ -29,9 +29,9 @@ exports.update = async(req, res) => {
         const { type } = req.body;
         const { id } = req.params;
 
-        await connection.query('UPDATE car_type SET type = ? WHERE id = ?', [type, id])
+        await db.query('UPDATE car_type SET type = $1 WHERE id = $2', [type, id])
 
-        res.json({message: 'แก้ไขประเภทรถสำเร็จ'})  
+        res.json({message: 'แก้ไขประเภทรถสำเร็จ'}) 
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
@@ -43,7 +43,7 @@ exports.remove = async(req, res) => {
         const {id} = req.params
 
         console.log(id)
-        await connection.query('DELETE FROM car_type WHERE id = ?', [id])
+        await db.query('DELETE FROM car_type WHERE id = $1', [id])
 
         res.json({message: 'ลบประเภทรถสำเร็จ'})
     } catch (err) {

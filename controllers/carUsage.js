@@ -1,10 +1,10 @@
-const connection = require('../config/database')
+const db = require('../config/database')
 
 exports.create = async(req, res) => {
     try {
         const { usage } = req.body
 
-        await connection.query('INSERT INTO car_usage (usage_name) VALUES (?)', [usage]);
+        await db.query('INSERT INTO car_usage (usage_name) VALUES ($1)', [usage]);
 
         res.json({ msg: 'เพิ่มประเภทรถสำเร็จ' })
     } catch (err) {
@@ -15,22 +15,9 @@ exports.create = async(req, res) => {
 
 exports.list = async(req, res) => {
     try {
-        const page = Number(req.query.page) || 1;
-        const per_page = Number(req.query.per_page) || 5;
+        const result = await db.query('SELECT id, usage_name FROM car_usage')
 
-        const start = (page - 1) * per_page;
-
-        const [rows] = await connection.query('SELECT id, usage_name FROM car_usage LIMIT ?, ?', [start, per_page])
-
-        const [[{total}]] = await connection.query('SELECT COUNT(*) as total FROM car_usage')
-        if(rows.length === 0){
-            return res.json({ mdata: [] })
-        }
-
-        res.json({ 
-            data: rows, 
-            total
-        })
+        res.json({data: result.rows})
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
@@ -39,13 +26,9 @@ exports.list = async(req, res) => {
 
 exports.listSelect = async(req, res) => {
     try {
-        const [rows] = await connection.query('SELECT id, usage_name FROM car_usage')
+        const result = await db.query('SELECT id, usage_name FROM car_usage')
 
-        if(rows.length === 0){
-            return res.json({ mdata: [] })
-        }
-
-        res.json({  data: rows})
+        res.json({  data: result.rows })
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
@@ -57,7 +40,7 @@ exports.update = async(req, res) => {
         const { usage } = req.body;
         const { id } = req.params;
 
-        await connection.query('UPDATE car_usage SET usage_name = ? WHERE id = ?', [usage, id])
+        await db.query('UPDATE car_usage SET usage_name = $1 WHERE id = $2', [usage, id])
 
         res.json({message: 'แก้ไขประเภทรถสำเร็จ'})  
     } catch (err) {
@@ -71,7 +54,7 @@ exports.remove = async(req, res) => {
         const {id} = req.params
 
         console.log(id)
-        await connection.query('DELETE FROM car_usage WHERE id = ?', [id])
+        await db.query('DELETE FROM car_usage WHERE id = $1', [id])
 
         res.json({message: 'ลบประเภทรถสำเร็จ'})
     } catch (err) {

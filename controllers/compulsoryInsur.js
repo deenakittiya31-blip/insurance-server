@@ -1,10 +1,10 @@
-const connection = require('../config/database')
+const db = require('../config/database')
 
 exports.create = async(req, res) => {
     try {
         const { car_type_id, price, coverage_detail } = req.body
 
-        await connection.query('INSERT INTO compulsory_insurance (car_type_id, price, coverage_detail) VALUES (?, ?, ?)', 
+        await db.query('INSERT INTO compulsory_insurance (car_type_id, price, coverage_detail) VALUES ($1, $2, $3)', 
                                 [Number(car_type_id), Number(price), coverage_detail]
                             );
 
@@ -17,13 +17,10 @@ exports.create = async(req, res) => {
 
 exports.list = async(req, res) => {
     try {
-        const [rows] = await connection.query('SELECT ci.id, ct.type, price, coverage_detail FROM insurance.compulsory_insurance as ci INNER JOIN insurance.car_type as ct ON ci.car_type_id = ct.id')
+        const result = await db.query('SELECT ci.id, ct.type, price, coverage_detail FROM compulsory_insurance as ci INNER JOIN car_type as ct ON ci.car_type_id = ct.id')
 
-        if(rows.length === 0){
-            return res.json({ data: [] })
-        }
 
-        res.json({data: rows})
+        res.json({data: result.rows})
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
@@ -33,13 +30,10 @@ exports.list = async(req, res) => {
 exports.read = async(req,res)=>{
     try {
         const { id } = req.params
-        const [rows] = await connection.query('SELECT ci.id, ci.car_type_id, ct.type, price, coverage_detail FROM insurance.compulsory_insurance as ci INNER JOIN insurance.car_type as ct ON ci.car_type_id = ct.id WHERE ci.id = ?', [id])
+        const result = await db.query('SELECT ci.id, ci.car_type_id, ct.type, price, coverage_detail FROM compulsory_insurance as ci INNER JOIN car_type as ct ON ci.car_type_id = ct.id WHERE ci.id = $1', [id])
 
-        if(rows.length === 0){
-            return res.json({ data: 'no data' })
-        }
 
-        res.json({data: rows[0]})
+        res.json({data: result.rows[0]})
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server error'})
@@ -51,13 +45,19 @@ exports.update = async(req, res) => {
     const { id } = req.params;
 
     try {
-        const [rows] = await connection.query('SELECT * FROM  compulsory_insurance WHERE id = ?',[id])
+        const result = await db.query('SELECT * FROM compulsory_insurance WHERE id = $1', [id])
 
-        await connection.query('UPDATE compulsory_insurance SET car_type_id = ?, price = ?, coverage_detail = ? WHERE id = ?', [
-             parseInt(car_type_id)   ?? rows[0].car_type_id,
-             parseInt(price)         ?? rows[0].price,
-             coverage_detail         ?? rows[0].coverage_detail,
-            id
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'ไม่พบข้อมูล' })
+        }
+
+        const old = result.rows[0]
+
+        await db.query('UPDATE compulsory_insurance SET car_type_id = $1, price = $2, coverage_detail = $3 WHERE id = $4', [
+            car_type_id     !== undefined ? Number(car_type_id) : old.car_type_id,
+            price           !== undefined ? Number(price) : old.price,
+            coverage_detail ?? old.coverage_detail,
+        id
         ])
 
         res.json({msg: 'แก้ไข พ.ร.บ. รถสำเร็จ'})  
@@ -72,7 +72,7 @@ exports.remove = async(req, res) => {
         const {id} = req.params
 
         console.log(id)
-        await connection.query('DELETE FROM compulsory_insurance WHERE id = ?', [id])
+        await db.query('DELETE FROM compulsory_insurance WHERE id = $1', [id])
 
         res.json({msg: 'ลบ พ.ร.บ. รถสำเร็จ'})
     } catch (err) {

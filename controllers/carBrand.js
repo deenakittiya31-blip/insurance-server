@@ -1,12 +1,12 @@
-const connection = require('../config/database')
+const db = require('../config/database')
 
 exports.create = async(req, res) => {
     try {
         const { name, logo_url, logo_public_id } = req.body
 
-      await connection.query(
+      await db.query(
       `INSERT INTO car_brand (name, logo_url, logo_public_id)
-       VALUES (?, ?, ?)`,
+       VALUES ($1, $2, $3)`,
       [name, logo_url, logo_public_id]
     )
 
@@ -19,9 +19,9 @@ exports.create = async(req, res) => {
 
 exports.list = async(req, res) => {
     try {
-        const [rows] = await connection.query('SELECT id, name, logo_url, logo_public_id FROM car_brand')
+        const result = await db.query('SELECT id, name, logo_url, logo_public_id FROM car_brand')
 
-        res.json({ data: rows })
+        res.json({ data: result.rows })
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
@@ -30,9 +30,9 @@ exports.list = async(req, res) => {
 
 exports.listSelect = async(req, res) => {
     try {
-        const [rows] = await connection.query('SELECT id, name FROM car_brand')
+        const result = await db.query('SELECT id, name FROM car_brand')
 
-        res.json({ data: rows })
+        res.json({ data: result.rows })
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
@@ -43,10 +43,10 @@ exports.read = async(req, res) => {
     try {  
         const {id} = req.params
         
-        const query = 'SELECT id, name, logo_url, logo_public_id FROM insurance.car_brand WHERE id = ?'
-        const [row] = await connection.query(query, [Number(id)])
+        const query = 'SELECT id, name, logo_url, logo_public_id FROM car_brand WHERE id = $1'
+        const result = await db.query(query, [Number(id)])
 
-         res.json({ data: row[0] })
+         res.json({ data: result.rows[0] })
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
@@ -58,13 +58,15 @@ exports.update = async(req, res) => {
     const { id } = req.params;
 
     try {
-        const [rows] = await connection.query('SELECT * FROM  car_brand WHERE id = ?',[id])
+        const existing = await db.query('SELECT * FROM  car_brand WHERE id = $1',[id])
 
-        await connection.query('UPDATE car_brand SET name = ?, logo_url = ?, logo_public_id = ?  WHERE id = ?', 
+        const brand = existing.rows[0]
+
+        await db.query('UPDATE car_brand SET name = $1, logo_url = $2, logo_public_id = $3  WHERE id = $4', 
           [
-            name            ?? rows[0].name,           
-            logo_url        ?? rows[0].logo_url, 
-            logo_public_id  ?? rows[0].logo_public_id, 
+            name            ?? brand.name,           
+            logo_url        ?? brand.logo_url, 
+            logo_public_id  ?? brand.logo_public_id, 
             id
 
           ])
@@ -81,7 +83,7 @@ exports.remove = async(req, res) => {
         const {id} = req.params
 
         console.log(id)
-        await connection.query('DELETE FROM car_brand WHERE id = ?', [id])
+        await db.query('DELETE FROM car_brand WHERE id = $1', [id])
 
         res.json({msg: 'ลบยี่ห้อรถสำเร็จ'})
     } catch (err) {
