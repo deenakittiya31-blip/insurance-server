@@ -31,6 +31,17 @@ exports.list = async(req, res) => {
     }
 }
 
+exports.listSelect = async(req, res) => {
+    try {
+        const result = await db.query('SELECT id, type FROM car_type')
+
+        res.json({  data: result.rows })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'}) 
+    }
+}
+
 exports.update = async(req, res) => {
     try {
         const { type } = req.body;
