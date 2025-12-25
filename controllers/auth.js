@@ -29,6 +29,17 @@ exports.register = async(req, res)=>{
     } 
 }
 
+exports.currentUser = async(req, res) => {
+    try {
+        const result = await db.query('SELECT name, email, image, role FROM users WHERE email = $1', req.user.email)
+
+        res.json({ user: result.rows[0]})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({ message: 'server error'})
+    }
+}
+
 exports.login = async(req, res) => {
     try {
         const { email, password } = req.body;
@@ -54,7 +65,6 @@ exports.login = async(req, res) => {
             id: user.user_id,
             name: user.name,
             email: user.email,
-            image: user.image,
             role: user.role
         }
 
@@ -62,7 +72,7 @@ exports.login = async(req, res) => {
             if(err){
                 return res.status(500).json({message: 'server errer jwt'})
             }
-            res.json({payload, token})
+            res.json({token})
         })
 
     } catch (err) {
@@ -109,14 +119,13 @@ exports.loginLine = async(req, res) => {
             name: user.name,
             email: user.email,
             role: user.role,
-            image: user.image
         }
 
         jwt.sign(payload, process.env.SECRET, {expiresIn: '1d'}, (err, token) => {
             if(err){
                 return res.status(500).json({message: 'server errer jwt'})
             }
-            res.json({payload, token})
+            res.json({token})
         })
 
 
@@ -168,7 +177,6 @@ exports.loginGoogle = async (req, res) => {
             id: user.user_id,
             name: user.name,
             email: user.email,
-            image: user.image,
             role: user.role,
     }
 
@@ -176,7 +184,7 @@ exports.loginGoogle = async (req, res) => {
             if(err){
                 return res.status(500).json({message: 'server errer jwt'})
             }
-            return res.status(200).json({payload, token})
+            return res.status(200).json({token})
         })
 
   } catch (err) {
