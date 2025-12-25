@@ -31,7 +31,7 @@ exports.register = async(req, res)=>{
 
 exports.currentUser = async(req, res) => {
     try {
-        const result = await db.query('SELECT name, email, image, role FROM users WHERE email = $1', req.user.email)
+        const result = await db.query('SELECT name, email, image, role FROM users WHERE email = $1', [req.user.email])
 
         res.json({ user: result.rows[0]})
     } catch (err) {
