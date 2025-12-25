@@ -4,7 +4,7 @@ const { create, list, update, remove, read } = require('../controllers/insurancC
 const router = express.Router()
 
 router.post('/create-company', authCheck, roleCheck(['admin']), create)
-router.get('/list-company', list)
+router.get('/list-company/page', list)
 router.get('/list-company-select', list)
 router.get('/read-company/:id', authCheck, roleCheck(['admin']), read)
 router.put('/update-company/:id', authCheck, roleCheck(['admin']), update)

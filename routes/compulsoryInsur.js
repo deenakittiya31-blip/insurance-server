@@ -4,7 +4,7 @@ const { create, list, update, remove, read } = require('../controllers/compulsor
 const router = express.Router()
 
 router.post('/create-compulsory', authCheck, roleCheck(['admin']), create)
-router.get('/list-compulsory', list)
+router.get('/list-compulsory/page', list)
 router.get('/read-compulsory/:id', authCheck, roleCheck(['admin']), read)
 router.put('/update-compulsory/:id', authCheck, roleCheck(['admin']), update)
 router.delete('/delete-compulsory/:id', authCheck, roleCheck(['admin']), remove)
