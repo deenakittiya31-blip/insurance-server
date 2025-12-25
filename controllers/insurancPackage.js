@@ -16,12 +16,19 @@ exports.create = async(req, res) => {
 }
 
 exports.list = async(req, res) => {
-    try {
-        const result = await db.query(
-            'SELECT ip.id, ic.namecompany as company, it.nametype as type, package_name, coverage_amount FROM insurance_package as ip INNER JOIN insurance_company as ic ON ip.company_id = ic.id INNER JOIN insurance_type as it ON ip.insurance_type_id = it.id'
-        )
+    const page = Number(req.query.page) || 1;
+    const per_page = Number(req.query.per_page) || 5;
 
-         res.json({ data: result.rows })
+    const offset = (page - 1) * per_page
+
+    try {
+        const query = 'SELECT ip.id, ic.namecompany as company, it.nametype as type, package_name, coverage_amount FROM insurance_package as ip INNER JOIN insurance_company as ic ON ip.company_id = ic.id INNER JOIN insurance_type as it ON ip.insurance_type_id = it.id ORDER BY ip.id ASC LIMIT $1 OFFSET $2'
+
+        const result = await db.query(query, [per_page, offset])
+
+        const countResult = await db.query('SELECT COUNT(*)::int as total FROM insurance_package')
+
+        res.json({ data: result.rows, total: countResult.rows[0].total })
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 

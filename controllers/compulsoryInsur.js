@@ -16,11 +16,17 @@ exports.create = async(req, res) => {
 }
 
 exports.list = async(req, res) => {
+    const page = Number(req.query.page) || 1;
+    const per_page = Number(req.query.per_page) || 5;
+
+    const offset = (page - 1) * per_page
+
     try {
-        const result = await db.query('SELECT ci.id, ct.type, price, coverage_detail FROM compulsory_insurance as ci INNER JOIN car_type as ct ON ci.car_type_id = ct.id')
+        const result = await db.query('SELECT ci.id, ct.type, price, coverage_detail FROM compulsory_insurance as ci INNER JOIN car_type as ct ON ci.car_type_id = ct.id ORDER BY ci.id ASC LIMIT $1 OFFSET $2', [per_page, offset])
 
+        const countResult = await db.query('SELECT COUNT(*)::int as total FROM compulsory_insurance')
 
-        res.json({data: result.rows})
+        res.json({ data: result.rows, total: countResult.rows[0].total })
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 

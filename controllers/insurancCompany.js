@@ -15,10 +15,17 @@ exports.create = async(req, res) => {
 }
 
 exports.list = async(req, res) => {
-    try {
-        const result = await db.query('SELECT id, namecompany, logo_url, code, phone, logo_public_id FROM insurance_company')
+    const page = Number(req.query.page) || 1;
+    const per_page = Number(req.query.per_page) || 5;
 
-        res.json({ data: result.rows })
+    const offset = (page - 1) * per_page
+
+    try {
+        const result = await db.query('SELECT id, namecompany, logo_url, code, phone, logo_public_id FROM insurance_company ORDER BY id ASC LIMIT $1 OFFSET $2', [per_page, offset])
+
+        const countResult = await db.query('SELECT COUNT(*)::int as total FROM insurance_company')
+
+        res.json({ data: result.rows, total: countResult.rows[0].total })
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
