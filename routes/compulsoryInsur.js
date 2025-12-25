@@ -1,5 +1,5 @@
 const express = require('express')
-const { authCheck } = require('../middleware/authCheck')
+const { authCheck, roleCheck } = require('../middleware/authCheck')
 const { create, list, update, remove, read } = require('../controllers/compulsoryInsur')
 const router = express.Router()
 

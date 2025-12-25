@@ -1,5 +1,5 @@
 const express = require('express')
-const { authCheck } = require('../middleware/authCheck')
+const { authCheck, roleCheck } = require('../middleware/authCheck')
 const { createImages, removeImages } = require('../controllers/image')
 const router = express.Router()
 
