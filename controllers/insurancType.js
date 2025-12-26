@@ -14,6 +14,21 @@ exports.create = async(req, res) => {
     }
 }
 
+exports.is_active = async(req, res) => {
+    const {is_active} = req.body
+    const {id} = req.params
+
+    try {
+            await db.query('UPDATE insurance_type SET is_active = $1 WHERE id = $2', 
+            [is_active, id])
+
+        res.json({msg: 'อัปเดตข้อมูลประเภทประกันสำเร็จ'})  
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'})
+    }
+}
+
 exports.list = async(req, res) => {
     const page = Number(req.query.page) || 1;
     const per_page = Number(req.query.per_page) || 5;

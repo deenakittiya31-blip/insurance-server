@@ -31,6 +31,19 @@ exports.list = async(req, res) => {
     }
 }
 
+exports.read = async(req,res)=>{
+    try {
+        const { id } = req.params
+        const result = await db.query('SELECT brand_id, name FROM car_model WHERE id = $1', [id])
+
+
+        res.json({data: result.rows[0]})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server error'})
+    }
+}
+
 exports.update = async(req, res) => {
    const { id } = req.params
     const fields = []
