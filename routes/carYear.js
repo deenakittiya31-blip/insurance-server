@@ -5,7 +5,7 @@ const router = express.Router()
 
 router.post('/create-year', authCheck, roleCheck(['admin']), create)
 router.get('/list-year/page', list)
-router.get('/read-carbrand/:id', authCheck, roleCheck(['admin']), read)
+router.get('/read-year/:id', authCheck, roleCheck(['admin']), read)
 router.put('/update-year/:id', authCheck, roleCheck(['admin']), update)
 router.delete('/delete-year/:id', authCheck, roleCheck(['admin']), remove)
 
