@@ -67,7 +67,7 @@ exports.update = async(req, res) => {
             [
                 type                ?? old.type,
                 code                ?? old.code, 
-                car_usage_id        !== undefined ? Number(car_type_id) : old.car_usage_id,
+                car_usage_id        !== undefined ? Number(car_usage_id) : old.car_usage_id,
                 id
             ])
 
