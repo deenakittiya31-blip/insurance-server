@@ -65,6 +65,10 @@ exports.login = async(req, res) => {
             return res.status(400).json({ message: 'Captcha verification failed' })
         }
 
+        console.log('CAPTCHA TOKEN:', captcha)
+
+        console.log('VERIFY RESULT:', verifyRes.data)
+
         if(email.trim() == '' || password.trim() == ''){
             return res.status(400).json({msg: 'อีเมลล์หรือรหัสผ่านไม่ถูกต้อง'})
         }
