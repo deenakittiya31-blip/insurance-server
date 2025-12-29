@@ -16,7 +16,7 @@ exports.register = async(req, res)=>{
 
         const emailCheck = await db.query('SELECT email FROM users WHERE email = $1', [email])
 
-        if(emailCheck.length > 0) {
+        if(emailCheck.rows.length > 0) {
             return res.status(409).json({ message: 'มีบัญชีผู้ใช้อยู่แล้ว' })
         }
 
