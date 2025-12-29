@@ -1,4 +1,5 @@
 const db = require('../config/database')
+const cloudinary = require('../config/cloudinary')
 
 exports.create = async(req, res) => {
     const { namecompany, code, logo_url, phone, logo_public_id } = req.body
@@ -89,9 +90,24 @@ exports.update = async(req, res) => {
 }
 
 exports.remove = async(req, res) => {
-    try {
-        const {id} = req.params
+    const {id} = req.params
 
+    try {
+        //1 ใช้ไอดีที่ได้มาหาข้อมูล
+        const result = await db.query('SELECT * FROM insurance_company WHERE id = $1', [id])
+
+        if(result.rows.length = 0){
+            return res.status(404).json({msg: 'ไม่เจอบริษัทนี้'})
+        }
+
+        const {logo_public_id} = result.rows[0]
+
+        //2 ถ้ามี logo_public_id ให้ลบรูปก่อน
+        if(logo_public_id){
+            await cloudinary.uploader.destroy(logo_public_id)
+        }
+        
+        //3 ลบบริษัท
         await db.query('DELETE FROM insurance_company WHERE id = $1', [id])
 
         res.json({msg: 'ลบข้อมูลบริษัทสำเร็จ'})
