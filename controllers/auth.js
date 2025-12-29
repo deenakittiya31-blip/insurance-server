@@ -77,6 +77,13 @@ exports.login = async(req, res) => {
 
         const user = result.rows[0]
 
+        if (!user.password) {
+            console.log('PASSWORD IS EMPTY:', user)
+            return res.status(400).json({
+                message: 'บัญชีนี้ไม่มีรหัสผ่าน'
+            })
+        }
+
         const isMatch = await bcrypt.compare(password, user.password)
         if(!isMatch){
             return res.status(400).json({message: 'รหัสผ่านไม่ถูกต้อง'})
