@@ -2,6 +2,7 @@ const db = require('../config/database')
 const { OAuth2Client } = require('google-auth-library')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const axios = require('axios')
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
 
@@ -42,7 +43,27 @@ exports.currentUser = async(req, res) => {
 
 exports.login = async(req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, captcha } = req.body;
+
+        if (!captcha) {
+            return res.status(400).json({ message: 'Captcha missing' })
+        }
+
+         // verify กับ Google
+        const verifyRes = await axios.post(
+            `https://www.google.com/recaptcha/api/siteverify`,
+            null,
+            {
+                params: {
+                secret: process.env.RECAPTCHA_SECRET_KEY,
+                response: captcha,
+                },
+            }
+        )
+
+        if (!verifyRes.data.success) {
+            return res.status(400).json({ message: 'Captcha verification failed' })
+        }
 
         if(email.trim() == '' || password.trim() == ''){
             return res.status(400).json({msg: 'อีเมลล์หรือรหัสผ่านไม่ถูกต้อง'})
