@@ -4,25 +4,23 @@ const api = "https://api.aigen.online/aiscript/general-invoice/v2";
 
 exports.aigen = async(req, res) => {
     try {
-        const { image } = req.body
+        const { base64, type } = req.body
 
-        if(!image){
-            return res.status(400).json({msg: 'ไม่มีรูปภาพ'})
+        if (!base64) {
+            return res.status(400).json({ msg: 'ไม่มีไฟล์' })
         }
- 
-        const response = await axios.post(
-            api, 
-            {
-                image : image
 
-            }, 
-            {
+        const payload =
+        type === 'pdf'
+        ? { pdf: base64 }
+        : { image: base64 }
+ 
+        const response = await axios.post(api, payload, {
                 headers: {
                     "x-aigen-key": process.env.AIGEN_KEY,
                     'Content-Type': 'application/json'
                 }
-            }
-        )
+            })
 
         res.status(200).json(response.data)
     } catch (err) {
