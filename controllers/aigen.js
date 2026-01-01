@@ -1,4 +1,3 @@
-require('dotenv').config();
 const axios = require('axios')
 
 const api = "https://api.aigen.online/aiscript/general-invoice/v2";
@@ -31,8 +30,8 @@ exports.aigen = async(req, res) => {
     } catch (err) {
        console.error('AIGEN ERROR:', err?.response?.data || err.message)
         res.status(500).json({
-      message: "AIGEN API error",
-      error: err?.response?.data
-    })
+            message: "AIGEN API error",
+            error: err?.response?.data
+        })
     }
 }
