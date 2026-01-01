@@ -1,4 +1,4 @@
-require('dotenv').config
+require('dotenv').config();
 const db = require('../config/database')
 const axios = require('axios')
 
