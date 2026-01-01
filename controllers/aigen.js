@@ -1,17 +1,11 @@
 require('dotenv').config();
-const db = require('../config/database')
 const axios = require('axios')
 
 const api = "https://api.aigen.online/aiscript/general-invoice/v2";
-const headers = {
-  "x-aigen-key": process.env.AIGEN_KEY,
-};
 
 exports.aigen = async(req, res) => {
     try {
         const { image } = req.body
-
-        console.log('image length:', image?.length)
 
         if(!image){
             return res.status(400).json({msg: 'ไม่มีรูปภาพ'})
@@ -26,7 +20,10 @@ exports.aigen = async(req, res) => {
 
             }, 
             {
-                headers: headers
+                headers: {
+                    "x-aigen-key": process.env.AIGEN_KEY,
+                    'Content-Type': 'application/json'
+                }
             }
         )
 
