@@ -9,8 +9,6 @@ exports.aigen = async(req, res) => {
         if(!image){
             return res.status(400).json({msg: 'ไม่มีรูปภาพ'})
         }
-
-        console.log('AIGEN KEY:', process.env.AIGEN_KEY)
  
         const response = await axios.post(
             api, 
@@ -26,7 +24,7 @@ exports.aigen = async(req, res) => {
             }
         )
 
-        console.log(response.data)
+        res.status(200).json(response.data)
     } catch (err) {
        console.error('AIGEN ERROR:', err?.response?.data || err.message)
         res.status(500).json({
