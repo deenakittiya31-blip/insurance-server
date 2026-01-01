@@ -6,14 +6,18 @@ exports.aigen = async(req, res) => {
     try {
         const { base64, type } = req.body
 
-        if (!base64) {
-            return res.status(400).json({ msg: 'ไม่มีไฟล์' })
+        if (!base64 || !type) {
+      return res.status(400).json({ msg: 'ข้อมูลไม่ครบ' })
+    }
+
+         const payload = {
+            file: {
+                type,          // 'pdf' | 'image'
+                content: base64
+            }
         }
 
-        const payload =
-        type === 'pdf'
-        ? { pdf: base64 }
-        : { image: base64 }
+        console.log(JSON.stringify(payload, null, 2))
  
         const response = await axios.post(api, payload, {
                 headers: {
