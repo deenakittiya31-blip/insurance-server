@@ -8,9 +8,6 @@ const headers = {
 };
 
 exports.aigen = async(req, res) => {
-    console.log('AIGEN HIT')
-    console.log('body keys:', Object.keys(req.body))
-
     try {
         const { image } = req.body
 
@@ -19,6 +16,8 @@ exports.aigen = async(req, res) => {
         if(!image){
             return res.status(400).json({msg: 'ไม่มีรูปภาพ'})
         }
+
+        console.log('AIGEN KEY:', process.env.AIGEN_KEY)
  
         const response = await axios.post(
             api, 
