@@ -6,7 +6,7 @@ exports.aigen = async(req, res) => {
     try {
         const { image } = req.body
 
-        console.log(typeof image)     // ต้องได้ "string"
+        console.log(image)     // ต้องได้ "string"
 
         if (!image || typeof image !== 'string') {
             return res.status(400).json({ msg: 'image ต้องเป็น base64 string' })
