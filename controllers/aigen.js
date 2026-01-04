@@ -1,6 +1,6 @@
 const axios = require('axios')
 
-const api = "https://api.aigen.online/aiscript/general-invoice/v2";
+const api = "https://api.aigen.online/aiscript/vehicle-insurance-policy/v1";
 
 exports.aigen = async(req, res) => {
     try {
@@ -13,7 +13,7 @@ exports.aigen = async(req, res) => {
          const payload = {
             file: {
                 type,          // 'pdf' | 'image'
-                content: base64
+                base64: base64
             }
         }
 
@@ -22,7 +22,6 @@ exports.aigen = async(req, res) => {
         const response = await axios.post(api, payload, {
                 headers: {
                     "x-aigen-key": process.env.AIGEN_KEY,
-                    'Content-Type': 'application/json'
                 }
             })
 
