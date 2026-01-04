@@ -2,10 +2,6 @@ const axios = require('axios')
 
 const api = "https://api.aigen.online/aiscript/vehicle-insurance-policy/v1";
 
-const headers = {
-  "x-aigen-key": process.env.AIGEN_KEY,
-};
-
 exports.aigen = async(req, res) => {
     try {
         const { image } = req.body
@@ -13,16 +9,25 @@ exports.aigen = async(req, res) => {
         console.log(typeof image)     // ต้องได้ "string"
 
         if (!image || typeof image !== 'string') {
-      return res.status(400).json({ msg: 'image ต้องเป็น base64 string' })
-    }
+            return res.status(400).json({ msg: 'image ต้องเป็น base64 string' })
+        }
 
-        const data = { image: image }
+        const headers = {
+            "x-aigen-key": process.env.AIGEN_KEY,
+            "Content-Type": "application/json"
+        };
+
+        const data = { image }
  
         const response = await axios.post(api, data, { headers: headers })
 
-        console.log(response.data)
+         console.log('AIGEN Response:', response.data)
 
-        res.status(200).json({msg: 'success'})
+        // ส่งข้อมูลที่ได้จาก API กลับไปให้ Frontend
+        res.status(200).json({
+            message: 'success',
+            data: response.data
+        })
     } catch (err) {
        console.error('AIGEN ERROR:', err?.response?.data || err.message)
         res.status(500).json({
