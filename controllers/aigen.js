@@ -2,6 +2,10 @@ const axios = require('axios')
 
 const api = "https://api.aigen.online/aiscript/vehicle-insurance-policy/v1";
 
+const headers = {
+  "x-aigen-key": process.env.AIGEN_KEY,
+};
+
 exports.aigen = async(req, res) => {
     try {
         const { image } = req.body
@@ -10,18 +14,11 @@ exports.aigen = async(req, res) => {
       return res.status(400).json({ msg: 'ไม่มีรูปภาพ' })
     }
 
-         const payload = {
-            language: "th",
-            image: image           
-        }
+        const data = { image: image };
 
-        console.log(JSON.stringify(payload, null, 2))
+        console.log(JSON.stringify(image, null, 2))
  
-        const response = await axios.post(api, payload, {
-                headers: {
-                    "x-aigen-key": process.env.AIGEN_KEY,
-                }
-            })
+        const response = await axios.post(api, data, { headers: headers })
 
         res.status(200).json(response.data)
     } catch (err) {
