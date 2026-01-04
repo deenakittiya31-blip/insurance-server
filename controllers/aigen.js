@@ -4,7 +4,7 @@ const api = "https://api.aigen.online/aiscript/vehicle-insurance-policy/v1";
 
 exports.aigen = async(req, res) => {
     try {
-        const { base64, type } = req.body
+        const { base64 } = req.body
 
         if (!base64 || !type) {
       return res.status(400).json({ msg: 'ข้อมูลไม่ครบ' })
@@ -12,10 +12,7 @@ exports.aigen = async(req, res) => {
 
          const payload = {
             language: "th",
-            image: {
-                type,          // 'pdf' | 'image'
-                content: base64
-            }
+            image: base64           
         }
 
         console.log(JSON.stringify(payload, null, 2))
