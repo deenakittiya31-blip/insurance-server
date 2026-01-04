@@ -6,8 +6,8 @@ exports.aigen = async(req, res) => {
     try {
         const { image } = req.body
 
-        if (!image || !type) {
-      return res.status(400).json({ msg: 'ข้อมูลไม่ครบ' })
+        if (!image) {
+      return res.status(400).json({ msg: 'ไม่มีรูปภาพ' })
     }
 
          const payload = {
