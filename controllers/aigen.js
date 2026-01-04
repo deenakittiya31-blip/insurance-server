@@ -12,7 +12,7 @@ exports.aigen = async(req, res) => {
 
          const payload = {
             language: "th",
-            file: {
+            image: {
                 type,          // 'pdf' | 'image'
                 content: base64
             }
