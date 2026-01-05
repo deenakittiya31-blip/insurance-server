@@ -19,7 +19,7 @@ exports.akson = async(req, res) => {
 
         for (let i = 0; i < images.length; i++) {
             const payload = {
-                base64Image: base64,
+                base64Image: images[i],
                 customFields:  field,
                 additionalInstructions: "Extract numbers without commas or currency symbols. Dates in DD/MM/YYYY format."
             }
@@ -39,7 +39,7 @@ exports.akson = async(req, res) => {
         }
 
            return res.json({data: results})  
-            
+
     } catch (err) {
         console.error(err.response?.data || err.message)
         return res.status(500).json({
