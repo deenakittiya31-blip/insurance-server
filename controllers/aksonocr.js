@@ -78,14 +78,22 @@ exports.akson = async(req, res) => {
             additionalInstructions: "Extract numbers without commas or currency symbols. Dates in DD/MM/YYYY format."
         }
 
-        const response = await axios.post(api, payload, {headers: headers})
+        const response = await axios.post(api, payload, {
+            headers: {
+                "X-API-Key": process.env.AKSON_KEY,
+                "Content-Type": "application/json"
+            },
+            timeout: 60000
+        })
+
+        console.log(response.data)
 
         return res.json({
             success: true,
             data: response.data
         })
 
-        console.log(response.data)
+        
         
     } catch (err) {
         
