@@ -4,9 +4,9 @@ const api = "https://api.aigen.online/aiscript/vehicle-insurance-policy/v1";
 
 exports.aigen = async(req, res) => {
     try {
-        const { image } = req.body
+        const { image, type } = req.body
 
-        console.log(image)     // ต้องได้ "string"
+        console.log(image, type)
 
         if (!image || typeof image !== 'string') {
             return res.status(400).json({ msg: 'image ต้องเป็น base64 string' })
@@ -17,9 +17,14 @@ exports.aigen = async(req, res) => {
             "Content-Type": "application/json"
         };
 
-        const data = { image }
+        const payload = {};
+        if (type === 'application/pdf') {
+            payload.pdf = image;
+        } else {
+            payload.image = image;
+        }
  
-        const response = await axios.post(api, data, { headers: headers })
+        const response = await axios.post(api, payload, { headers: headers })
 
          console.log('AIGEN Response:', response.data)
 
