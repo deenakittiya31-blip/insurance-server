@@ -31,7 +31,7 @@ const field = [
     },
     {
         key: "vehicle_year",
-        description: "ปีรถ",
+        description: "ปีรถยนต์",
         example: "2021"
     },
     {

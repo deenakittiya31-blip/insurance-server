@@ -26,8 +26,6 @@ exports.akson = async(req, res) => {
             timeout: 60000
         })
 
-        console.log(response.data)
-
         return res.json({
             success: true,
             data: response.data.data
