@@ -13,7 +13,7 @@ exports.aigen = async(req, res) => {
         }
 
         const headers = {
-            "x-aigen-key": process.env.AIGEN_KEY,
+            "x-aigen-key": process.env.AKSON_KEY,
             "Content-Type": "application/json"
         };
 
