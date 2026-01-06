@@ -67,10 +67,12 @@ exports.akson = async(req, res) => {
 
              // --- สร้าง quotation ---
             const quotationRes = await db.query(
-                    `INSERT INTO quotation (compare_id, company_id, status)
-                     VALUES ($1, $2, 'draft')
+                    `INSERT INTO quotation (compare_id, company_id, company_name_raw, status)
+                     VALUES ($1, $2, $3, 'draft')
                      RETURNING id`,
-                    [compareId, companyId]
+                    [compareId, 
+                     companyId, 
+                     ocrData.insurance_company || null]
                 )
 
             const quotationId = quotationRes.rows[0].id
