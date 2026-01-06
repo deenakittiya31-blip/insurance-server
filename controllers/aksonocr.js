@@ -8,7 +8,6 @@ const api = 'https://backend.aksonocr.com/api/v1/key-extract-url'
 exports.akson = async(req, res) => {
     try {
         const {images} = req.body;
-        console.log(images)
 
         if (!Array.isArray(images) || images.length === 0) {
             return res.status(400).json({
@@ -68,10 +67,10 @@ exports.akson = async(req, res) => {
 
              // --- สร้าง quotation ---
             const quotationRes = await db.query(
-                    `INSERT INTO quotation (status, company_id, company_id, )
-                     VALUES ('draft', $1, $2 )
+                    `INSERT INTO quotation (compare_id, company_id, status)
+                     VALUES ($1, $2, 'draft')
                      RETURNING id`,
-                    [companyId, compareId]
+                    [compareId, companyId]
                 )
 
             const quotationId = quotationRes.rows[0].id
