@@ -1,10 +1,18 @@
 const db = require('../config/database')
 
-exports.createQuotation = async(req, res) => {
+exports.createCompare = async(req, res) => {
     try {
-       // 1. insert และเอา id ออกมา
+        const { car_brand_id, car_model_id, car_year_id, car_usage_id } = req.body;
+
+       // 1. insert พร้อมข้อมูลรถ และเอา id ออกมา
         const insertResult = await db.query(
-            'INSERT INTO quotation_compare DEFAULT VALUES RETURNING id'
+            'INSERT INTO quotation_compare(car_brand_id, car_model_id, car_year_id, car_usage_id) VALUES ($1, $2, $3, $4) RETURNING id',
+            [
+                Number(car_brand_id),
+                Number(car_model_id),
+                Number(car_year_id),
+                Number(car_usage_id),
+            ]
         )
 
         const id = insertResult.rows[0].id
