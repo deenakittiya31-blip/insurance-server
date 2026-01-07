@@ -31,6 +31,20 @@ exports.list = async(req, res) => {
     }
 }
 
+exports.listSelect = async(req, res) => {
+    try {
+        const result = await db.query('SELECT id, year_be, year_ad FROM car_year')
+         if (result.rows.length === 0) {
+            return res.json({ data: [] })
+        }
+
+        res.json({ data: result.rows })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({msg: 'Server errer'})
+    }
+}
+
 exports.read = async(req,res)=>{
     try {
         const { id } = req.params
