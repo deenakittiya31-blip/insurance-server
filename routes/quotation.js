@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require('express')
 const { authCheck, roleCheck } = require('../middleware/authCheck');
 const { createQuotation } = require('../controllers/quotation');
 const router = express.Router();
