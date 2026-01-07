@@ -15,12 +15,14 @@ exports.akson = async(req, res) => {
             })
         }
 
-        await db.query('INSERT INTO quotation(company_id, compare_id) VALUES ($1, $2)',
+        const insertResult = await db.query('INSERT INTO quotation(company_id, compare_id) VALUES ($1, $2) RETURNING id',
             [
                 Number(company_id),
                 compare_id
             ]
         )
+
+        const id = insertResult.rows[0].id
 
         const payload = {
             base64Image: image,
@@ -40,7 +42,8 @@ exports.akson = async(req, res) => {
 
         return res.json({
             success: true,
-            ocrData
+            ocrData,
+            id: id
         })  
 
     } catch (err) {
