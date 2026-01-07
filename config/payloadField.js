@@ -1,11 +1,11 @@
 const field = [
     {
-        key: "quote_no",
+        key: "quotation_number",
         description: "เลขที่ใบเสนอราคาประกันรถยนต์",
         example: "QT-INS-2024-001"
     },
     {
-        key: "quote_date",
+        key: "quotation_date",
         description: "วันที่ออกใบเสนอราคา",
         example: "15/01/2024"
     },
