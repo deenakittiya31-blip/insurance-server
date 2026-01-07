@@ -35,6 +35,10 @@ exports.listBy = async(req, res) => {
     try {
         const { brand_id } = req.query;
 
+         if (!brand_id) {
+            return res.json({ data: [] })
+        }
+
         const result = await db.query(
             `SELECT id, name 
              FROM car_model 
