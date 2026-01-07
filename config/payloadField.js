@@ -1,11 +1,11 @@
 const field = [
     {
-        key: "quotation_number",
+        key: "quote_no",
         description: "เลขที่ใบเสนอราคาประกันรถยนต์",
         example: "QT-INS-2024-001"
     },
     {
-        key: "quotation_date",
+        key: "quote_date",
         description: "วันที่ออกใบเสนอราคา",
         example: "15/01/2024"
     },
@@ -20,17 +20,17 @@ const field = [
         example: "ซ่อมอู่"
     },
     {
-        key: "vehicle_brand",
+        key: "car_brand",
         description: "ยี่ห้อรถยนต์",
         example: "Toyota"
     },
     {
-        key: "vehicle_model",
+        key: "car_model",
         description: "รุ่นรถยนต์",
         example: "Corolla Altis"
     },
     {
-        key: "vehicle_year",
+        key: "car_year",
         description: "ปีรถยนต์",
         example: "2021"
     },
