@@ -81,7 +81,7 @@ const field = [
     },
     {
         key: "car_fire_theft",
-        description: "รถยนต์สูญหาย/ ไฟไหม",
+        description: "รถยนต์สูญหาย/ ไฟไหม้",
         example: "1000000"
     },
     {

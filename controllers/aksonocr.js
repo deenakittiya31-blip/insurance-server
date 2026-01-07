@@ -1,13 +1,12 @@
 const axios = require('axios');
 const field = require('../config/payloadField');
 const db = require('../config/database');
-const { mapToMainField } = require('../config/mapService');
 
 const api = 'https://backend.aksonocr.com/api/v1/key-extract-url'
 
 exports.akson = async(req, res) => {
     try {
-        const {image, company_id} = req.body;
+        const {image, company_id, compare_id} = req.body;
 
         if (!image) {
             return res.status(400).json({
@@ -16,21 +15,28 @@ exports.akson = async(req, res) => {
             })
         }
 
-            const payload = {
-                base64Image: image,
-                customFields:  field,
-                additionalInstructions: "Extract numbers without commas or currency symbols. Dates in DD/MM/YYYY format."
-            }
+        await db.query('INSERT INTO quotaion(company_id, compare_id) VALUES ($1, $2)',
+            [
+                Number(company_id),
+                compare_id
+            ]
+        )
 
-            const ocrRes = await axios.post(api, payload, {
-                headers: {
-                    "X-API-Key": process.env.AKSON_KEY,
-                    "Content-Type": "application/json"
-                },
-                timeout: 60000
-            })
+        const payload = {
+            base64Image: image,
+            customFields:  field,
+            additionalInstructions: "Extract numbers without commas or currency symbols. Dates in DD/MM/YYYY format."
+        }
 
-            const ocrData = ocrRes.data.data
+        const ocrRes = await axios.post(api, payload, {
+            headers: {
+                "X-API-Key": process.env.AKSON_KEY,
+                "Content-Type": "application/json"
+            },
+            timeout: 60000
+        })
+
+        const ocrData = ocrRes.data.data
 
         return res.json({
             success: true,
