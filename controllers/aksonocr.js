@@ -15,7 +15,7 @@ exports.akson = async(req, res) => {
             })
         }
 
-        await db.query('INSERT INTO quotaion(company_id, compare_id) VALUES ($1, $2)',
+        await db.query('INSERT INTO quotation(company_id, compare_id) VALUES ($1, $2)',
             [
                 Number(company_id),
                 compare_id
