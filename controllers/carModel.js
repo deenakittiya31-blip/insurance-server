@@ -31,6 +31,27 @@ exports.list = async(req, res) => {
     }
 }
 
+exports.listBy = async(req, res) => {
+    try {
+        const { brand_id } = req.query;
+
+        const result = await db.query(
+            `SELECT id, name 
+             FROM car_model 
+             WHERE brand_id = $1
+             ORDER BY name ASC`,
+            [brand_id]
+        )
+
+        res.json({
+            data: result.rows
+        })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({msg: 'Server errer'})
+    }
+}
+
 exports.read = async(req,res)=>{
     try {
         const { id } = req.params
