@@ -35,3 +35,18 @@ exports.createCompare = async(req, res) => {
         res.status(500).json({msg: 'Server error'})
     }
 }
+
+exports.getDetailCompare = async(req, res) => {
+    try {
+        const { id } = req.params;
+
+        const result = await db.query(
+            'select qc.q_id, cb.name as car_brand, cm.name as car_model, cu.usage_name as usage, concat(cy.year_be || '/' || cy.year_ad) as year from quotation_compare as qc join car_brand as cb on qc.car_brand_id = cb.id join car_model as cm on qc.car_model_id = cm.id join car_usage as cu on qc.car_usage_id = cu.id join car_year as cy on qc.car_year_id = cy.id where qc.q_id = $1',
+            [id])
+
+        res.json({ data: result.rows[0]})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({ msg : 'Server error'})
+    }
+}
