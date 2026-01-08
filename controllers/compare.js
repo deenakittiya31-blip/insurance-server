@@ -71,11 +71,13 @@ exports.comparePDF = async(req, res) => {
         const { id } = req.params;
 
         //รอบแรก query ข้อมูลรถ
-        const carResult = await db.query('select qc.q_id, cb.name, cm.name, cu.usage_name, cy.year_be, cy.year_ad from quotation_compare as qc join car_brand as cb on qc.car_brand_id = cb.id join car_model as cm on qc.car_model_id = cm.id join car_usage as cu on qc.car_usage_id = cu.id join car_year as cy on qc.car_year_id = cy.id where qc.q_id = $1', [id])
+        const carResult = await db.query('select qc.q_id, cb.name as car_brand, cm.name as car_model, cu.usage_name as usage, cy.year_be, cy.year_ad from quotation_compare as qc join car_brand as cb on qc.car_brand_id = cb.id join car_model as cm on qc.car_model_id = cm.id join car_usage as cu on qc.car_usage_id = cu.id join car_year as cy on qc.car_year_id = cy.id where qc.q_id = $1', [id])
 
         if (!carResult.rows.length) {
             return res.status(404).json({ msg: 'ไม่พบข้อมูลรถ' });
         }
+
+        const companyResult = db.query('select ic.namecompany as company, ic.logo_url from quotation_compare as qc left join quotation as q on qc.q_id = q.q_id left join insurance_company as ic on q.company_id = ic.id where qc.q_id = $1 order by q.id asc', [id])
 
         //รอบสอง query ข้อมูลเอกสาร
         const quotationResult = await db.query('select qf.quotation_id, qf.field_code, qf.field_value from quotation_compare as qc left join quotation as q on qc.q_id = q.q_id left join quotation_field as qf on q.id = qf.quotation_id where qc.q_id = $1 order by quotation_id asc', [id])
@@ -94,6 +96,7 @@ exports.comparePDF = async(req, res) => {
 
         res.json({
             car: carResult.rows[0],
+            company: (await companyResult).rows[0],
             quotations
     });
 
