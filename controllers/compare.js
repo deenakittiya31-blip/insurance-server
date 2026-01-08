@@ -96,7 +96,7 @@ exports.comparePDF = async(req, res) => {
 
         res.json({
             car: carResult.rows[0],
-            company: (companyResult).rows,
+            company: companyResult.rows[0],
             quotations
     });
 
