@@ -77,7 +77,7 @@ exports.comparePDF = async(req, res) => {
             return res.status(404).json({ msg: 'ไม่พบข้อมูลรถ' });
         }
 
-        const companyResult = db.query('select ic.namecompany as company, ic.logo_url from quotation_compare as qc left join quotation as q on qc.q_id = q.q_id left join insurance_company as ic on q.company_id = ic.id where qc.q_id = $1 order by q.id asc', [id])
+        const companyResult = await db.query('select ic.namecompany as company, ic.logo_url from quotation_compare as qc left join quotation as q on qc.q_id = q.q_id left join insurance_company as ic on q.company_id = ic.id where qc.q_id = $1 order by q.id asc', [id])
 
         //รอบสอง query ข้อมูลเอกสาร
         const quotationResult = await db.query('select qf.quotation_id, qf.field_code, qf.field_value from quotation_compare as qc left join quotation as q on qc.q_id = q.q_id left join quotation_field as qf on q.id = qf.quotation_id where qc.q_id = $1 order by quotation_id asc', [id])
@@ -96,7 +96,7 @@ exports.comparePDF = async(req, res) => {
 
         res.json({
             car: carResult.rows[0],
-            company: (await companyResult).rows[0],
+            company: (companyResult).rows[0],
             quotations
     });
 
