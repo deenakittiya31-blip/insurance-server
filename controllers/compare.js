@@ -65,3 +65,40 @@ exports.getDetailCompare = async(req, res) => {
         res.status(500).json({ msg : 'Server error'})
     }
 }
+
+exports.comparePDF = async(req, res) => {
+    try {
+        const { id } = req.params;
+
+        //รอบแรก query ข้อมูลรถ
+        const carResult = db.query('select qc.q_id, cb.name, cm.name, cu.usage_name, cy.year_be, cy.year_ad from quotation_compare as qc join car_brand as cb on qc.car_brand_id = cb.id join car_model as cm on qc.car_model_id = cm.id join car_usage as cu on qc.car_usage_id = cu.id join car_year as cy on qc.car_year_id = cy.id where qc.q_id = $1', [id])
+
+        if (!carResult.rows.length) {
+            return res.status(404).json({ msg: 'ไม่พบข้อมูลรถ' });
+        }
+
+        //รอบสอง query ข้อมูลเอกสาร
+        const quotationResult = db.query('select qf.quotation_id, qf.field_code, qf.field_value from quotation_compare as qc left join quotation as q on qc.q_id = q.q_id left join quotation_field as qf on q.id = qf.quotation_id where qc.q_id = $1 order by quotation_id asc', [id])
+
+        // 🟢 group fields
+        const quotations = {};
+        quotationResult.rows.forEach(row => {
+            if (!row.quotation_id) return;
+
+            if (!quotations[row.quotation_id]) {
+                quotations[row.quotation_id] = {};
+            }
+
+            quotations[row.quotation_id][row.field_code] = row.field_value;
+        });
+
+        res.json({
+            car: carResult.rows[0],
+            quotations
+    });
+
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({ msg: 'Server error'})
+    }
+}
