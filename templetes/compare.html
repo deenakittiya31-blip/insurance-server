@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <style>
+    body {
+      font-family: 'TH Sarabun New', sans-serif;
+      font-size: 14px;
+    }
+    h2 { text-align: center; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #333;
+      padding: 6px;
+      text-align: center;
+    }
+    .header {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+    <h2>ตารางเปรียบเทียบประกันภัย</h2>
+
+  <div class="header">
+    <p><b>รถ:</b> {{car_brand}} {{car_model}}</p>
+    <p><b>การใช้งาน:</b> {{usage}}</p>
+    <p><b>ปีรถ:</b> {{year_be}} ({{year_ad}})</p>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>รายการ</th>
+        {{#companies}}
+        <th>{{company}}</th>
+        {{/companies}}
+      </tr>
+    </thead>
+    <tbody>
+      {{#rows}}
+      <tr>
+        <td>{{label}}</td>
+        {{#values}}
+        <td>{{.}}</td>
+        {{/values}}
+      </tr>
+      {{/rows}}
+    </tbody>
+  </table>
+</body>
+</html>
