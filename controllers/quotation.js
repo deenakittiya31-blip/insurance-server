@@ -29,3 +29,16 @@ exports.createQuotation = async(req, res) => {
         res.status(500).json({msg: 'Server error'})
     }
 }
+
+exports.removeQuotation = async(req, res) => {
+    try {
+        const {id} = req.params
+
+        await db.query('DELETE FROM quotation WHERE id = $1', [id])
+
+        res.json({ success: true })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({msg: 'Server error'})
+    }
+}

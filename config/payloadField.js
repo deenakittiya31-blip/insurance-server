@@ -17,7 +17,7 @@ const field = [
     {
         key: "repair_type",
         description: "ประเภทซ่อม",
-        example: "ซ่อมอู่"
+        example: "อู่ประกัน ซ่อมอู่"
     },
     {
         key: "car_brand",
@@ -96,12 +96,12 @@ const field = [
     },
     {
         key: "additional_bail_bond",
-        description: "การประกันตัวผู้ขับขี่(ต่อคร้ัง)",
+        description: "การประกันตัวผู้ขับขี่",
         example: "300000"
     },
     {
         key: "additional_personal_permanent_driver_number",
-        description: "จำนวนที่นั่ง (ผู้ขับขี่รวมผู้โดยสาร)",
+        description: "จำนวนที่นั่ง",
         example: "7"
     },
 ]
