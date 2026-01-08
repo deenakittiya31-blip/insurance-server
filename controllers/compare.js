@@ -110,124 +110,128 @@ exports.comparePDF = async(req, res) => {
 
 // ฟังก์ชันสร้าง PDF
 async function generatePDF(res, carData, companies, quotations, id) {
-    const doc = new PDFDocument({ 
-        size: 'A4', 
-        margin: 50,
-        bufferPages: true
-    });
+    return new Promise((resolve, reject) => {
+        const doc = new PDFDocument({ 
+            size: 'A4', 
+            margin: 50,
+            bufferPages: true
+        });
 
-    // ตั้งค่า response header
-    res.contentType('application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=comparison_${id}.pdf`);
+        // ตั้งค่า response header
+        res.contentType('application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=comparison_${id}.pdf`);
 
-    // Pipe PDF ไปที่ response
-    doc.pipe(res);
+        // Handle errors
+        doc.on('error', (err) => {
+            console.error('PDF Document Error:', err);
+            reject(err);
+        });
 
-    // ลงทะเบียนฟอนต์ภาษาไทย (สำคัญมาก!)
-    doc.registerFont('THSarabunNew', 'fonts/thsarabunnew-webfont.ttf');
-    doc.registerFont('THSarabunNew-Bold', 'fonts/thsarabunnew_bold-webfont.ttf');
+        // Pipe PDF ไปที่ response
+        doc.pipe(res);
 
-    // === Header ===
-    doc.font('THSarabunNew-Bold')
-       .fontSize(24)
-       .fillColor('#0066cc')
-       .text('เอกสารเปรียบเทียบใบเสนอราคาประกันภัย', { align: 'center' });
-    
-    doc.moveDown(0.5);
-    doc.font('THSarabunNew')
-       .fontSize(14)
-       .fillColor('#333333')
-       .text(`เลขที่: ${carData.q_id}`, { align: 'center' });
+        // ✅ ไม่ต้องลงทะเบียนฟอนต์ ใช้ฟอนต์ default ของ PDFKit
+        // doc.registerFont(...) // <-- ลบออก
 
-    doc.moveDown(1);
-
-    // === กรอบข้อมูลรถ ===
-    const boxTop = doc.y;
-    doc.rect(50, boxTop, 495, 100)
-       .fillAndStroke('#f8f9fa', '#0066cc');
-
-    doc.fillColor('#333333')
-       .font('THSarabunNew-Bold')
-       .fontSize(16)
-       .text('ข้อมูลรถยนต์', 60, boxTop + 15);
-
-    doc.font('THSarabunNew')
-       .fontSize(14)
-       .text(`ยี่ห้อ: ${carData.car_brand}`, 60, boxTop + 40)
-       .text(`รุ่น: ${carData.car_model}`, 60, boxTop + 60)
-       .text(`ประเภทการใช้งาน: ${carData.usage}`, 300, boxTop + 40)
-       .text(`ปี: ${carData.year_be} / ${carData.year_ad}`, 300, boxTop + 60);
-
-    doc.moveDown(3);
-
-    // === ตารางเปรียบเทียบ ===
-    doc.font('THSarabunNew-Bold')
-       .fontSize(16)
-       .text('ตารางเปรียบเทียบ', 50, doc.y);
-
-    doc.moveDown(0.5);
-
-    // วาดตาราง
-    drawComparisonTable(doc, companies, quotations);
-
-    // === Footer ===
-    const pageCount = doc.bufferedPageRange().count;
-    for (let i = 0; i < pageCount; i++) {
-        doc.switchToPage(i);
+        // === Header ===
+        doc.font('Helvetica-Bold')
+           .fontSize(20)
+           .fillColor('#0066cc')
+           .text('Comparison Document - Insurance Quotation', { align: 'center' });
         
-        doc.font('THSarabunNew')
-           .fontSize(10)
-           .fillColor('#666666')
-           .text(
-               `สร้างเมื่อ: ${new Date().toLocaleDateString('th-TH', { 
-                   year: 'numeric', 
-                   month: 'long', 
-                   day: 'numeric',
-                   hour: '2-digit',
-                   minute: '2-digit'
-               })}`,
-               50,
-               doc.page.height - 50,
-               { align: 'center' }
-           );
-    }
+        doc.moveDown(0.3);
+        doc.font('Helvetica')
+           .fontSize(12)
+           .fillColor('#333333')
+           .text(`Document ID: ${carData.q_id}`, { align: 'center' });
 
-    doc.end();
+        doc.moveDown(1);
+
+        // === กรอบข้อมูลรถ ===
+        const boxTop = doc.y;
+        doc.rect(50, boxTop, 495, 120)
+           .fillAndStroke('#f8f9fa', '#0066cc');
+
+        doc.fillColor('#333333')
+           .font('Helvetica-Bold')
+           .fontSize(14)
+           .text('Car Information', 60, boxTop + 15);
+
+        doc.font('Helvetica')
+           .fontSize(11)
+           .text(`Brand: ${carData.car_brand}`, 60, boxTop + 40)
+           .text(`Model: ${carData.car_model}`, 60, boxTop + 60)
+           .text(`Usage: ${carData.usage}`, 60, boxTop + 80)
+           .text(`Year (BE): ${carData.year_be}`, 300, boxTop + 40)
+           .text(`Year (AD): ${carData.year_ad}`, 300, boxTop + 60);
+
+        doc.moveDown(4);
+
+        // === ตารางเปรียบเทียบ ===
+        doc.font('Helvetica-Bold')
+           .fontSize(14)
+           .text('Comparison Table', 50, doc.y);
+
+        doc.moveDown(0.5);
+
+        // วาดตาราง
+        drawComparisonTable(doc, companies, quotations);
+
+        // === Footer ===
+        const pageCount = doc.bufferedPageRange().count;
+        for (let i = 0; i < pageCount; i++) {
+            doc.switchToPage(i);
+            
+            doc.font('Helvetica')
+               .fontSize(9)
+               .fillColor('#666666')
+               .text(
+                   `Generated: ${new Date().toLocaleString('en-US')}`,
+                   50,
+                   doc.page.height - 50,
+                   { align: 'center' }
+               );
+        }
+
+        doc.end();
+        
+        doc.on('finish', () => {
+            resolve();
+        });
+    });
 }
 
 // ฟังก์ชันวาดตาราง
 function drawComparisonTable(doc, companies, quotations) {
     const startX = 50;
     let startY = doc.y;
-    const colWidth = 495 / (companies.length + 1); // +1 สำหรับคอลัมน์รายการ
+    const colWidth = 495 / (companies.length + 1);
     const rowHeight = 35;
 
-    // Labels สำหรับแต่ละ field
     const fieldLabels = {
-        'quotation_number': 'เลขที่ใบเสนอราคา',
-        'quotation_date': 'วันที่ใบเสนอราคา',
-        'insurance_company': 'บริษัทประกันภัย',
-        'repair_type': 'ประเภทการซ่อม',
-        'car_brand': 'ยี่ห้อรถ',
-        'additional_personal_permanent_driver_number': 'จำนวนคนขับเพิ่ม',
-        'car_own_damage': 'ทุนประกัน'
+        'quotation_number': 'Quotation No.',
+        'quotation_date': 'Date',
+        'insurance_company': 'Company',
+        'repair_type': 'Repair Type',
+        'car_brand': 'Brand',
+        'additional_personal_permanent_driver_number': 'Additional Drivers',
+        'car_own_damage': 'Sum Insured'
     };
 
-    // ดึง field_code ทั้งหมด
     const allFieldCodes = new Set();
     Object.values(quotations).forEach(fields => {
         Object.keys(fields).forEach(code => allFieldCodes.add(code));
     });
     const fieldCodesArray = Array.from(allFieldCodes);
 
-    // === Header Row (บริษัท) ===
-    doc.font('THSarabunNew-Bold').fontSize(12);
+    // === Header Row ===
+    doc.font('Helvetica-Bold').fontSize(10);
     
     // คอลัมน์รายการ
     doc.rect(startX, startY, colWidth, rowHeight)
        .fillAndStroke('#0066cc', '#000000');
     doc.fillColor('#ffffff')
-       .text('รายการ', startX + 5, startY + 10, { width: colWidth - 10, align: 'center' });
+       .text('Item', startX + 5, startY + 12, { width: colWidth - 10, align: 'center' });
 
     // คอลัมน์บริษัท
     companies.forEach((company, index) => {
@@ -236,8 +240,8 @@ function drawComparisonTable(doc, companies, quotations) {
            .fillAndStroke('#0066cc', '#000000');
         
         doc.fillColor('#ffffff')
-           .fontSize(11)
-           .text(company.company, x + 5, startY + 10, { 
+           .fontSize(9)
+           .text(company.company, x + 5, startY + 12, { 
                width: colWidth - 10, 
                align: 'center' 
            });
@@ -246,7 +250,7 @@ function drawComparisonTable(doc, companies, quotations) {
     startY += rowHeight;
 
     // === Data Rows ===
-    doc.font('THSarabunNew').fontSize(11);
+    doc.font('Helvetica').fontSize(9);
     
     fieldCodesArray.forEach((fieldCode, rowIndex) => {
         const isEvenRow = rowIndex % 2 === 0;
@@ -257,8 +261,8 @@ function drawComparisonTable(doc, companies, quotations) {
            .fillAndStroke(isEvenRow ? '#f8f9fa' : '#ffffff', '#cccccc');
         
         doc.fillColor('#333333')
-           .font('THSarabunNew-Bold')
-           .text(label, startX + 5, startY + 10, { 
+           .font('Helvetica-Bold')
+           .text(label, startX + 5, startY + 12, { 
                width: colWidth - 10, 
                align: 'left' 
            });
@@ -273,8 +277,8 @@ function drawComparisonTable(doc, companies, quotations) {
                .fillAndStroke(isEvenRow ? '#f8f9fa' : '#ffffff', '#cccccc');
             
             doc.fillColor('#333333')
-               .font('THSarabunNew')
-               .text(value, x + 5, startY + 10, { 
+               .font('Helvetica')
+               .text(value, x + 5, startY + 12, { 
                    width: colWidth - 10, 
                    align: 'center' 
                });
@@ -282,12 +286,11 @@ function drawComparisonTable(doc, companies, quotations) {
 
         startY += rowHeight;
 
-        // ถ้าใกล้จบหน้า ให้ขึ้นหน้าใหม่
+        // ขึ้นหน้าใหม่ถ้าใกล้จบหน้า
         if (startY > doc.page.height - 100) {
             doc.addPage();
             startY = 50;
         }
     });
 }
-
 
