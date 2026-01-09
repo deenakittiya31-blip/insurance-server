@@ -5,13 +5,13 @@ const fs = require('fs');
 
 exports.createCompare = async(req, res) => {
     try {
-        const { to, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer } = req.body;
+        const { to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer } = req.body;
 
        // 1. insert พร้อมข้อมูลรถ และเอา id ออกมา
         const insertResult = await db.query(
-            'INSERT INTO quotation_compare(to, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
+            'INSERT INTO quotation_compare(to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
             [
-                to,
+                to_name,
                 details,
                 Number(car_brand_id),
                 Number(car_model_id),
