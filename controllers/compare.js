@@ -5,16 +5,19 @@ const fs = require('fs');
 
 exports.createCompare = async(req, res) => {
     try {
-        const { car_brand_id, car_model_id, car_year_id, car_usage_id } = req.body;
+        const { to, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer } = req.body;
 
        // 1. insert พร้อมข้อมูลรถ และเอา id ออกมา
         const insertResult = await db.query(
-            'INSERT INTO quotation_compare(car_brand_id, car_model_id, car_year_id, car_usage_id) VALUES ($1, $2, $3, $4) RETURNING id',
+            'INSERT INTO quotation_compare(to, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
             [
+                to,
+                details,
                 Number(car_brand_id),
                 Number(car_model_id),
                 Number(car_year_id),
                 Number(car_usage_id),
+                offer
             ]
         )
 
@@ -85,7 +88,7 @@ exports.comparePDF = async(req, res) => {
         //รอบสอง query ข้อมูลเอกสาร
         const quotationResult = await db.query('select qf.quotation_id, qf.field_code, qf.field_value from quotation_compare as qc left join quotation as q on qc.q_id = q.q_id left join quotation_field as qf on q.id = qf.quotation_id where qc.q_id = $1 order by quotation_id asc', [id])
 
-        // 🟢 group fields
+        //group fields
         const quotations = {};
         quotationResult.rows.forEach(row => {
             if (!row.quotation_id) return;
