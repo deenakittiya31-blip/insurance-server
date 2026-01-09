@@ -12,6 +12,7 @@ exports.authCheck = async(req, res, next) => {
 
         //ถอดรหัส
         const decode = jwt.verify(token, process.env.SECRET)
+        console.log('DECODE JWT:', decode)
 
         req.user = decode
 

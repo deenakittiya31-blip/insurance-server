@@ -34,6 +34,8 @@ exports.currentUser = async(req, res) => {
     try {
         const result = await db.query('SELECT name, email, image, role FROM users WHERE user_id = $1', [req.user.id])
 
+        console.log('REQ.USER:', req.user)
+
         res.json({ user: result.rows[0]})
     } catch (err) {
         console.log(err)
