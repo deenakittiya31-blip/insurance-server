@@ -7,10 +7,27 @@ exports.createCompare = async(req, res) => {
     try {
         const { to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer } = req.body;
 
+        //สร้างเลข q_id
+        const now = new Date()
+        const year = now.getFullYear()
+        const month = String(now.getMonth() + 1).padStart(2, '0')
+
+        const yearMonth = `${year}${month}` // 202601
+
+        const countResult = await db.query(
+            `SELECT COUNT(*) FROM quotation WHERE q_id LIKE $1`,
+            [`Q${yearMonth}%`]
+        )
+
+        const running = Number(countResult.rows[0].count) + 1
+        const runningNumber = String(running).padStart(6, '0')
+        const q_id = `Q${yearMonth}${runningNumber}`
+
        // 1. insert พร้อมข้อมูลรถ และเอา id ออกมา
         const insertResult = await db.query(
-            'INSERT INTO quotation_compare(to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
+            'INSERT INTO quotation_compare(q_id, to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
             [
+                q_id,
                 to_name,
                 details,
                 Number(car_brand_id),
@@ -19,17 +36,6 @@ exports.createCompare = async(req, res) => {
                 Number(car_usage_id),
                 offer
             ]
-        )
-
-        const id = insertResult.rows[0].id
-
-        // 2. สร้าง q_id
-        const q_id = `Q${String(id).padStart(3, '0')}`
-
-        // 3. update และ return q_id
-        const updateResult = await db.query(
-            'UPDATE quotation_compare SET q_id = $1 WHERE id = $2 RETURNING q_id',
-            [q_id, id]
         )
 
        res.json({

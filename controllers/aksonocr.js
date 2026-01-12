@@ -28,10 +28,18 @@ exports.akson = async(req, res) => {
 
         const id = insertResult.rows[0].id
 
+        //ดีงข้อมูลฟิลด์ custom และคำแนะนำเพิ่มเติม
+        const resultCustom  = await db.query('select key_name, description, example_value from company_theme where company_id = $1',[company_id])
+        const resultAddition  = await db.query('select additional from additional_theme where company_id = $1',[company_id])
+
+        const customdData = resultCustom.rows
+        const additionalData = resultAddition.rows[0]
+
+        //เตรียมข้อมูล
         const payload = {
             base64Image: image,
-            customFields:  field,
-            additionalInstructions: "Extract numbers without commas or currency symbols. Dates in DD/MM/YYYY format."
+            customFields:  customdData,
+            additionalInstructions: additionalData
         }
 
         const ocrRes = await axios.post(api, payload, {
@@ -57,6 +65,18 @@ exports.akson = async(req, res) => {
             message: 'AksonOCR error',
             error: err.response?.data
         })
+    }
+}
+
+exports.testdata = async(req, res) => {
+    try {
+        const {company_id} = req.body;
+
+        const fieldData  = await db.query('select key_name, description, example_value from company_theme where company_id = $1',[company_id])
+
+        console.log(fieldData.rows)
+    } catch (error) {
+        console.log(error)
     }
 }
 
