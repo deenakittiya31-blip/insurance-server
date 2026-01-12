@@ -45,6 +45,7 @@ exports.akson = async(req, res) => {
 
         //เตรียมข้อมูล
         const payload = {
+            model: "AksonOCR-1.0",
             base64Image: image,
             customFields,
             additionalInstructions
