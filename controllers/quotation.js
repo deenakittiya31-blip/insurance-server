@@ -1,6 +1,6 @@
 const db = require('../config/database')
 
-exports.createQuotation = async(req, res) => {
+exports.createQuotationFields = async(req, res) => {
     const { quotation_id, fields } = req.body
 
     if (!quotation_id || !fields) {
