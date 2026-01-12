@@ -1,5 +1,4 @@
 const axios = require('axios');
-const field = require('../config/payloadField');
 const db = require('../config/database');
 
 const api = 'https://backend.aksonocr.com/api/v1/key-extract-url'
@@ -32,14 +31,20 @@ exports.akson = async(req, res) => {
         const resultCustom  = await db.query('select key_name, description, example_value from company_theme where company_id = $1',[company_id])
         const resultAddition  = await db.query('select additional from additional_theme where company_id = $1',[company_id])
 
-        const customdData = resultCustom.rows
-        const additionalData = resultAddition.rows[0]
+        //แปลงให้ตรงกับสิ่งที่ akson ต้องการ
+        const customFields =  resultCustom.rows.map(item => ({
+            key: item.key_name,
+            description: item.description,
+            example: item.example_value
+        }))
+
+        const additionalInstructions = resultAddition.rows[0]?.additional || ''
 
         //เตรียมข้อมูล
         const payload = {
             base64Image: image,
-            customFields:  customdData,
-            additionalInstructions: additionalData
+            customFields,
+            additionalInstructions
         }
 
         const ocrRes = await axios.post(api, payload, {
@@ -70,11 +75,22 @@ exports.akson = async(req, res) => {
 
 exports.testdata = async(req, res) => {
     try {
-        const {company_id} = req.body;
+        const { company_id} = req.body;
 
-        const fieldData  = await db.query('select key_name, description, example_value from company_theme where company_id = $1',[company_id])
+        const resultCustom  = await db.query('select key_name, description, example_value from company_theme where company_id = $1',[company_id])
+        const resultAddition  = await db.query('select additional from additional_theme where company_id = $1',[company_id])
 
-        console.log(fieldData.rows)
+        //แปลงให้ตรงกับสิ่งที่ akson ต้องการ
+        const customFields =  resultCustom.rows.map(item => ({
+            key: item.key_name,
+            description: item.description,
+            example: item.example_value
+        }))
+        
+        const additionalInstructions = resultAddition.rows[0]?.additional || ''
+
+        console.log(additionalInstructions)
+        console.log(customFields)
     } catch (error) {
         console.log(error)
     }
