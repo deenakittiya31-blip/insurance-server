@@ -40,6 +40,9 @@ exports.akson = async(req, res) => {
 
         const additionalInstructions = resultAddition.rows[0]?.additional || ''
 
+        console.log(customFields)
+        console.log(additionalInstructions)
+
         //เตรียมข้อมูล
         const payload = {
             base64Image: image,
