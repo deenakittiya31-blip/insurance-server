@@ -96,7 +96,7 @@ exports.remove = async(req, res) => {
         //1 ใช้ไอดีที่ได้มาหาข้อมูล
         const result = await db.query('SELECT * FROM insurance_company WHERE id = $1', [id])
 
-        if(result.rows.length = 0){
+        if(result.rows.length === 0){
             return res.status(404).json({msg: 'ไม่เจอบริษัทนี้'})
         }
 
