@@ -18,7 +18,7 @@ exports.akson = async(req, res) => {
         const document_id = `${compare_id}-${doc_id}`
 
         //สร้าง quotation ว่าเป็นของบริษัทไหนอยู่ในใบเสนอราคาที่เท่าไหร่
-        const insertResult = await db.query('INSERT INTO quotation(company_id, q_id, doc_id) VALUES ($1, $2, $3) RETURNING id',
+        const insertResult = await db.query('INSERT INTO quotation(company_id, compare_id, doc_id) VALUES ($1, $2, $3) RETURNING id',
             [
                 Number(company_id),
                 compare_id,

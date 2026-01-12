@@ -25,7 +25,7 @@ exports.createCompare = async(req, res) => {
 
        // 1. insert พร้อมข้อมูลรถ และเอา id ออกมา
         const insertResult = await db.query(
-            'INSERT INTO quotation_compare(q_id, to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
+            'INSERT INTO quotation_compare(q_id, to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING q_id',
             [
                 q_id,
                 to_name,
@@ -39,7 +39,7 @@ exports.createCompare = async(req, res) => {
         )
 
        res.json({
-            q_id: updateResult.rows[0].q_id
+            q_id: insertResult.rows[0].q_id
         })
 
     } catch (err) {
