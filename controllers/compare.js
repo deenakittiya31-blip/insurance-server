@@ -15,7 +15,7 @@ exports.createCompare = async(req, res) => {
         const yearMonth = `${year}${month}` // 202601
 
         const countResult = await db.query(
-            `SELECT COUNT(*) FROM quotation WHERE q_id LIKE $1`,
+            `SELECT COUNT(*) FROM quotation_compare WHERE q_id LIKE $1`,
             [`Q${yearMonth}%`]
         )
 
