@@ -2,9 +2,9 @@ const db = require('../config/database')
 
 exports.create = async(req, res) => {
     try {
-        const { car_type_id, code, net_price, vat, stamp, total, datail } = req.body
+        const { car_type_id, code, net_price, vat, stamp, total, detail } = req.body
 
-        await db.query('INSERT INTO compulsory_insurance (car_type_id, code, net_price, vat, stamp, total, datail) VALUES ($1, $2, $3, $4, $5, $6, $7)', 
+        await db.query('INSERT INTO compulsory_insurance (car_type_id, code, net_price, vat, stamp, total, detail) VALUES ($1, $2, $3, $4, $5, $6, $7)', 
                             [
                                 Number(car_type_id), 
                                 code,
@@ -12,7 +12,7 @@ exports.create = async(req, res) => {
                                 Number(vat), 
                                 Number(stamp), 
                                 Number(total), 
-                                datail
+                                detail
                             ]
                        );
 
@@ -30,7 +30,7 @@ exports.list = async(req, res) => {
     const offset = (page - 1) * per_page
 
     try {
-        const result = await db.query('SELECT ci.id, ct.type, code, net_price, vat, stamp, total, datail FROM compulsory_insurance as ci INNER JOIN car_type as ct ON ci.car_type_id = ct.id ORDER BY ci.id ASC LIMIT $1 OFFSET $2', [per_page, offset])
+        const result = await db.query('SELECT ci.id, ct.type, code, net_price, vat, stamp, total, detail FROM compulsory_insurance as ci INNER JOIN car_type as ct ON ci.car_type_id = ct.id ORDER BY ci.id ASC LIMIT $1 OFFSET $2', [per_page, offset])
 
         const countResult = await db.query('SELECT COUNT(*)::int as total FROM compulsory_insurance')
 
@@ -44,7 +44,7 @@ exports.list = async(req, res) => {
 exports.read = async(req,res)=>{
     try {
         const { id } = req.params
-        const result = await db.query('SELECT ci.id, ci.car_type_id, ct.type, code, net_price, vat, stamp, total, datail FROM compulsory_insurance as ci INNER JOIN car_type as ct ON ci.car_type_id = ct.id WHERE ci.id = $1', [id])
+        const result = await db.query('SELECT ci.id, ci.car_type_id, ct.type, code, net_price, vat, stamp, total, detail FROM compulsory_insurance as ci INNER JOIN car_type as ct ON ci.car_type_id = ct.id WHERE ci.id = $1', [id])
 
 
         res.json({data: result.rows[0]})
@@ -55,7 +55,7 @@ exports.read = async(req,res)=>{
 }
 
 exports.update = async(req, res) => {
-    const { car_type_id, code, net_price, vat, stamp, total, datail } = req.body;
+    const { car_type_id, code, net_price, vat, stamp, total, detail } = req.body;
     const { id } = req.params;
 
     try {
@@ -67,14 +67,14 @@ exports.update = async(req, res) => {
 
         const old = result.rows[0]
 
-        await db.query('UPDATE compulsory_insurance SET car_type_id = $1, code = $2, net_price = $3, vat = $4, stamp = $5, total = $6, datail = $7 WHERE id = $8', [
+        await db.query('UPDATE compulsory_insurance SET car_type_id = $1, code = $2, net_price = $3, vat = $4, stamp = $5, total = $6, detail = $7 WHERE id = $8', [
             car_type_id     !== undefined ? Number(car_type_id) : old.car_type_id, 
             code          !== undefined ?? old.code,
             net_price       !== undefined ? Number(net_price)   : old.net_price, 
             vat             !== undefined ? Number(vat)         : old.vat, 
             stamp           !== undefined ? Number(stamp)       : old.stamp, 
             total           !== undefined ? Number(total)       : old.total, 
-            datail          !== undefined ?? old.datail,
+            detail          !== undefined ?? old.detail,
             id
         ])
 
