@@ -30,7 +30,7 @@ exports.list = async(req, res) => {
     const offset = (page - 1) * per_page
 
     try {
-        const result = await db.query('SELECT ci.id, ct.type, code, net_price, vat, stamp, total, detail FROM compulsory_insurance as ci INNER JOIN car_type as ct ON ci.car_type_id = ct.id ORDER BY ci.id ASC LIMIT $1 OFFSET $2', [per_page, offset])
+        const result = await db.query('SELECT ci.id, ct.type, ci.code, net_price, vat, stamp, total, detail FROM compulsory_insurance as ci INNER JOIN car_type as ct ON ci.car_type_id = ct.id ORDER BY ci.id ASC LIMIT $1 OFFSET $2', [per_page, offset])
 
         const countResult = await db.query('SELECT COUNT(*)::int as total FROM compulsory_insurance')
 
@@ -44,7 +44,7 @@ exports.list = async(req, res) => {
 exports.read = async(req,res)=>{
     try {
         const { id } = req.params
-        const result = await db.query('SELECT ci.id, ci.car_type_id, ct.type, code, net_price, vat, stamp, total, detail FROM compulsory_insurance as ci INNER JOIN car_type as ct ON ci.car_type_id = ct.id WHERE ci.id = $1', [id])
+        const result = await db.query('SELECT ci.id, ci.car_type_id, ct.type, ci.code, net_price, vat, stamp, total, detail FROM compulsory_insurance as ci INNER JOIN car_type as ct ON ci.car_type_id = ct.id WHERE ci.id = $1', [id])
 
 
         res.json({data: result.rows[0]})
