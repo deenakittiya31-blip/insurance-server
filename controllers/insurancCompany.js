@@ -35,7 +35,7 @@ exports.list = async(req, res) => {
 
 exports.listSelect = async(req, res) => {
     try {
-        const result = await db.query('SELECT id, namecompany FROM insurance_company')
+        const result = await db.query('SELECT id, logo_url, namecompany FROM insurance_company')
 
         res.json({ data: result.rows })
     } catch (err) {
