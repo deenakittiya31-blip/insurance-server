@@ -39,7 +39,7 @@ async function generatePDF(res, carData, insurances, qId) {
         );
         doc.registerFont(
             'THSarabun-Bold',
-            path.join(__dirname, '../fonts/THSarabunNew-Bold.ttf')
+            path.join(__dirname, '../fonts/Sarabun-Bold.ttf')
         );
 
         doc.font('THSarabun').fillColor('#333333');
