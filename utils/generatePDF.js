@@ -117,7 +117,7 @@ async function downloadImage(url) {
 
 async function drawTableContent(doc, insurances) {
     const tableX = 30;
-    let tableY = 165;
+    let tableY = 160;
     const tableWidth = 515;
     const colWidth = tableWidth / 4;  // 4 columns
     const rowHeight = 18;
