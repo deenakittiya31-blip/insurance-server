@@ -53,26 +53,26 @@ async function generatePDF(res, carData, insurances, qId) {
     doc.font('THSarabun-Bold')
        .fontSize(8)
        .fillColor('#333333')
-       .text(`เรียน ลูกค้า : ${carData.to_name || 'คุณลูกค้า'}`, 50, 95);
+       .text(`เรียน ลูกค้า : ${carData.to_name || 'คุณลูกค้า'}`, 50, 90);
 
     doc.font('THSarabun-Bold')
        .fillColor('#333333')
        .fontSize(8)
-       .text(`รายละเอียด : ${carData.details || '-'}`, 50, 110);
+       .text(`รายละเอียด : ${carData.details || '-'}`, 50, 105);
 
     // --- ข้อมูลรถ --- ห่างละ 15 
     doc.font('THSarabun-Bold')
        .fillColor('#333333')
        .fontSize(8)
-       .text(`ยี่ห้อรถยนต์ : ${carData.car_brand}`, 50, 130);
+       .text(`ยี่ห้อรถยนต์ : ${carData.car_brand}`, 50, 115);
     doc.font('THSarabun-Bold')
        .fillColor('#333333')
        .fontSize(8)
-       .text(`รุ่นรถยนต์ : ${carData.car_model}`, 50, 145);
+       .text(`รุ่นรถยนต์ : ${carData.car_model}`, 50, 130);
     doc.font('THSarabun-Bold')
        .fillColor('#333333')
        .fontSize(8)
-       .text(`ปีรถยนต์ : ${carData.year_ad} (พ.ศ. ${carData.year_be})`, 50, 160);
+       .text(`ปีรถยนต์ : ${carData.year_ad} (พ.ศ. ${carData.year_be})`, 50, 145);
 
      // --- Logo บริษัท ---
     const logoStartX = 250;
@@ -80,7 +80,7 @@ async function generatePDF(res, carData, insurances, qId) {
     const logoSize = 40;
     
     for (let i = 0; i < Math.min(insurances.length, 3); i++) {
-        const x = logoStartX + (i * (logoSize + 90));
+        const x = logoStartX + (i * (logoSize + 85));
         if (insurances[i].company_logo) {
             try {
                 const logoBuffer = await downloadImage(insurances[i].company_logo);
@@ -117,7 +117,7 @@ async function downloadImage(url) {
 
 async function drawTableContent(doc, insurances) {
     const tableX = 30;
-    let tableY = 190;
+    let tableY = 160;
     const tableWidth = 515;
     const colWidth = tableWidth / 4;  // 4 columns
     const rowHeight = 15;
@@ -176,7 +176,6 @@ async function drawTableContent(doc, insurances) {
     for (const section of sections) {
         // Section Header
         doc.rect(tableX, tableY, tableWidth, rowHeight)
-           .fillAndStroke('#e0f2fe', '#87ceeb');
         
         doc.fontSize(10)
            .font('THSarabun-Bold')
@@ -188,11 +187,9 @@ async function drawTableContent(doc, insurances) {
         // Rows
         for (let i = 0; i < section.rows.length; i++) {
             const row = section.rows[i];
-            const bgColor = i % 2 === 0 ? '#ffffff' : '#f8fafc';
             
             // Row background
             doc.rect(tableX, tableY, tableWidth, rowHeight)
-               .fillAndStroke(row.highlight ? '#fef3c7' : bgColor, '#e5e7eb');
 
             // Label
             doc.fontSize(9)
