@@ -167,7 +167,7 @@ async function drawTableContent(doc, insurances) {
             rows: [
                 { label: '  เบี้ยประกัน', key: 'premium_net', format: true },
                 { label: '  พรบ.', key: 'compulsory_premium', format: true },
-                { label: '  เบี้ยประกันรวม พรบ.', key: 'premium_total', format: true, highlight: true },
+                { label: '  เบี้ยประกันรวม พรบ.', key: 'premium_total', format: true },
             ]
         },
     ];
@@ -193,10 +193,10 @@ async function drawTableContent(doc, insurances) {
 
             // Label
             doc.fontSize(10)
-               .font(row.highlight ? 'THSarabun-Bold' : 'THSarabun')
+               .font('THSarabun')
                .fillColor('#374151')
             
-            doc.text(row.label, tableX + 5, tableY + 3, { width: col1 - 10 });
+            doc.text(row.label, tableX + 5, tableY + 1, { width: col1 - 10 });
 
             // Values for each company
             for (let j = 0; j < insurances.length; j++) {
@@ -224,9 +224,9 @@ async function drawTableContent(doc, insurances) {
                 }
 
                 doc.fontSize(10)
-                   .fillColor(row.highlight ? '#92400e' : '#374151')
+                   .fillColor('#000000')
                 
-                doc.text(value, x + 40, tableY + 3, { width: colData - 10, align: 'center' });
+                doc.text(value, x + 40, tableY + 1, { width: colData - 10, align: 'center' });
             }
 
             tableY += rowHeight;
