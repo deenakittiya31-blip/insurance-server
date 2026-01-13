@@ -106,6 +106,11 @@ exports.comparePDF = async(req, res) => {
             quotations[row.quotation_id][row.field_code] = row.field_value;
         });
 
+        const  quotationList = companies.map((c, index) => ({
+            ...c,
+            quotation: quotations[Object.keys(quotations)[index]]
+        }))
+
         const carData = carResult.rows[0];
         const companies = companyResult.rows;
        
@@ -114,8 +119,8 @@ exports.comparePDF = async(req, res) => {
         // await generatePDF(res, carData, companies, quotations, id);
 
         console.log(carData)
-        console.log(companies)
-        console.log(quotations)
+        // console.log(companies)
+        console.log(quotationList)
 
     } catch (err) {
         console.log(err)
