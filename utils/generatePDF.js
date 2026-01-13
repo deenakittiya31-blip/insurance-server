@@ -182,7 +182,7 @@ async function drawTableContent(doc, insurances) {
            .fillColor('#333333')
 
         doc.text(section.title, tableX + 5, tableY + 5, { width: col1 - 10 });
-        // tableY += rowHeight;
+        tableY += rowHeight;
 
         // Rows
         for (let i = 0; i < section.rows.length; i++) {
