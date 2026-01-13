@@ -191,6 +191,16 @@ async function drawTableContent(doc, insurances) {
            .font('THSarabun-Bold')
            .fillColor('#333333')
            .text(section.title, tableX + 5, tableY + 5);
+
+        drawTextCenterY(
+            doc,
+            section.title,
+            tableX + 5,
+            tableY,
+            col1 - 10,
+            rowHeight,
+            { align: 'left' }
+        );
         
         tableY += rowHeight;
 
