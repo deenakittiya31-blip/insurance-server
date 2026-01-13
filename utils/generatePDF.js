@@ -221,7 +221,7 @@ async function drawTableContent(doc, insurances) {
                 tableX + 5,
                 tableY,
                 col1 - 10,
-                rowHeight,
+                rowHeight + 5,
                 { align: 'left' }
             );
 
