@@ -64,11 +64,11 @@ async function generatePDF(res, carData, insurances, qId) {
     doc.font('THSarabun-Bold')
        .fillColor('#333333')
        .fontSize(8)
-       .text(`ยี่ห้อรถยนต์ : ${carData.car_brand}`, 50, 110);
+       .text(`ยี่ห้อรถยนต์ : ${carData.car_brand}`, 50, 125);
     doc.font('THSarabun-Bold')
        .fillColor('#333333')
        .fontSize(8)
-       .text(`รุ่นรถยนต์ : ${carData.car_model}`, 50, 120);
+       .text(`รุ่นรถยนต์ : ${carData.car_model}`, 50, 135);
     doc.font('THSarabun-Bold')
        .fillColor('#333333')
        .fontSize(8)
@@ -120,7 +120,7 @@ async function drawTableContent(doc, insurances) {
     let tableY = 165;
     const tableWidth = 515;
     const colWidth = tableWidth / 4;  // 4 columns
-    const rowHeight = 15;
+    const rowHeight = 17;
 
     // Column widths
     const col1 = 150;  // Label column
@@ -129,7 +129,7 @@ async function drawTableContent(doc, insurances) {
     // กำหนดข้อมูลแต่ละ section
     const sections = [
         {
-            title: 'ข้อมูลเบี้ยประกั',
+            title: 'ข้อมูลเบี้ยประกัน',
             rows: [
                 { label: 'บริษัทประกันภัย', key: 'insurance_company', field: 'company_name' },
                 { label: 'ประเภทประกันภัย', key: 'insurance_type' },
@@ -244,7 +244,7 @@ function drawFooter(doc, carData, insurances) {
        .text(
         `ชื่อผู้เสนอราคา : ${carData.offer || '-'}`,
         45,
-        720
+        730
     );
 
     doc.font('THSarabun-Bold')
@@ -253,31 +253,31 @@ function drawFooter(doc, carData, insurances) {
        .text(
         `วันที่ออกเอกสาร : ${new Date(carData.created_at_th).toLocaleString('th-TH')}`,
         45,
-        735
+        740
     );
 
     doc.font('THSarabun-Bold')
        .fillColor('#ffffff')
        .fontSize(9)
-       .text('DEENA BROCKER (ดีน่า โบรคเกอร์', 50, 750)
+       .text('DEENA BROCKER (ดีน่า โบรคเกอร์', 50, 790)
     doc.font('THSarabun')
        .fillColor('#ffffff')
-       .fontSize(7)
-       .text('44/170 ปริญลักษณ์ เพชรเกษม 69 ถนนเลียบฯ ฝั่งเหนือ', 50, 760)
+       .fontSize(9)
+       .text('44/170 ปริญลักษณ์ เพชรเกษม 69 ถนนเลียบฯ ฝั่งเหนือ', 50, 800)
     doc.font('THSarabun')
        .fillColor('#ffffff')
-       .fontSize(7)
-       .text('แขวงหนองแขม เขตหนองแขม กรุงเทพมหานคร 10160', 50, 770)
+       .fontSize(9)
+       .text('แขวงหนองแขม เขตหนองแขม กรุงเทพมหานคร 10160', 50, 810)
 
      doc.font('THSarabun-Bold')
-       .fillColor('#333333')
-       .fontSize(8)
-       .text('095-065-8887',50, 780);
+       .fillColor('#ffffff')
+       .fontSize(9)
+       .text('095-065-8887',50, 820);
 
      doc.font('THSarabun-Bold')
-       .fillColor('#333333')
-       .fontSize(8)
-       .text('@deena',150, 780);
+       .fillColor('#ffffff')
+       .fontSize(9)
+       .text('@deena',350, 830);
 }
 
 module.exports = { generatePDF }
