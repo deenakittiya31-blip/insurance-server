@@ -46,35 +46,40 @@ async function generatePDF(res, carData, insurances, qId) {
 
             // --- ข้อมูลเอกสาร ---
     doc.font('THSarabun-Bold')
-       .fontSize(12)
+       .fontSize(10)
        .fillColor('#ffffff')
-       .text(`หมายเลขใบเสนอราคา : ${qId} | ประเภท : ${carData.usage}`, 50, 75);
+       .text(`หมายเลขใบเสนอราคา : ${qId} | ประเภท : ${carData.usage}`, 50, 60);
 
     doc.font('THSarabun-Bold')
-       .fontSize(12)
+       .fontSize(10)
+       .fillColor('#333333')
        .text(`เรียน ลูกค้า : ${carData.to_name || 'คุณลูกค้า'}`, 50, 112);
     doc.font('THSarabun-Bold')
-       .fontSize(12)
+       .fillColor('#333333')
+       .fontSize(10)
        .text(`รายละเอียด : ${carData.details || '-'}`, 50, 127);
 
     // --- ข้อมูลรถ ---
     doc.font('THSarabun-Bold')
-       .fontSize(12)
+       .fillColor('#333333')
+       .fontSize(10)
        .text(`ยี่ห้อรถยนต์ : ${carData.car_brand}`, 50, 150);
     doc.font('THSarabun-Bold')
-       .fontSize(12)
+       .fillColor('#333333')
+       .fontSize(10)
        .text(`รุ่นรถยนต์ : ${carData.car_model}`, 50, 165);
     doc.font('THSarabun-Bold')
-       .fontSize(12)
+       .fillColor('#333333')
+       .fontSize(10)
        .text(`ปีรถยนต์ : ${carData.year_ad} (พ.ศ. ${carData.year_be})`, 50, 180);
 
      // --- Logo บริษัท ---
     const logoStartX = 250;
-    const logoY = 135;
-    const logoSize = 50;
+    const logoY = 120;
+    const logoSize = 40;
     
     for (let i = 0; i < Math.min(insurances.length, 3); i++) {
-        const x = logoStartX + (i * (logoSize + 10));
+        const x = logoStartX + (i * (logoSize + 40));
         if (insurances[i].company_logo) {
             try {
                 const logoBuffer = await downloadImage(insurances[i].company_logo);
