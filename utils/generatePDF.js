@@ -144,6 +144,7 @@ async function drawTableContent(doc, insurances) {
                 { label: '  ความเสียหายต่อตัวรถยนต์', key: 'car_own_damage', format: true },
                 { label: '  รถยนต์สูญหาย ไฟไหม้', key: 'car_fire_theft', format: true },
                 { label: '  ความเสียหายส่วนแรก', key: 'car_own_damage_deductible', format: true },
+                { label: '  ', key: '', format: true },
             ]
         },
         {
@@ -226,7 +227,7 @@ async function drawTableContent(doc, insurances) {
                 doc.fontSize(10)
                    .fillColor('#000000')
                 
-                doc.text(value, x + 40, tableY + 10, { width: colData - 10, align: 'center' });
+                doc.text(value, x + 40, tableY + 5, { width: colData - 10, align: 'center' });
             }
 
             tableY += rowHeight;
