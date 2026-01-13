@@ -126,19 +126,6 @@ async function drawTableContent(doc, insurances) {
     const col1 = 150;  // Label column
     const colData = (tableWidth - col1) / insurances.length;  // Data columns
 
-    // Function วาดข้อความให้อยู่กลางเซลล์
-    function drawCenteredText(text, x, y, width, height, align = 'left', fontSize = 9) {
-        const padding = 2; // ระยะห่างจากขอบ
-        const verticalOffset = 3;
-        const textY = y + (height - fontSize) / 2 + verticalOffset;
-        
-        doc.text(text, x + padding, textY, {
-            width: width - (padding * 2),
-            align: align,
-            lineBreak: false
-        });
-    }
-
     // กำหนดข้อมูลแต่ละ section
     const sections = [
         {
@@ -194,8 +181,7 @@ async function drawTableContent(doc, insurances) {
            .font('THSarabun-Bold')
            .fillColor('#333333')
 
-        drawCenteredText(section.title, tableX, tableY, col1, rowHeight, 'left', 9);
-        
+        doc.text(section.title, tableX + 5, tableY + 5, { width: col1 - 10 });
         tableY += rowHeight;
 
         // Rows
@@ -210,7 +196,7 @@ async function drawTableContent(doc, insurances) {
                .font(row.highlight ? 'THSarabun-Bold' : 'THSarabun')
                .fillColor('#374151')
             
-            drawCenteredText(row.label, tableX, tableY, col1, rowHeight, 'left', 9);
+            doc.text(row.label, tableX + 5, tableY + 5, { width: col1 - 10 });
 
             // Values for each company
             for (let j = 0; j < insurances.length; j++) {
@@ -240,7 +226,7 @@ async function drawTableContent(doc, insurances) {
                 doc.fontSize(10)
                    .fillColor(row.highlight ? '#92400e' : '#374151')
                 
-                drawCenteredText(value, x, tableY, colData, rowHeight, 'center', 9);
+                doc.text(value, x + 5, tableY + 5, { width: colData - 10, align: 'center' });
             }
 
             tableY += rowHeight;
