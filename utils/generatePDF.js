@@ -79,7 +79,7 @@ async function generatePDF(res, carData, insurances, qId) {
     const logoSize = 40;
     
     for (let i = 0; i < Math.min(insurances.length, 3); i++) {
-        const x = logoStartX + (i * (logoSize + 40));
+        const x = logoStartX + (i * (logoSize + 90));
         if (insurances[i].company_logo) {
             try {
                 const logoBuffer = await downloadImage(insurances[i].company_logo);
