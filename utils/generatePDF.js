@@ -120,7 +120,7 @@ async function drawTableContent(doc, insurances) {
     let tableY = 165;
     const tableWidth = 515;
     const colWidth = tableWidth / 4;  // 4 columns
-    const rowHeight = 13;
+    const rowHeight = 15;
 
     // Column widths
     const col1 = 150;  // Label column
@@ -180,7 +180,7 @@ async function drawTableContent(doc, insurances) {
         doc.fontSize(8)
            .font('THSarabun-Bold')
            .fillColor('#333333')
-           .text(section.title, tableX + 5);
+           .text(section.title, tableX + 5, tableY + 5);
         
         tableY += rowHeight;
 
@@ -267,7 +267,7 @@ function drawFooter(doc, carData, insurances) {
     doc.font('THSarabun')
        .fillColor('#ffffff')
        .fontSize(9)
-       .text('แขวงหนองแขม เขตหนองแขม กรุงเทพมหานคร 10160', 50, 195)
+       .text('แขวงหนองแขม เขตหนองแขม กรุงเทพมหานคร 10160', 50, 795)
 
      doc.font('THSarabun-Bold')
        .fillColor('#ffffff')
