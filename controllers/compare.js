@@ -83,7 +83,7 @@ exports.comparePDF = async(req, res) => {
         const { id } = req.params;
 
         //รอบแรก query ข้อมูลรถ
-        const carResult = await db.query('select qc.q_id, cb.name as car_brand, cm.name as car_model, cu.usage_name as usage, cy.year_be, cy.year_ad from quotation_compare as qc join car_brand as cb on qc.car_brand_id = cb.id join car_model as cm on qc.car_model_id = cm.id join car_usage as cu on qc.car_usage_id = cu.id join car_year as cy on qc.car_year_id = cy.id where qc.q_id = $1', [id])
+        const carResult = await db.query(`select qc.q_id, qc.to_name, qc.details, qc.offer, qc.created_at AT TIME ZONE 'Asia/Bangkok' AS created_at_th, cb.name as car_brand, cm.name as car_model, cu.usage_name as usage, cy.year_be, cy.year_ad from quotation_compare as qc join car_brand as cb on qc.car_brand_id = cb.id join car_model as cm on qc.car_model_id = cm.id join car_usage as cu on qc.car_usage_id = cu.id join car_year as cy on qc.car_year_id = cy.id where qc.q_id = $1`, [id])
 
         if (!carResult.rows.length) {
             return res.status(404).json({ msg: 'ไม่พบข้อมูลรถ' });
@@ -108,10 +108,14 @@ exports.comparePDF = async(req, res) => {
 
         const carData = carResult.rows[0];
         const companies = companyResult.rows;
+       
 
         // สร้าง PDF
-        await generatePDF(res, carData, companies, quotations, id);
+        // await generatePDF(res, carData, companies, quotations, id);
 
+        console.log(carData)
+        console.log(companies)
+        console.log(quotations)
 
     } catch (err) {
         console.log(err)
