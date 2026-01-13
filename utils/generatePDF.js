@@ -226,7 +226,7 @@ async function drawTableContent(doc, insurances) {
                 doc.fontSize(10)
                    .fillColor('#000000')
                 
-                doc.text(value, x + 40, tableY + 5, { width: colData - 10, align: 'center' });
+                doc.text(value, x + 40, tableY + 10, { width: colData - 10, align: 'center' });
             }
 
             tableY += rowHeight;
