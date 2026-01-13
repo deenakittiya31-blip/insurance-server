@@ -182,7 +182,7 @@ async function drawTableContent(doc, insurances) {
            .font('THSarabun-Bold')
            .fillColor('#333333')
 
-        doc.text(section.title, tableX + 5, tableY + 7, { width: col1 - 10 });
+        doc.text(section.title, tableX + 5, tableY + 5, { width: col1 - 10 });
         tableY += rowHeight;
 
         // Rows
