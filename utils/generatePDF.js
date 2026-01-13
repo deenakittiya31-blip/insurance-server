@@ -182,7 +182,7 @@ async function drawTableContent(doc, insurances) {
            .fillColor('#333333')
 
         doc.text(section.title, tableX + 5, tableY + 5, { width: col1 - 10 });
-        tableY += rowHeight;
+        // tableY += rowHeight;
 
         // Rows
         for (let i = 0; i < section.rows.length; i++) {
@@ -226,7 +226,7 @@ async function drawTableContent(doc, insurances) {
                 doc.fontSize(10)
                    .fillColor(row.highlight ? '#92400e' : '#374151')
                 
-                doc.text(value, x + 30, tableY + 5, { width: colData - 10, align: 'center' });
+                doc.text(value, x + 40, tableY + 5, { width: colData - 10, align: 'center' });
             }
 
             tableY += rowHeight;
