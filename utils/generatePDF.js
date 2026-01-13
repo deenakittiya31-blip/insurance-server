@@ -35,7 +35,7 @@ async function generatePDF(res, carData, insurances, qId) {
     // Register Thai Font (สำคัญมาก!)
     doc.registerFont(
             'THSarabun',
-            path.join(__dirname, '../fonts/Sarabun-Medium.ttf')
+            path.join(__dirname, '../fonts/THSarabunNew.ttf')
         );
         doc.registerFont(
             'THSarabun-Bold',
@@ -120,7 +120,7 @@ async function drawTableContent(doc, insurances) {
     let tableY = 165;
     const tableWidth = 515;
     const colWidth = tableWidth / 4;  // 4 columns
-    const rowHeight = 15;
+    const rowHeight = 14;
 
     // Column widths
     const col1 = 150;  // Label column
@@ -197,7 +197,7 @@ async function drawTableContent(doc, insurances) {
                .font('THSarabun')
                .fillColor('#374151')
             
-            doc.text(row.label, tableX + 5, tableY + 7, { width: col1 - 10 });
+            doc.text(row.label, tableX + 5, tableY + 8, { width: col1 - 10 });
 
             // Values for each company
             for (let j = 0; j < insurances.length; j++) {
