@@ -45,22 +45,33 @@ async function generatePDF(res, carData, insurances, qId) {
         doc.font('THSarabun').fillColor('#333333');
 
             // --- ข้อมูลเอกสาร ---
-    doc.fontSize(11)
-       .fillColor('#333333')
-       .text(`หมายเลขใบเสนอราคา : ${qId} | ประเภท : ${carData.usage}`, 50, 95);
+    doc.font('THSarabun-Bold')
+       .fontSize(12)
+       .fillColor('#ffffff')
+       .text(`หมายเลขใบเสนอราคา : ${qId} | ประเภท : ${carData.usage}`, 50, 75);
 
-    doc.text(`เรียน ลูกค้า : ${carData.to_name || 'คุณลูกค้า'}`, 50, 112);
-    doc.text(`รายละเอียด : ${carData.details || '-'}`, 50, 127);
+    doc.font('THSarabun-Bold')
+       .fontSize(12)
+       .text(`เรียน ลูกค้า : ${carData.to_name || 'คุณลูกค้า'}`, 50, 112);
+    doc.font('THSarabun-Bold')
+       .fontSize(12)
+       .text(`รายละเอียด : ${carData.details || '-'}`, 50, 127);
 
     // --- ข้อมูลรถ ---
-    doc.text(`ยี่ห้อรถยนต์ : ${carData.car_brand}`, 50, 150);
-    doc.text(`รุ่นรถยนต์ : ${carData.car_model}`, 50, 165);
-    doc.text(`ปีรถยนต์ : ${carData.year_ad} (พ.ศ. ${carData.year_be})`, 50, 180);
+    doc.font('THSarabun-Bold')
+       .fontSize(12)
+       .text(`ยี่ห้อรถยนต์ : ${carData.car_brand}`, 50, 150);
+    doc.font('THSarabun-Bold')
+       .fontSize(12)
+       .text(`รุ่นรถยนต์ : ${carData.car_model}`, 50, 165);
+    doc.font('THSarabun-Bold')
+       .fontSize(12)
+       .text(`ปีรถยนต์ : ${carData.year_ad} (พ.ศ. ${carData.year_be})`, 50, 180);
 
      // --- Logo บริษัท ---
-    const logoStartX = 350;
-    const logoY = 145;
-    const logoSize = 55;
+    const logoStartX = 250;
+    const logoY = 135;
+    const logoSize = 50;
     
     for (let i = 0; i < Math.min(insurances.length, 3); i++) {
         const x = logoStartX + (i * (logoSize + 10));
