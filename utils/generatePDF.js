@@ -51,27 +51,27 @@ async function generatePDF(res, carData, insurances, qId) {
        .text(`หมายเลขใบเสนอราคา : ${qId} | ประเภท : ${carData.usage}`, 50, 67);
 
     doc.font('THSarabun-Bold')
-       .fontSize(9)
+       .fontSize(8)
        .fillColor('#333333')
        .text(`เรียน ลูกค้า : ${carData.to_name || 'คุณลูกค้า'}`, 50, 95);
 
     doc.font('THSarabun-Bold')
        .fillColor('#333333')
-       .fontSize(9)
+       .fontSize(8)
        .text(`รายละเอียด : ${carData.details || '-'}`, 50, 110);
 
     // --- ข้อมูลรถ --- ห่างละ 15 
     doc.font('THSarabun-Bold')
        .fillColor('#333333')
-       .fontSize(9)
+       .fontSize(8)
        .text(`ยี่ห้อรถยนต์ : ${carData.car_brand}`, 50, 130);
     doc.font('THSarabun-Bold')
        .fillColor('#333333')
-       .fontSize(9)
+       .fontSize(8)
        .text(`รุ่นรถยนต์ : ${carData.car_model}`, 50, 145);
     doc.font('THSarabun-Bold')
        .fillColor('#333333')
-       .fontSize(9)
+       .fontSize(8)
        .text(`ปีรถยนต์ : ${carData.year_ad} (พ.ศ. ${carData.year_be})`, 50, 160);
 
      // --- Logo บริษัท ---
@@ -116,11 +116,11 @@ async function downloadImage(url) {
 }
 
 async function drawTableContent(doc, insurances) {
-    const tableX = 40;
-    let tableY = 210;
+    const tableX = 30;
+    let tableY = 190;
     const tableWidth = 515;
     const colWidth = tableWidth / 4;  // 4 columns
-    const rowHeight = 18;
+    const rowHeight = 15;
 
     // Column widths
     const col1 = 150;  // Label column
