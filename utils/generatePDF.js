@@ -190,7 +190,6 @@ async function drawTableContent(doc, insurances) {
         doc.fontSize(8)
            .font('THSarabun-Bold')
            .fillColor('#333333')
-           .text(section.title, tableX + 5, tableY + 5);
 
         drawTextCenterY(
             doc,
