@@ -5,7 +5,7 @@ const path = require('path');
 async function generatePDF(res, carData, insurances, qId) {
     const doc = new PDFDocument({
         size: 'A4',
-        margin: 0,  // ❗ ต้องตั้ง margin เป็น 0 เพื่อให้รูปเต็มหน้า
+        margin: 0,  //ต้องตั้ง margin เป็น 0 เพื่อให้รูปเต็มหน้า
         info: {
             Title: `ใบเสนอราคา ${qId}`,
         }
@@ -32,7 +32,7 @@ async function generatePDF(res, carData, insurances, qId) {
 
     // Register Thai Font (สำคัญมาก!)
     doc.registerFont('THSarabun', path.join(__dirname, '../fonts/THSarabunNew.ttf'));
-    doc.registerFont('THSarabun-Bold', path.join(__dirname, '../fonts/THSarabunNew-Bold.ttf'));
+    doc.registerFont('THSarabun-Bold', path.join(__dirname, '../fonts/Sarabun-Bold.ttf'));
     doc.font('THSarabun');
     doc.font('THSarabun-Bold');
 
