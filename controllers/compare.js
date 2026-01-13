@@ -2,6 +2,7 @@ const db = require('../config/database')
 const PDFDocument = require('pdfkit');
 const path = require('path');
 const fs = require('fs');
+const { groupQuotationData } = require('../utils/groupQuotationData');
 
 exports.createCompare = async(req, res) => {
     try {
@@ -89,38 +90,25 @@ exports.comparePDF = async(req, res) => {
             return res.status(404).json({ msg: 'ไม่พบข้อมูลรถ' });
         }
 
-        const companyResult = await db.query('select ic.namecompany as company, ic.logo_url from quotation_compare as qc left join quotation as q on qc.q_id = q.compare_id left join insurance_company as ic on q.company_id = ic.id where qc.q_id = $1 order by q.id asc', [id])
-
         //รอบสอง query ข้อมูลเอกสาร
-        const quotationResult = await db.query('select qf.quotation_id, qf.field_code, qf.field_value from quotation_compare as qc left join quotation as q on qc.q_id = q.compare_id left join quotation_field as qf on q.id = qf.quotation_id where qc.q_id = $1 order by quotation_id asc', [id])
+        const quotationResult = await db.query(`select q.id AS quotation_id, ic.namecompany AS company_name, ic.logo_url AS company_logo, qf.field_code, qf.field_value from quotation_compare as qc INNER JOIN quotation AS q ON qc.q_id = q.compare_id left join quotation_field as qf on q.id = qf.quotation_id LEFT JOIN insurance_company AS ic ON q.company_id = ic.id where qc.q_id = $1 ORDER BY q.id ASC, qf.field_code ASC`, [id])
 
-        //group fields
-        const quotations = {};
-        quotationResult.rows.forEach(row => {
-            if (!row.quotation_id) return;
+         // ตรวจสอบว่ามีข้อมูลไหม
+        if (!quotationResult.rows.length) {
+            return res.status(404).json({ 
+                success: false,
+                msg: 'ไม่พบข้อมูลบริษัทประกัน' 
+            });
+        }
 
-            if (!quotations[row.quotation_id]) {
-                quotations[row.quotation_id] = {};
-            }
-
-            quotations[row.quotation_id][row.field_code] = row.field_value;
-        });
-
-        const  quotationList = companies.map((c, index) => ({
-            ...c,
-            quotation: quotations[Object.keys(quotations)[index]]
-        }))
-
+        //จัดกรุ๊ปข้อมูล
+        const grouped = groupQuotationData(quotationResult.rows);
         const carData = carResult.rows[0];
-        const companies = companyResult.rows;
        
 
-        // สร้าง PDF
-        // await generatePDF(res, carData, companies, quotations, id);
-
+        console.log(grouped)
         console.log(carData)
-        // console.log(companies)
-        console.log(quotationList)
+
 
     } catch (err) {
         console.log(err)
