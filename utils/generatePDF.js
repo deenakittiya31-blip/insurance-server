@@ -82,7 +82,7 @@ async function generatePDF(res, carData, insurances, qId) {
     drawFooter(doc, carData, insurances);
 
     doc.end();
-    } catch (error) {
+    } catch (err) {
         console.error('PDF generation error:', err);
         doc.end();
         throw err; 
