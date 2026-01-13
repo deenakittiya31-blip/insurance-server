@@ -108,7 +108,9 @@ exports.comparePDF = async(req, res) => {
 
     } catch (err) {
         console.log(err)
-        res.status(500).json({ msg: 'Server error'})
+        if (!res.headersSent) {
+            res.status(500).json({ msg: 'Server error' });
+        }
     }
 }
 

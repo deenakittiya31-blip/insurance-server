@@ -11,11 +11,13 @@ async function generatePDF(res, carData, insurances, qId) {
         }
     });
 
+    // ===== ตั้ง header ก่อน pipe =====
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=quotation_${qId}.pdf`);
     doc.pipe(res);
 
-    // ===== 1. วางรูป Background =====
+    try {
+        // ===== 1. วางรูป Background =====
     // วิธีที่ 1: จากไฟล์ local
     const templatePath = path.join(__dirname, '../assets/bg_qt.jpg');
     doc.image(templatePath, 0, 0, {
@@ -31,12 +33,18 @@ async function generatePDF(res, carData, insurances, qId) {
     // ต้องวัด position จากรูปเทมเพลต
 
     // Register Thai Font (สำคัญมาก!)
-    doc.registerFont('THSarabun', path.join(__dirname, '../fonts/THSarabunNew.ttf'));
-    doc.registerFont('THSarabun-Bold', path.join(__dirname, '../fonts/Sarabun-Bold.ttf'));
-    doc.font('THSarabun');
-    doc.font('THSarabun-Bold');
+    doc.registerFont(
+            'THSarabun',
+            path.join(__dirname, '../fonts/THSarabunNew.ttf')
+        );
+        doc.registerFont(
+            'THSarabun-Bold',
+            path.join(__dirname, '../fonts/THSarabunNew-Bold.ttf')
+        );
 
-    // --- ข้อมูลเอกสาร ---
+        doc.font('THSarabun').fillColor('#333333');
+
+            // --- ข้อมูลเอกสาร ---
     doc.fontSize(11)
        .fillColor('#333333')
        .text(`หมายเลขใบเสนอราคา : ${qId} | ประเภท : ${carData.usage}`, 50, 95);
@@ -49,7 +57,7 @@ async function generatePDF(res, carData, insurances, qId) {
     doc.text(`รุ่นรถยนต์ : ${carData.car_model}`, 50, 165);
     doc.text(`ปีรถยนต์ : ${carData.year_ad} (พ.ศ. ${carData.year_be})`, 50, 180);
 
-    // --- Logo บริษัท ---
+     // --- Logo บริษัท ---
     const logoStartX = 350;
     const logoY = 145;
     const logoSize = 55;
@@ -67,13 +75,18 @@ async function generatePDF(res, carData, insurances, qId) {
         }
     }
 
-    // --- ตารางข้อมูล ---
+     // --- ตารางข้อมูล ---
     await drawTableContent(doc, insurances);
 
     // --- Footer ---
     drawFooter(doc, carData, insurances);
 
     doc.end();
+    } catch (error) {
+        console.error('PDF generation error:', err);
+        doc.end();
+        throw err; 
+    }
 }
 
 // Download รูปจาก URL
@@ -207,6 +220,25 @@ async function drawTableContent(doc, insurances) {
     }
 
     return tableY;
+}
+
+function drawFooter(doc, carData, insurances) {
+    doc.font('THSarabun')
+       .fontSize(9)
+       .fillColor('#1f2937');
+
+    // วัดตำแหน่งจาก template จริง
+    doc.text(
+        `ชื่อผู้เสนอราคา : ${carData.offer || '-'}`,
+        45,
+        740
+    );
+
+    doc.text(
+        `วันที่ออกเอกสาร : ${new Date(carData.created_at_th).toLocaleString('th-TH')}`,
+        45,
+        755
+    );
 }
 
 module.exports = { generatePDF }
