@@ -120,7 +120,7 @@ async function drawTableContent(doc, insurances) {
     let tableY = 165;
     const tableWidth = 515;
     const colWidth = tableWidth / 4;  // 4 columns
-    const rowHeight = 18;
+    const rowHeight = 13;
 
     // Column widths
     const col1 = 150;  // Label column
@@ -180,7 +180,7 @@ async function drawTableContent(doc, insurances) {
         doc.fontSize(8)
            .font('THSarabun-Bold')
            .fillColor('#333333')
-           .text(section.title, tableX + 5, tableY + 5);
+           .text(section.title, tableX + 5);
         
         tableY += rowHeight;
 
@@ -243,7 +243,7 @@ function drawFooter(doc, carData, insurances) {
        .fontSize(8)
        .text(
         `ชื่อผู้เสนอราคา : ${carData.offer || '-'}`,
-        45,
+        50,
         725
     );
 
@@ -252,7 +252,7 @@ function drawFooter(doc, carData, insurances) {
        .fontSize(8)
        .text(
         `วันที่ออกเอกสาร : ${new Date(carData.created_at_th).toLocaleString('th-TH')}`,
-        45,
+        50,
         745
     );
 
@@ -277,7 +277,7 @@ function drawFooter(doc, carData, insurances) {
      doc.font('THSarabun-Bold')
        .fillColor('#ffffff')
        .fontSize(9)
-       .text('@deena',220, 815);
+       .text('@deena',225, 815);
 }
 
 module.exports = { generatePDF }
