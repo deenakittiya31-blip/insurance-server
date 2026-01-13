@@ -22,7 +22,7 @@ exports.statusLoginWith = async(req, res) => {
 
 exports.getStatusLoginWith = async(req, res) => {
     try {
-        const result = await db.query('select id, login_with, status from login') 
+        const result = await db.query('select id, login_with, status from login order by id') 
         
         res.json({data: result.rows}) 
     } catch (err) {
