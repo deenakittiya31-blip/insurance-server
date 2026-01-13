@@ -192,7 +192,7 @@ async function drawTableContent(doc, insurances) {
             doc.rect(tableX, tableY, tableWidth, rowHeight)
 
             // Label
-            doc.fontSize(9)
+            doc.fontSize(10)
                .font(row.highlight ? 'THSarabun-Bold' : 'THSarabun')
                .fillColor('#374151')
             
