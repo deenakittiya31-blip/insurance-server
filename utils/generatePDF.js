@@ -58,21 +58,21 @@ async function generatePDF(res, carData, insurances, qId) {
     doc.font('THSarabun-Bold')
        .fillColor('#333333')
        .fontSize(8)
-       .text(`รายละเอียด : ${carData.details || '-'}`, 50, 13);
+       .text(`รายละเอียด : ${carData.details || '-'}`, 50, 105);
 
     // --- ข้อมูลรถ --- ห่างละ 15 
     doc.font('THSarabun-Bold')
        .fillColor('#333333')
        .fontSize(8)
-       .text(`ยี่ห้อรถยนต์ : ${carData.car_brand}`, 50, 128);
+       .text(`ยี่ห้อรถยนต์ : ${carData.car_brand}`, 50, 120);
     doc.font('THSarabun-Bold')
        .fillColor('#333333')
        .fontSize(8)
-       .text(`รุ่นรถยนต์ : ${carData.car_model}`, 50, 138);
+       .text(`รุ่นรถยนต์ : ${carData.car_model}`, 50, 135);
     doc.font('THSarabun-Bold')
        .fillColor('#333333')
        .fontSize(8)
-       .text(`ปีรถยนต์ : ${carData.year_ad} (พ.ศ. ${carData.year_be})`, 50, 148);
+       .text(`ปีรถยนต์ : ${carData.year_ad} (พ.ศ. ${carData.year_be})`, 50, 150);
 
      // --- Logo บริษัท ---
     const logoStartX = 250;
@@ -180,7 +180,7 @@ async function drawTableContent(doc, insurances) {
         doc.fontSize(8)
            .font('THSarabun-Bold')
            .fillColor('#333333')
-           .text(section.title, tableX + 5, tableY + 4);
+           .text(section.title, tableX + 7, tableY + 4);
         
         tableY += rowHeight;
 
@@ -195,7 +195,7 @@ async function drawTableContent(doc, insurances) {
             doc.fontSize(9)
                .font(row.highlight ? 'THSarabun-Bold' : 'THSarabun')
                .fillColor('#374151')
-               .text(row.label, tableX + 5, tableY + 2, { width: col1 - 10 });
+               .text(row.label, tableX + 5, tableY + 5, { width: col1 - 10 });
 
             // Values for each company
             for (let j = 0; j < insurances.length; j++) {
@@ -253,31 +253,31 @@ function drawFooter(doc, carData, insurances) {
        .text(
         `วันที่ออกเอกสาร : ${new Date(carData.created_at_th).toLocaleString('th-TH')}`,
         45,
-        735
+        745
     );
 
     doc.font('THSarabun-Bold')
        .fillColor('#ffffff')
        .fontSize(9)
-       .text('DEENA BROCKER (ดีน่า โบรคเกอร์', 50, 740)
+       .text('DEENA BROCKER (ดีน่า โบรคเกอร์', 50, 760)
     doc.font('THSarabun')
        .fillColor('#ffffff')
        .fontSize(9)
-       .text('44/170 ปริญลักษณ์ เพชรเกษม 69 ถนนเลียบฯ ฝั่งเหนือ',50, 755)
+       .text('44/170 ปริญลักษณ์ เพชรเกษม 69 ถนนเลียบฯ ฝั่งเหนือ',50, 775)
     doc.font('THSarabun')
        .fillColor('#ffffff')
        .fontSize(9)
-       .text('แขวงหนองแขม เขตหนองแขม กรุงเทพมหานคร 10160', 50, 770)
+       .text('แขวงหนองแขม เขตหนองแขม กรุงเทพมหานคร 10160', 50, 790)
 
      doc.font('THSarabun-Bold')
        .fillColor('#ffffff')
        .fontSize(9)
-       .text('095-065-8887',50, 785);
+       .text('095-065-8887',50, 805);
 
      doc.font('THSarabun-Bold')
        .fillColor('#ffffff')
        .fontSize(9)
-       .text('@deena',350, 785);
+       .text('@deena',200, 805);
 }
 
 module.exports = { generatePDF }
