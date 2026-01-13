@@ -126,17 +126,6 @@ async function drawTableContent(doc, insurances) {
     const col1 = 150;  // Label column
     const colData = (tableWidth - col1) / insurances.length;  // Data columns
 
-       // ===== Helper: วาดข้อความกึ่งกลางแนวตั้ง =====
-    function drawTextCenterY(text, x, y, width, options = {}) {
-        const lineHeight = doc.currentLineHeight();
-        const textY = y + (rowHeight - lineHeight) / 2;
-
-        doc.text(text, x, textY, {
-            width,
-            ...options
-        });
-    }
-
     // กำหนดข้อมูลแต่ละ section
     const sections = [
         {
@@ -188,18 +177,11 @@ async function drawTableContent(doc, insurances) {
         // Section Header
         doc.rect(tableX, tableY, tableWidth, rowHeight)
         
-        doc.font('THSarabun-Bold')
-           .fontSize(8)
-           .fillColor('#333333');
-
-        drawTextCenterY(
-            section.title,
-            tableX + 5,
-            tableY,
-            tableWidth - 10,
-            { align: 'left' }
-        );
-
+        doc.fontSize(8)
+           .font('THSarabun-Bold')
+           .fillColor('#333333')
+           .text(section.title, tableX + 5, tableY + 5);
+        
         tableY += rowHeight;
 
         // Rows
@@ -212,15 +194,8 @@ async function drawTableContent(doc, insurances) {
             // Label
             doc.fontSize(9)
                .font(row.highlight ? 'THSarabun-Bold' : 'THSarabun')
-               .fillColor('#333333')
-
-            drawTextCenterY(
-                row.label,
-                tableX + 5,
-                tableY,
-                colLabel - 10,
-                { align: 'left' }
-            );
+               .fillColor('#374151')
+               .text(row.label, tableX + 5, tableY + 5, { width: col1 - 10 });
 
             // Values for each company
             for (let j = 0; j < insurances.length; j++) {
@@ -247,16 +222,11 @@ async function drawTableContent(doc, insurances) {
                     value += ` (${ins.fields.additional_personal_permanent_driver_number})`;
                 }
 
-                doc.font(row.highlight ? 'THSarabun-Bold' : 'THSarabun')
-                   .fillColor(row.highlight ? '#92400e' : '#374151')
-
-                drawTextCenterY(
-                    value,
-                    x,
-                    tableY,
-                    colData,
-                    { align: 'center' }
-                );
+                doc.fillColor(row.highlight ? '#92400e' : '#374151')
+                   .text(value, x, tableY + 4, { 
+                       width: colData - 5, 
+                       align: 'center' 
+                   });
             }
 
             tableY += rowHeight;
