@@ -120,7 +120,7 @@ async function drawTableContent(doc, insurances) {
     let tableY = 165;
     const tableWidth = 515;
     const colWidth = tableWidth / 4;  // 4 columns
-    const rowHeight = 15;
+    const rowHeight = 18;
 
     // Column widths
     const col1 = 150;  // Label column
@@ -180,7 +180,7 @@ async function drawTableContent(doc, insurances) {
         doc.fontSize(8)
            .font('THSarabun-Bold')
            .fillColor('#333333')
-           .text(section.title, tableX + 5, tableY + 7);
+           .text(section.title, tableX + 5, tableY + 5);
         
         tableY += rowHeight;
 
@@ -259,15 +259,15 @@ function drawFooter(doc, carData, insurances) {
     doc.font('THSarabun-Bold')
        .fillColor('#ffffff')
        .fontSize(9)
-       .text('DEENA BROCKER (ดีน่า โบรคเกอร์', 50, 780)
+       .text('DEENA BROCKER (ดีน่า โบรคเกอร์', 50, 770)
     doc.font('THSarabun')
        .fillColor('#ffffff')
        .fontSize(9)
-       .text('44/170 ปริญลักษณ์ เพชรเกษม 69 ถนนเลียบฯ ฝั่งเหนือ',50, 790)
+       .text('44/170 ปริญลักษณ์ เพชรเกษม 69 ถนนเลียบฯ ฝั่งเหนือ',50, 785)
     doc.font('THSarabun')
        .fillColor('#ffffff')
        .fontSize(9)
-       .text('แขวงหนองแขม เขตหนองแขม กรุงเทพมหานคร 10160', 50, 800)
+       .text('แขวงหนองแขม เขตหนองแขม กรุงเทพมหานคร 10160', 50, 195)
 
      doc.font('THSarabun-Bold')
        .fillColor('#ffffff')
@@ -277,7 +277,7 @@ function drawFooter(doc, carData, insurances) {
      doc.font('THSarabun-Bold')
        .fillColor('#ffffff')
        .fontSize(9)
-       .text('@deena',250, 815);
+       .text('@deena',220, 815);
 }
 
 module.exports = { generatePDF }
