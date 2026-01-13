@@ -126,6 +126,16 @@ async function drawTableContent(doc, insurances) {
     const col1 = 150;  // Label column
     const colData = (tableWidth - col1) / insurances.length;  // Data columns
 
+    function drawTextCenterY(doc, text, x, y, width, rowHeight, options = {}) {
+    const lineHeight = doc.currentLineHeight();
+    const textY = y + (rowHeight - lineHeight) / 2;
+
+    doc.text(text, x, textY, {
+        width,
+        ...options
+    });
+}
+
     // กำหนดข้อมูลแต่ละ section
     const sections = [
         {
@@ -192,10 +202,19 @@ async function drawTableContent(doc, insurances) {
             doc.rect(tableX, tableY, tableWidth, rowHeight)
 
             // Label
-            doc.fontSize(9)
+            doc.fontSize(10)
                .font(row.highlight ? 'THSarabun-Bold' : 'THSarabun')
                .fillColor('#374151')
-               .text(row.label, tableX + 5, tableY + 5, { width: col1 - 10 });
+               
+            drawTextCenterY(
+                doc,
+                row.label,
+                tableX + 5,
+                tableY,
+                col1 - 10,
+                rowHeight,
+                { align: 'left' }
+            );
 
             // Values for each company
             for (let j = 0; j < insurances.length; j++) {
@@ -222,11 +241,18 @@ async function drawTableContent(doc, insurances) {
                     value += ` (${ins.fields.additional_personal_permanent_driver_number})`;
                 }
 
-                doc.fillColor(row.highlight ? '#92400e' : '#374151')
-                   .text(value, x, tableY + 4, { 
-                       width: colData - 5, 
-                       align: 'center' 
-                   });
+                doc.fontSize(10)
+                   .fillColor(row.highlight ? '#92400e' : '#374151')
+                   
+                drawTextCenterY(
+                    doc,
+                    value,
+                    x,
+                    tableY,
+                    colData,
+                    rowHeight,
+                    { align: 'center' }
+                );
             }
 
             tableY += rowHeight;
