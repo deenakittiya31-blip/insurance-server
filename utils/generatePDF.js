@@ -120,7 +120,7 @@ async function drawTableContent(doc, insurances) {
     let tableY = 165;
     const tableWidth = 515;
     const colWidth = tableWidth / 4;  // 4 columns
-    const rowHeight = 15;
+    const rowHeight = 18;
 
     // Column widths
     const col1 = 150;  // Label column
@@ -129,7 +129,8 @@ async function drawTableContent(doc, insurances) {
     // Function วาดข้อความให้อยู่กลางเซลล์
     function drawCenteredText(text, x, y, width, height, align = 'left', fontSize = 9) {
         const padding = 2; // ระยะห่างจากขอบ
-        const textY = y + (height - fontSize) / 2 + padding;
+        const verticalOffset = 3;
+        const textY = y + (height - fontSize) / 2 + verticalOffset;
         
         doc.text(text, x + padding, textY, {
             width: width - (padding * 2),
