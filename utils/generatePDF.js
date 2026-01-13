@@ -237,22 +237,47 @@ async function drawTableContent(doc, insurances) {
 }
 
 function drawFooter(doc, carData, insurances) {
-    doc.font('THSarabun')
-       .fontSize(9)
-       .fillColor('#1f2937');
-
     // วัดตำแหน่งจาก template จริง
-    doc.text(
+    doc.font('THSarabun-Bold')
+       .fillColor('#333333')
+       .fontSize(8)
+       .text(
         `ชื่อผู้เสนอราคา : ${carData.offer || '-'}`,
         45,
-        740
+        720
     );
 
-    doc.text(
+    doc.font('THSarabun-Bold')
+       .fillColor('#333333')
+       .fontSize(8)
+       .text(
         `วันที่ออกเอกสาร : ${new Date(carData.created_at_th).toLocaleString('th-TH')}`,
         45,
-        755
+        735
     );
+
+    doc.font('THSarabun-Bold')
+       .fillColor('#ffffff')
+       .fontSize(9)
+       .text('DEENA BROCKER (ดีน่า โบรคเกอร์', 50, 750)
+    doc.font('THSarabun')
+       .fillColor('#ffffff')
+       .fontSize(7)
+       .text('44/170 ปริญลักษณ์ เพชรเกษม 69 ถนนเลียบฯ ฝั่งเหนือ', 50, 760)
+    doc.font('THSarabun')
+       .fillColor('#ffffff')
+       .fontSize(7)
+       .text('แขวงหนองแขม เขตหนองแขม กรุงเทพมหานคร 10160', 50, 770)
+
+     doc.font('THSarabun-Bold')
+       .fillColor('#333333')
+       .fontSize(8)
+       .text('095-065-8887',50, 780);
+
+     doc.font('THSarabun-Bold')
+       .fillColor('#333333')
+       .fontSize(8)
+       .text('@deena',150, 780);
 }
 
 module.exports = { generatePDF }
