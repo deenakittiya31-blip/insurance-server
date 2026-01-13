@@ -180,7 +180,7 @@ async function drawTableContent(doc, insurances) {
         doc.fontSize(8)
            .font('THSarabun-Bold')
            .fillColor('#333333')
-           .text(section.title, tableX + 7, tableY + 4);
+           .text(section.title, tableX + 5, tableY + 7);
         
         tableY += rowHeight;
 
@@ -259,25 +259,25 @@ function drawFooter(doc, carData, insurances) {
     doc.font('THSarabun-Bold')
        .fillColor('#ffffff')
        .fontSize(9)
-       .text('DEENA BROCKER (ดีน่า โบรคเกอร์', 50, 760)
+       .text('DEENA BROCKER (ดีน่า โบรคเกอร์', 50, 780)
     doc.font('THSarabun')
        .fillColor('#ffffff')
        .fontSize(9)
-       .text('44/170 ปริญลักษณ์ เพชรเกษม 69 ถนนเลียบฯ ฝั่งเหนือ',50, 775)
+       .text('44/170 ปริญลักษณ์ เพชรเกษม 69 ถนนเลียบฯ ฝั่งเหนือ',50, 790)
     doc.font('THSarabun')
        .fillColor('#ffffff')
        .fontSize(9)
-       .text('แขวงหนองแขม เขตหนองแขม กรุงเทพมหานคร 10160', 50, 790)
+       .text('แขวงหนองแขม เขตหนองแขม กรุงเทพมหานคร 10160', 50, 800)
 
      doc.font('THSarabun-Bold')
        .fillColor('#ffffff')
        .fontSize(9)
-       .text('095-065-8887',50, 805);
+       .text('095-065-8887',50, 815);
 
      doc.font('THSarabun-Bold')
        .fillColor('#ffffff')
        .fontSize(9)
-       .text('@deena',200, 805);
+       .text('@deena',250, 815);
 }
 
 module.exports = { generatePDF }
