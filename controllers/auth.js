@@ -6,6 +6,31 @@ const axios = require('axios')
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
 
+exports.statusLoginWith = async(req, res) => {
+    const {status} = req.body;
+    const { id } = req.params;
+
+    try {
+        await db.query('UPDATE login SET status = $1 WHERE id = $2', [status, id]) 
+        
+        res.json({msg: 'เปลี่ยนแปลงการตั้งค่าเกี่ยวกับการล็อกอินสำเร็จ'}) 
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({ msg: 'Server error'})
+    }
+}
+
+exports.getStatusLoginWith = async(req, res) => {
+    try {
+        const result = await db.query('select id, login_with, status from login') 
+        
+        res.json({data: result.rows}) 
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({ msg: 'Server error'})
+    }
+}
+
 exports.register = async(req, res)=>{
     try {
         const {name, email, phone, password} = req.body
