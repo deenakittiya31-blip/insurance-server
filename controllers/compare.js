@@ -1,7 +1,5 @@
-const db = require('../config/database')
-const PDFDocument = require('pdfkit');
-const path = require('path');
-const fs = require('fs');
+const db = require('../config/database');
+const { generatePDF } = require('../utils/generatePDF');
 const { groupQuotationData } = require('../utils/groupQuotationData');
 
 exports.createCompare = async(req, res) => {
@@ -91,7 +89,7 @@ exports.comparePDF = async(req, res) => {
         }
 
         //รอบสอง query ข้อมูลเอกสาร
-        const quotationResult = await db.query(`select q.id AS quotation_id, ic.namecompany AS company_name, ic.logo_url AS company_logo, qf.field_code, qf.field_value from quotation_compare as qc INNER JOIN quotation AS q ON qc.q_id = q.compare_id left join quotation_field as qf on q.id = qf.quotation_id LEFT JOIN insurance_company AS ic ON q.company_id = ic.id where qc.q_id = $1 ORDER BY q.id ASC, qf.field_code ASC`, [id])
+        const quotationResult = await db.query(`select q.id AS quotation_id, q.company_id, ic.namecompany AS company_name, ic.logo_url AS company_logo, qf.field_code, qf.field_value from quotation_compare as qc INNER JOIN quotation AS q ON qc.q_id = q.compare_id left join quotation_field as qf on q.id = qf.quotation_id LEFT JOIN insurance_company AS ic ON q.company_id = ic.id where qc.q_id = $1 ORDER BY q.id ASC, qf.field_code ASC`, [id])
 
          // ตรวจสอบว่ามีข้อมูลไหม
         if (!quotationResult.rows.length) {
@@ -105,10 +103,8 @@ exports.comparePDF = async(req, res) => {
         const grouped = groupQuotationData(quotationResult.rows);
         const carData = carResult.rows[0];
        
-
-        console.log(grouped)
-        console.log(carData)
-
+           //สร้าง PDF
+        await generatePDF(res, carData, grouped.insurances, id);
 
     } catch (err) {
         console.log(err)
@@ -116,163 +112,3 @@ exports.comparePDF = async(req, res) => {
     }
 }
 
-// ฟังก์ชันสร้าง PDF
-async function generatePDF(res, carData, companies, quotations, id) {
-    const doc = new PDFDocument({ 
-        size: 'A4', 
-        margin: 50,
-        bufferPages: true
-    });
-
-     //กำหนด path ของฟอนต์
-    const fontRegular = path.join(__dirname, '..', 'fonts', 'Sarabun-Regular.ttf');
-    const fontBold = path.join(__dirname, '..', 'fonts', 'Sarabun-Bold.ttf');
-
-
-    // ตั้งค่า response header
-    res.contentType('application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=comparison_${id}.pdf`);
-
-    // Pipe PDF ไปที่ response
-    doc.pipe(res);
-
-    //ตรวจสอบและลงทะเบียนฟอนต์ไทย
-        try {
-            if (fs.existsSync(fontRegular) && fs.existsSync(fontBold)) {
-                doc.registerFont('Sarabun', fontRegular);
-                doc.registerFont('Sarabun-Bold', fontBold);
-            }
-        } catch (fontError) {
-            console.error('Error loading fonts:', fontError);
-        }
-
-    // === ส่วนหัว ===
-        doc.font('Sarabun')
-           .fontSize(12)
-           .fillColor('#000000');
-
-        doc.text(`หมายเลขใบเสนอราคา : ${carData.q_id}`, 40, 40);
-        doc.text(`ยี่ห้อรถยนต์ : ${carData.car_brand}`, 40, 60);
-        doc.text(`รุ่นรถยนต์: ${carData.car_model}`, 40, 80);
-        doc.text(`ปีรถยนต์ : ${carData.year_be} / ${carData.year_ad}`, 40, 100);
-
-        // === ตาราง ===
-        let startY = 130;
-        drawComparisonTableNew(doc, companies, quotations, startY);
-
-        doc.end();
-        
-        doc.on('finish', () => {
-            resolve();
-        });
-}
-
-// ฟังก์ชันวาดตารางแบบใหม่
-function drawComparisonTableNew(doc, companies, quotations, startY) {
-    const pageWidth = 595.28; // A4 width
-    const margin = 40;
-    const tableWidth = pageWidth - (margin * 2);
-    
-    // คำนวณความกว้างคอลัมน์
-    const labelColWidth = 180;
-    const dataColWidth = (tableWidth - labelColWidth) / companies.length;
-    
-    let currentY = startY;
-    const rowHeight = 25;
-    const headerHeight = 30;
-
-    // ข้อมูลที่จะแสดง (เรียงตามลำดับ)
-    const fields = [
-        { code: 'insurance_company', label: 'บริษัทประกันภัย', isHeader: true },
-        { code: 'insurance_type', label: 'ประเภทประกัน' },
-        { code: 'repair_type', label: 'ประเภทซ่อม' },
-        { label: 'คุ้มครองรถเรา', isSection: true },
-        { code: 'car_own_damage', label: 'ความเสียหายต่อตัวรถยนต์' },
-        { code: 'car_fire_theft', label: 'รถยนต์สูญหาย ไฟไหม้' },
-        { code: 'car_own_damage_deductible', label: 'ความเสียหายส่วนแรก' },
-        { label: 'คุ้มครองคู่กรณี', isSection: true },
-        { code: 'thirdparty_injury_death_per_accident', label: 'ความรับผิดต่อชีวิตร่างกายบุคคลภายนอก (ต่อครั้ง)' },
-        { code: 'thirdparty_injury_death_per_person', label: 'ความรับผิดต่อชีวิตร่างกายบุคคลภายนอก (ต่อคน)' },
-        { code: 'thirdparty_property', label: 'ความรับผิดต่อทรัพย์สินของบุคคลภายนอก' },
-        { label: 'เอกสารแนบท้าย', isSection: true },
-        { code: 'additional_personal_permanent_driver_cover', label: 'อุบัติเหตุส่วนบุคคล' },
-        { code: 'additional_medical_expense_cover', label: 'ค่ารักษาพยาบาล' },
-        { code: 'additional_bail_bond', label: 'การประกันตัวผู้ขับขี่' }
-    ];
-
-    // วาดแต่ละแถว
-    fields.forEach((field, index) => {
-        // ตรวจสอบว่าต้องขึ้นหน้าใหม่หรือไม่
-        if (currentY > 750) {
-            doc.addPage();
-            currentY = 40;
-        }
-
-        if (field.isHeader) {
-            // แถวหัวตาราง (บริษัทประกันภัย)
-            doc.font('Sarabun-Bold').fontSize(11);
-
-            // คอลัมน์แรก (ว่าง)
-            doc.rect(margin, currentY, labelColWidth, headerHeight)
-               .fillAndStroke('#e0e0e0', '#000000');
-
-            // คอลัมน์บริษัท
-            companies.forEach((company, idx) => {
-                const x = margin + labelColWidth + (dataColWidth * idx);
-                doc.rect(x, currentY, dataColWidth, headerHeight)
-                   .fillAndStroke('#e0e0e0', '#000000');
-                
-                doc.fillColor('#000000')
-                   .text(
-                       company.company, 
-                       x + 5, 
-                       currentY + 8, 
-                       { width: dataColWidth - 10, align: 'center' }
-                   );
-            });
-
-            currentY += headerHeight;
-
-        } else if (field.isSection) {
-            // หัวข้อหมวดหมู่ (เต็มแถว)
-            doc.font('Sarabun-Bold').fontSize(11);
-            doc.rect(margin, currentY, tableWidth, rowHeight)
-               .fillAndStroke('#f5f5f5', '#000000');
-            
-            doc.fillColor('#000000')
-               .text(field.label, margin + 5, currentY + 7, { width: tableWidth - 10 });
-
-            currentY += rowHeight;
-
-        } else {
-            // แถวข้อมูลทั่วไป
-            doc.font('Sarabun').fontSize(10);
-
-            // คอลัมน์ชื่อรายการ
-            doc.rect(margin, currentY, labelColWidth, rowHeight)
-               .stroke('#000000');
-            doc.fillColor('#000000')
-               .text(field.label, margin + 5, currentY + 7, { width: labelColWidth - 10 });
-
-            // คอลัมน์ข้อมูล
-            companies.forEach((company, idx) => {
-                const x = margin + labelColWidth + (dataColWidth * idx);
-                const quotationId = Object.keys(quotations)[idx];
-                const value = quotations[quotationId]?.[field.code] || '-';
-
-                doc.rect(x, currentY, dataColWidth, rowHeight)
-                   .stroke('#000000');
-                
-                doc.fillColor('#000000')
-                   .text(
-                       value, 
-                       x + 5, 
-                       currentY + 7, 
-                       { width: dataColWidth - 10, align: 'center' }
-                   );
-            });
-
-            currentY += rowHeight;
-        }
-    });
-}
