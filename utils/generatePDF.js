@@ -35,7 +35,7 @@ async function generatePDF(res, carData, insurances, qId) {
     // Register Thai Font (สำคัญมาก!)
     doc.registerFont(
             'THSarabun',
-            path.join(__dirname, '../fonts/THSarabunNew.ttf')
+            path.join(__dirname, '../fonts/Sarabun-Medium.ttf')
         );
         doc.registerFont(
             'THSarabun-Bold',
