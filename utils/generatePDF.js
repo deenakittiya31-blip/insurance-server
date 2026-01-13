@@ -58,17 +58,17 @@ async function generatePDF(res, carData, insurances, qId) {
     doc.font('THSarabun-Bold')
        .fillColor('#333333')
        .fontSize(8)
-       .text(`รายละเอียด : ${carData.details || '-'}`, 50, 105);
+       .text(`รายละเอียด : ${carData.details || '-'}`, 50, 100);
 
     // --- ข้อมูลรถ --- ห่างละ 15 
     doc.font('THSarabun-Bold')
        .fillColor('#333333')
        .fontSize(8)
-       .text(`ยี่ห้อรถยนต์ : ${carData.car_brand}`, 50, 115);
+       .text(`ยี่ห้อรถยนต์ : ${carData.car_brand}`, 50, 110);
     doc.font('THSarabun-Bold')
        .fillColor('#333333')
        .fontSize(8)
-       .text(`รุ่นรถยนต์ : ${carData.car_model}`, 50, 130);
+       .text(`รุ่นรถยนต์ : ${carData.car_model}`, 50, 120);
     doc.font('THSarabun-Bold')
        .fillColor('#333333')
        .fontSize(8)
@@ -117,7 +117,7 @@ async function downloadImage(url) {
 
 async function drawTableContent(doc, insurances) {
     const tableX = 30;
-    let tableY = 160;
+    let tableY = 165;
     const tableWidth = 515;
     const colWidth = tableWidth / 4;  // 4 columns
     const rowHeight = 15;
@@ -129,7 +129,7 @@ async function drawTableContent(doc, insurances) {
     // กำหนดข้อมูลแต่ละ section
     const sections = [
         {
-            title: 'ข้อมูลเบี้ยประกัน:-',
+            title: 'ข้อมูลเบี้ยประกั',
             rows: [
                 { label: 'บริษัทประกันภัย', key: 'insurance_company', field: 'company_name' },
                 { label: 'ประเภทประกันภัย', key: 'insurance_type' },
@@ -139,7 +139,7 @@ async function drawTableContent(doc, insurances) {
             ]
         },
         {
-            title: 'คุ้มครองรถเรา :-',
+            title: 'คุ้มครองรถเรา',
             rows: [
                 { label: '  ความเสียหายต่อตัวรถยนต์', key: 'car_own_damage', format: true },
                 { label: '  รถยนต์สูญหาย ไฟไหม้', key: 'car_fire_theft', format: true },
@@ -147,7 +147,7 @@ async function drawTableContent(doc, insurances) {
             ]
         },
         {
-            title: 'คุ้มครองคู่กรณี :-',
+            title: 'คุ้มครองคู่กรณี',
             rows: [
                 { label: '  ความเสียหายต่อชีวิต ร่างกาย', key: 'thirdparty_injury_death_per_person', format: true },
                 { label: '  ความเสียหายต่อชีวิต ร่างกาย สูงสุด', key: 'thirdparty_injury_death_per_accident', format: true },
@@ -155,7 +155,7 @@ async function drawTableContent(doc, insurances) {
             ]
         },
         {
-            title: 'คุ้มครองคนในรถ :-',
+            title: 'คุ้มครองคนในรถ',
             rows: [
                 { label: '  อุบัติเหตุส่วนบุคคล', key: 'additional_personal_permanent_driver_cover', format: true, seats: true },
                 { label: '  รักษาพยาบาล', key: 'additional_medical_expense_cover', format: true, seats: true },
@@ -163,7 +163,7 @@ async function drawTableContent(doc, insurances) {
             ]
         },
         {
-            title: 'ราคาเบี้ยประกัน :-',
+            title: 'ราคาเบี้ยประกัน',
             rows: [
                 { label: '  เบี้ยประกัน', key: 'premium_net', format: true },
                 { label: '  พรบ.', key: 'compulsory_premium', format: true },
@@ -177,9 +177,9 @@ async function drawTableContent(doc, insurances) {
         // Section Header
         doc.rect(tableX, tableY, tableWidth, rowHeight)
         
-        doc.fontSize(10)
+        doc.fontSize(8)
            .font('THSarabun-Bold')
-           .fillColor('#0284c7')
+           .fillColor('#333333')
            .text(section.title, tableX + 5, tableY + 4);
         
         tableY += rowHeight;
