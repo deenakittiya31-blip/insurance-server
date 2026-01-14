@@ -1,6 +1,7 @@
 const PDFDocument = require('pdfkit');
 const axios = require('axios');
 const path = require('path');
+const fs = require('fs');
 
 async function generatePDF({carData, insurances, qId, output}) {
     const doc = new PDFDocument({

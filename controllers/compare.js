@@ -2,6 +2,7 @@ const db = require('../config/database');
 const { generatePDF } = require('../utils/generatePDF');
 const { groupQuotationData } = require('../utils/groupQuotationData');
 const path = require('path');
+const fs = require('fs');
 
 exports.createCompare = async(req, res) => {
     try {
