@@ -157,6 +157,11 @@ exports.compareJPG = async(req, res) => {
         const pdfPath = path.join(tmpDir, `${id}.pdf`);
         const imageDir = path.join(tmpDir, id);
 
+        //สร้าง tmp dir ถ้ายังไม่มี
+        if (!fs.existsSync(tmpDir)) {
+            fs.mkdirSync(tmpDir, { recursive: true });
+        }
+
         await generatePDF({
             carData,
             insurances: grouped.insurances,
