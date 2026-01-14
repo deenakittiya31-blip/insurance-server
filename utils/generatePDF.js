@@ -2,7 +2,7 @@ const PDFDocument = require('pdfkit');
 const axios = require('axios');
 const path = require('path');
 
-async function generatePDF( carData, insurances, qId, output) {
+async function generatePDF({carData, insurances, qId, output}) {
     const doc = new PDFDocument({
         size: 'A4',
         margin: 0,  //ต้องตั้ง margin เป็น 0 เพื่อให้รูปเต็มหน้า
@@ -11,7 +11,7 @@ async function generatePDF( carData, insurances, qId, output) {
         }
     });
 
-    if(output.type === 'stream'){
+    if(output.type === 'stream'){ 
         output.res.setHeader('Content-Type', 'application/pdf');
         output.res.setHeader(
             'Content-Disposition',
@@ -22,12 +22,6 @@ async function generatePDF( carData, insurances, qId, output) {
         doc.pipe(fs.createWriteStream(output.path));
     }
     
-
-    // ===== ตั้ง header ก่อน pipe =====
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=quotation_${qId}.pdf`);
-    doc.pipe(res);
-
     try {
         //วางรูป Backgroundจากไฟล์ local
         const templatePath = path.join(__dirname, '../assets/bg_qt.jpg');
