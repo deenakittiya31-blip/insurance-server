@@ -166,9 +166,13 @@ async function drawTableContent(doc, insurances) {
         {
             title: 'ราคาเบี้ยประกัน',
             rows: [
-                { label: '  เบี้ยประกัน', key: 'premium_net', format: true },
-                { label: '  พรบ.', key: 'compulsory_premium', format: true },
-                { label: '  เบี้ยประกันรวม พรบ.', key: 'premium_total', format: true },
+                { label: '  เบี้ยประกัน', key: 'premium_total', format: true },
+                { label: '  พรบ.', key: 'compulsory_amount', format: true },
+                {
+                    label: '  เบี้ยประกันรวม พรบ.',
+                    sumKeys: ['premium_total', 'compulsory_amount'],
+                    format: true
+                },
             ]
         },
     ];
@@ -204,19 +208,21 @@ async function drawTableContent(doc, insurances) {
                 const x = tableX + col1 + (j * colData);
                 const ins = insurances[j];
                 
-                let value;
-                if (row.field) {
-                    value = ins[row.field] || '-';
-                } else {
-                    value = ins.fields[row.key] || '-';
-                }
+                let value = '-';
 
-                // Format number
-                if (row.format && value !== '-') {
-                    const num = parseFloat(value);
-                    if (!isNaN(num)) {
-                        value = num.toLocaleString('th-TH');
-                    }
+                //กรณีเป็นแถวผลรวม
+                if (row.sumKeys) {
+                    const nums = row.sumKeys.map(k => parseFloat(ins.fields[k] || 0));
+                    const total = nums.reduce((a, b) => a + b, 0);
+                    value = total || '-';
+                }
+                //กรณี field ปกติ
+                else if (row.field) {
+                    value = ins[row.field] || '-';
+                }
+                //กรณี key ปกติ
+                else if (row.key) {
+                    value = ins.fields[row.key] || '-';
                 }
 
                 // Add seats info
