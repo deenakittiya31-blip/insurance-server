@@ -191,7 +191,7 @@ async function drawTableContent(doc, insurances) {
         // Section Header
         doc.rect(tableX, tableY, tableWidth, rowHeight)
         
-        doc.fontSize(9)
+        doc.fontSize(10)
            .font('THSarabun-Bold')
            .fillColor('#333333')
 
@@ -243,7 +243,7 @@ async function drawTableContent(doc, insurances) {
                 doc.fontSize(9)
                    .fillColor('#000000')
                 
-                doc.text(value, x + 40, tableY + 7, { width: colData - 10, align: 'center' });
+                doc.text(value, x + 40, tableY + 8, { width: colData - 10, align: 'center' });
             }
 
             tableY += rowHeight;
