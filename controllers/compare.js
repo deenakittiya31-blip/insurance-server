@@ -1,6 +1,7 @@
 const db = require('../config/database');
 const { generatePDF } = require('../utils/generatePDF');
 const { groupQuotationData } = require('../utils/groupQuotationData');
+const path = require('path');
 
 exports.createCompare = async(req, res) => {
     try {
@@ -150,10 +151,42 @@ exports.compareJPG = async(req, res) => {
         //จัดกรุ๊ปข้อมูล
         const grouped = groupQuotationData(quotationResult.rows);
         const carData = carResult.rows[0];
-       
-           //สร้าง PDF
-        await generatePDF(res, carData, grouped.insurances, id);
-        await pdfToJpg(pdfPath, imageDir);
+
+        const tmpDir = path.join(__dirname, '../tmp');
+        const pdfPath = path.join(tmpDir, `${id}.pdf`);
+        const imageDir = path.join(tmpDir, id);
+
+        await generatePDF({
+            carData,
+            insurances: grouped.insurances,
+            qId: id,
+            output: {
+                type: 'file',
+                path: pdfPath
+            }
+        });
+
+        const imagePath = await pdfToJpg(pdfPath, imageDir);
+
+        res.download(imagePath, `quotation_${id}.jpg`, async (err) => {
+
+            // ===== cleanup =====
+            try {
+                if (fs.existsSync(pdfPath)) {
+                    fs.unlinkSync(pdfPath);
+                }
+
+                if (fs.existsSync(imageDir)) {
+                    fs.rmSync(imageDir, { recursive: true, force: true });
+                }
+            } catch (cleanupErr) {
+                console.error('Temp cleanup error:', cleanupErr);
+            }
+
+            if (err) {
+                console.error('Download error:', err);
+            }
+        });
 
     } catch (err) {
         console.log(err)
