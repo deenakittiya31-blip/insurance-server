@@ -20,7 +20,7 @@ exports.list = async(req, res) => {
 
        const offset = (page - 1) * per_page
 
-        const result = await db.query('SELECT id, year_be, year_ad FROM car_year LIMIT $1 OFFSET $2', [per_page, offset])
+        const result = await db.query('SELECT id, year_be, year_ad FROM car_year order by id desc LIMIT $1 OFFSET $2', [per_page, offset])
 
          const countResult = await db.query('SELECT COUNT(*)::int as total FROM car_year')
 

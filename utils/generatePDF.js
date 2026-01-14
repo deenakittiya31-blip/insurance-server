@@ -117,6 +117,13 @@ async function downloadImage(url) {
     return Buffer.from(response.data);
 }
 
+function formatNumber(value) {
+    if (value === null || value === undefined || value === '' || isNaN(value)) {
+        return '-';
+    }
+    return Number(value).toLocaleString('th-TH');
+}
+
 async function drawTableContent(doc, insurances) {
     const tableX = 30;
     let tableY = 165;
@@ -184,7 +191,7 @@ async function drawTableContent(doc, insurances) {
         // Section Header
         doc.rect(tableX, tableY, tableWidth, rowHeight)
         
-        doc.fontSize(8)
+        doc.fontSize(9)
            .font('THSarabun-Bold')
            .fillColor('#333333')
 
@@ -199,7 +206,7 @@ async function drawTableContent(doc, insurances) {
             doc.rect(tableX, tableY, tableWidth, rowHeight)
 
             // Label
-            doc.fontSize(10)
+            doc.fontSize(9)
                .font('THSarabun')
                .fillColor('#374151')
             
@@ -215,7 +222,7 @@ async function drawTableContent(doc, insurances) {
                 //กรณีเป็นแถวผลรวม
                 if (row.sumKeys) {
                     const total = getTotalPremiumWithCompulsory(ins)
-                    value = total || '-';
+                     value = row.format ? formatNumber(total) : total;
                 }
                 //กรณี field ปกติ
                 else if (row.field) {
@@ -223,15 +230,17 @@ async function drawTableContent(doc, insurances) {
                 }
                 //กรณี key ปกติ
                 else if (row.key) {
-                    value = ins.fields[row.key] || '-';
+                    // value = ins.fields[row.key] || '-';
+                    const rawValue = ins.fields[row.key];
+                    value = row.format ? formatNumber(rawValue) : (rawValue || '-');
                 }
 
                 // Add seats info
                 if (row.seats && ins.fields.additional_personal_permanent_driver_number) {
-                    value += ` (${ins.fields.additional_personal_permanent_driver_number})`;
+                    value += ` (${ins.fields.additional_personal_permanent_driver_number} คน)`;
                 }
 
-                doc.fontSize(10)
+                doc.fontSize(9)
                    .fillColor('#000000')
                 
                 doc.text(value, x + 40, tableY + 7, { width: colData - 10, align: 'center' });
