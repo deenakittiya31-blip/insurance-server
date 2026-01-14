@@ -43,7 +43,7 @@ exports.list = async(req, res) => {
 
 exports.listOption = async(req, res) => {
     try {
-        const result = await db.query('SELECT ci.id, ct.type, total FROM compulsory_insurance as ci INNER JOIN car_type as ct ON ci.car_type_id = ct.id ORDER BY ci.id ASC')
+        const result = await db.query('SELECT ci.id, ct.type, ct.code, total FROM compulsory_insurance as ci INNER JOIN car_type as ct ON ci.car_type_id = ct.id ORDER BY ci.id ASC')
 
 
         res.json({ data: result.rows })
