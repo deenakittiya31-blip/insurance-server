@@ -2,7 +2,7 @@ const PDFDocument = require('pdfkit');
 const axios = require('axios');
 const path = require('path');
 
-async function generatePDF(res, carData, insurances, qId) {
+async function generatePDF( carData, insurances, qId, output) {
     const doc = new PDFDocument({
         size: 'A4',
         margin: 0,  //ต้องตั้ง margin เป็น 0 เพื่อให้รูปเต็มหน้า
@@ -11,26 +11,30 @@ async function generatePDF(res, carData, insurances, qId) {
         }
     });
 
+    if(output.type === 'stream'){
+        output.res.setHeader('Content-Type', 'application/pdf');
+        output.res.setHeader(
+            'Content-Disposition',
+            `attachment; filename=quotation_${qId}.pdf`
+        );
+        doc.pipe(output.res);
+    } else {
+        doc.pipe(fs.createWriteStream(output.path));
+    }
+    
+
     // ===== ตั้ง header ก่อน pipe =====
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=quotation_${qId}.pdf`);
     doc.pipe(res);
 
     try {
-        // ===== 1. วางรูป Background =====
-    // วิธีที่ 1: จากไฟล์ local
-    const templatePath = path.join(__dirname, '../assets/bg_qt.jpg');
-    doc.image(templatePath, 0, 0, {
-        width: 595.28,   // A4 width in points
-        height: 841.89   // A4 height in points
-    });
-
-    // วิธีที่ 2: จาก URL (ต้อง download ก่อน)
-    // const templateBuffer = await downloadImage('https://your-url.com/bg_qt.jpg');
-    // doc.image(templateBuffer, 0, 0, { width: 595.28, height: 841.89 });
-
-    // ===== 2. วางข้อความทับบน Background =====
-    // ต้องวัด position จากรูปเทมเพลต
+        //วางรูป Backgroundจากไฟล์ local
+        const templatePath = path.join(__dirname, '../assets/bg_qt.jpg');
+        doc.image(templatePath, 0, 0, {
+            width: 595.28, 
+            height: 841.89
+        });
 
     // Register Thai Font (สำคัญมาก!)
         doc.registerFont(
@@ -44,63 +48,67 @@ async function generatePDF(res, carData, insurances, qId) {
 
         doc.font('THSarabun').fillColor('#333333');
 
-            // --- ข้อมูลเอกสาร ---
-    doc.font('THSarabun-Bold')
-       .fontSize(9)
-       .fillColor('#ffffff')
-       .text(`หมายเลขใบเสนอราคา : ${qId} | ประเภท : ${carData.usage}`, 50, 67);
+            //ข้อมูลเอกสาร
+        doc.font('THSarabun-Bold')
+            .fontSize(9)
+            .fillColor('#ffffff')
+            .text(`หมายเลขใบเสนอราคา : ${qId} | ประเภท : ${carData.usage}`, 50, 67);
 
-    doc.font('THSarabun-Bold')
-       .fontSize(8)
-       .fillColor('#333333')
-       .text(`เรียน ลูกค้า : ${carData.to_name || 'คุณลูกค้า'}`, 50, 90);
+        doc.font('THSarabun-Bold')
+            .fontSize(8)
+            .fillColor('#333333')
+            .text(`เรียน ลูกค้า : ${carData.to_name || 'คุณลูกค้า'}`, 50, 90);
 
-    doc.font('THSarabun-Bold')
-       .fillColor('#333333')
-       .fontSize(8)
-       .text(`รายละเอียด : ${carData.details || '-'}`, 50, 105);
+        doc.font('THSarabun-Bold')
+            .fillColor('#333333')
+            .fontSize(8)
+            .text(`รายละเอียด : ${carData.details || '-'}`, 50, 105);
 
-    // --- ข้อมูลรถ --- ห่างละ 15 
-    doc.font('THSarabun-Bold')
-       .fillColor('#333333')
-       .fontSize(8)
-       .text(`ยี่ห้อรถยนต์ : ${carData.car_brand}`, 50, 120);
-    doc.font('THSarabun-Bold')
-       .fillColor('#333333')
-       .fontSize(8)
-       .text(`รุ่นรถยนต์ : ${carData.car_model}`, 50, 135);
-    doc.font('THSarabun-Bold')
-       .fillColor('#333333')
-       .fontSize(8)
-       .text(`ปีรถยนต์ : ${carData.year_ad} (พ.ศ. ${carData.year_be})`, 50, 150);
+        //ข้อมูลรถห่างละ 15 
+        doc.font('THSarabun-Bold')
+            .fillColor('#333333')
+            .fontSize(8)
+            .text(`ยี่ห้อรถยนต์ : ${carData.car_brand}`, 50, 120);
+        doc.font('THSarabun-Bold')
+            .fillColor('#333333')
+            .fontSize(8)
+            .text(`รุ่นรถยนต์ : ${carData.car_model}`, 50, 135);
+        doc.font('THSarabun-Bold')
+            .fillColor('#333333')
+            .fontSize(8)
+            .text(`ปีรถยนต์ : ${carData.year_ad} (พ.ศ. ${carData.year_be})`, 50, 150);
 
-     // --- Logo บริษัท ---
-    const logoStartX = 250;
-    const logoY = 120;
-    const logoSize = 40;
+        //Logo บริษัท
+        const logoStartX = 250;
+        const logoY = 120;
+        const logoSize = 40;
     
-    for (let i = 0; i < Math.min(insurances.length, 3); i++) {
-        const x = logoStartX + (i * (logoSize + 85));
-        if (insurances[i].company_logo) {
-            try {
-                const logoBuffer = await downloadImage(insurances[i].company_logo);
-                doc.image(logoBuffer, x, logoY, { width: logoSize, height: logoSize });
-            } catch (err) {
-                // ถ้าโหลด logo ไม่ได้ ก็ข้ามไป
-                console.log('Logo load failed:', err.message);
+        for (let i = 0; i < Math.min(insurances.length, 3); i++) {
+            const x = logoStartX + (i * (logoSize + 85));
+            if (insurances[i].company_logo) {
+                try {
+                    const logoBuffer = await downloadImage(insurances[i].company_logo);
+                    doc.image(logoBuffer, x, logoY, { width: logoSize, height: logoSize });
+                } catch (err) {
+                    // ถ้าโหลด logo ไม่ได้ ก็ข้ามไป
+                    console.log('Logo load failed:', err.message);
+                }
             }
         }
-    }
 
-     // --- ตารางข้อมูล ---
-    await drawTableContent(doc, insurances);
+        //ตารางข้อมูล
+        await drawTableContent(doc, insurances);
 
-    drawPaymentSection(doc, insurances, 550);
+        drawPaymentSection(doc, insurances, 550);
 
-    // --- Footer ---
-    drawFooter(doc, carData, insurances);
+        //Footer
+        drawFooter(doc, carData, insurances);
 
-    doc.end();
+        doc.end();
+
+        await new Promise(resolve => doc.on('end', resolve));
+
+        return output.type === 'file' ? output.path : true;
     } catch (err) {
         console.error('PDF generation error:', err);
         doc.end();
@@ -209,7 +217,7 @@ async function drawTableContent(doc, insurances) {
                .font('THSarabun')
                .fillColor('#000000')
             
-            doc.text(row.label, tableX + 5, tableY + 10, { width: col1 - 10 }); //tableY + 7
+            doc.text(row.label, tableX + 5, tableY + 7, { width: col1 - 10 }); //tableY + 7
 
             // Values for each company
             for (let j = 0; j < insurances.length; j++) {
