@@ -252,8 +252,7 @@ function getTotalPremiumWithCompulsory(ins) {
 
 function drawPaymentSection(doc, insurances, startY = 600) {
     const boxWidth = 165;
-    const boxHeight = 90;
-    const startX = 30;
+    const startX = 225;
 
     for (let i = 0; i < insurances.length; i++) {
         const ins = insurances[i];
@@ -261,9 +260,6 @@ function drawPaymentSection(doc, insurances, startY = 600) {
 
         const total = getTotalPremiumWithCompulsory(ins);
         const totalText = total.toLocaleString('th-TH');
-
-        // กล่อง
-        doc.rect(x, startY, boxWidth, boxHeight).stroke('#999');
 
         doc.font('THSarabun-Bold')
            .fontSize(9)
