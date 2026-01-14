@@ -195,7 +195,7 @@ async function drawTableContent(doc, insurances) {
            .font('THSarabun-Bold')
            .fillColor('#000000')
 
-        doc.text(section.title, tableX + 5, tableY + 5, { width: col1 - 10 });
+        doc.text(section.title, tableX + 5, tableY + 6, { width: col1 - 10 }); ////tableY + 5
         tableY += rowHeight;
 
         // Rows
@@ -210,7 +210,7 @@ async function drawTableContent(doc, insurances) {
                .font('THSarabun')
                .fillColor('#000000')
             
-            doc.text(row.label, tableX + 5, tableY + 8, { width: col1 - 10 });
+            doc.text(row.label, tableX + 5, tableY + 6, { width: col1 - 10 }); //tableY + 7
 
             // Values for each company
             for (let j = 0; j < insurances.length; j++) {
@@ -313,24 +313,24 @@ function drawFooter(doc, carData, insurances) {
     doc.font('THSarabun-Bold')
        .fillColor('#ffffff')
        .fontSize(9)
-       .text('DEENA BROCKER (ดีน่า โบรคเกอร์', 50, 770)
+       .text('DEENA BROCKER (ดีน่า โบรคเกอร์)', 50, 770)
     doc.font('THSarabun')
        .fillColor('#ffffff')
-       .fontSize(9)
+       .fontSize(8)
        .text('44/170 ปริญลักษณ์ เพชรเกษม 69 ถนนเลียบฯ ฝั่งเหนือ',50, 785)
     doc.font('THSarabun')
        .fillColor('#ffffff')
-       .fontSize(9)
+       .fontSize(8)
        .text('แขวงหนองแขม เขตหนองแขม กรุงเทพมหานคร 10160', 50, 795)
 
      doc.font('THSarabun-Bold')
        .fillColor('#ffffff')
-       .fontSize(9)
+       .fontSize(10)
        .text('095-065-8887',50, 815);
 
      doc.font('THSarabun-Bold')
        .fillColor('#ffffff')
-       .fontSize(9)
+       .fontSize(10)
        .text('@deena',225, 815);
 }
 
