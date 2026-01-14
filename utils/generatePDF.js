@@ -33,9 +33,9 @@ async function generatePDF(res, carData, insurances, qId) {
     // ต้องวัด position จากรูปเทมเพลต
 
     // Register Thai Font (สำคัญมาก!)
-    doc.registerFont(
+        doc.registerFont(
             'THSarabun',
-            path.join(__dirname, '../fonts/THSarabunNew.ttf')
+            path.join(__dirname, '../fonts/Sarabun-Medium.ttf')
         );
         doc.registerFont(
             'THSarabun-Bold',
@@ -136,8 +136,8 @@ async function drawTableContent(doc, insurances) {
                 { label: 'บริษัทประกันภัย', key: 'insurance_company', field: 'company_name' },
                 { label: 'ประเภทประกันภัย', key: 'insurance_type' },
                 { label: 'ประเภทซ่อม', key: 'repair_type' },
-                { label: 'ชื่อเบี้ยประกันภัย', key: 'quotation_number' },
-                { label: 'รหัสเบี้ยประกัน', key: 'premium_code' },
+                { label: 'ชื่อเบี้ยประกันภัย', key: 'premium_code' },
+                { label: 'รหัสเบี้ยประกัน', key: 'quotation_number' },
             ]
         },
         {
