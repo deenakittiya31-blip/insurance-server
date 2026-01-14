@@ -95,7 +95,7 @@ async function generatePDF(res, carData, insurances, qId) {
      // --- ตารางข้อมูล ---
     await drawTableContent(doc, insurances);
 
-    drawPaymentSection(doc, insurances, 400);
+    drawPaymentSection(doc, insurances, 550);
 
     // --- Footer ---
     drawFooter(doc, carData, insurances);
@@ -250,7 +250,7 @@ function getTotalPremiumWithCompulsory(ins) {
     return premium + compulsory;
 }
 
-function drawPaymentSection(doc, insurances, startY = 400) {
+function drawPaymentSection(doc, insurances, startY = 600) {
     const startX = 220;
     const gapX = 120;             // ระยะห่างระหว่างกล่อง
 
