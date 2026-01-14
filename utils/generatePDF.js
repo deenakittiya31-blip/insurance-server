@@ -95,7 +95,7 @@ async function generatePDF(res, carData, insurances, qId) {
      // --- ตารางข้อมูล ---
     await drawTableContent(doc, insurances);
 
-    drawPaymentSection(doc, insurances, 590);
+    drawPaymentSection(doc, insurances, 400);
 
     // --- Footer ---
     drawFooter(doc, carData, insurances);
@@ -250,8 +250,7 @@ function getTotalPremiumWithCompulsory(ins) {
     return premium + compulsory;
 }
 
-function drawPaymentSection(doc, insurances, startY = 500) {
-    const boxWidth = 165;
+function drawPaymentSection(doc, insurances, startY = 400) {
     const startX = 220;
     const gapX = 120;             // ระยะห่างระหว่างกล่อง
 
@@ -271,7 +270,13 @@ function drawPaymentSection(doc, insurances, startY = 500) {
 
         doc.font('THSarabun-Bold')
            .fontSize(9)
-           .text(`ชำระเงินสด ราคาพิเศษ : ${totalText} บาท`, x + 8, startY + 25);
+           .text('ชำระเงินสด ราคาพิเศษ :', x + 8, startY + 25);
+        
+        
+        doc.font('THSarabun-Bold')
+           .fontSize(11)
+           .fillColor('#000')
+           .text(`${totalText} บาท`, x + 8, startY + 45);
 
     }
 }
