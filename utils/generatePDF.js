@@ -195,7 +195,7 @@ async function drawTableContent(doc, insurances) {
            .font('THSarabun-Bold')
            .fillColor('#000000')
 
-        doc.text(section.title, tableX + 5, tableY + 6, { width: col1 - 10 }); ////tableY + 5
+        doc.text(section.title, tableX + 5, tableY + 5, { width: col1 - 10 }); ////tableY + 5
         tableY += rowHeight;
 
         // Rows
@@ -210,7 +210,7 @@ async function drawTableContent(doc, insurances) {
                .font('THSarabun')
                .fillColor('#000000')
             
-            doc.text(row.label, tableX + 5, tableY + 6, { width: col1 - 10 }); //tableY + 7
+            doc.text(row.label, tableX + 5, tableY + 9, { width: col1 - 10 }); //tableY + 7
 
             // Values for each company
             for (let j = 0; j < insurances.length; j++) {
