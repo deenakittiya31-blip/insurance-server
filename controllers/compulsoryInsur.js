@@ -44,7 +44,7 @@ exports.list = async(req, res) => {
 exports.listOption = async(req, res) => {
     const { id } = req.params
     try {
-        const result = await db.query('SELECT ci.id, ct.type, ct.code, total FROM compulsory_insurance as ci INNER JOIN car_type as ct ON ci.car_type_id = ct.id join car_usage as cu on ct.car_usage_id = cu.id where ct.car_usage_id = $1',[])
+        const result = await db.query('SELECT ci.id, ct.type, ct.code, total FROM compulsory_insurance as ci INNER JOIN car_type as ct ON ci.car_type_id = ct.id join car_usage as cu on ct.car_usage_id = cu.id where ct.car_usage_id = $1',[id])
 
         console.log(result.rows)
         res.json({ data: result.rows })
