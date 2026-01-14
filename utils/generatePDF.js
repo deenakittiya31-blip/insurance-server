@@ -253,7 +253,7 @@ function getTotalPremiumWithCompulsory(ins) {
 function drawPaymentSection(doc, insurances, startY = 600) {
     const boxWidth = 165;
     const startX = 225;
-    const gapX = 20;             // ระยะห่างระหว่างกล่อง
+    const gapX = 100;             // ระยะห่างระหว่างกล่อง
 
    
 
