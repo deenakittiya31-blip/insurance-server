@@ -191,9 +191,9 @@ async function drawTableContent(doc, insurances) {
         // Section Header
         doc.rect(tableX, tableY, tableWidth, rowHeight)
         
-        doc.fontSize(10)
+        doc.fontSize(9)
            .font('THSarabun-Bold')
-           .fillColor('#333333')
+           .fillColor('#000000')
 
         doc.text(section.title, tableX + 5, tableY + 5, { width: col1 - 10 });
         tableY += rowHeight;
@@ -208,9 +208,9 @@ async function drawTableContent(doc, insurances) {
             // Label
             doc.fontSize(9)
                .font('THSarabun')
-               .fillColor('#374151')
+               .fillColor('#000000')
             
-            doc.text(row.label, tableX + 5, tableY + 7, { width: col1 - 10 });
+            doc.text(row.label, tableX + 5, tableY + 8, { width: col1 - 10 });
 
             // Values for each company
             for (let j = 0; j < insurances.length; j++) {
@@ -243,7 +243,7 @@ async function drawTableContent(doc, insurances) {
                 doc.fontSize(9)
                    .fillColor('#000000')
                 
-                doc.text(value, x + 40, tableY + 8, { width: colData - 10, align: 'center' });
+                doc.text(value, x + 40, tableY + 7, { width: colData - 10, align: 'center' });
             }
 
             tableY += rowHeight;
