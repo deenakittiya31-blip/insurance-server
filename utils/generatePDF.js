@@ -256,7 +256,7 @@ function drawPaymentSection(doc, insurances, startY = 600) {
 
     for (let i = 0; i < insurances.length; i++) {
         const ins = insurances[i];
-        const x = startX + (i * (boxWidth + 10));
+        const x = startX + i ;
 
         const total = getTotalPremiumWithCompulsory(ins);
         const totalText = total.toLocaleString('th-TH');
