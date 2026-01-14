@@ -274,7 +274,7 @@ function drawPaymentSection(doc, insurances, startY = 600) {
         
         
         doc.font('THSarabun-Bold')
-           .fontSize(11)
+           .fontSize(9)
            .fillColor('#000')
            .text(`${totalText} บาท`, x + 8, startY + 45);
 
