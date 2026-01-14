@@ -250,10 +250,10 @@ function getTotalPremiumWithCompulsory(ins) {
     return premium + compulsory;
 }
 
-function drawPaymentSection(doc, insurances, startY = 600) {
+function drawPaymentSection(doc, insurances, startY = 500) {
     const boxWidth = 165;
-    const startX = 225;
-    const gapX = 100;             // ระยะห่างระหว่างกล่อง
+    const startX = 220;
+    const gapX = 120;             // ระยะห่างระหว่างกล่อง
 
    
 
@@ -269,14 +269,10 @@ function drawPaymentSection(doc, insurances, startY = 600) {
            .fillColor('#333')
            .text('วิธีชำระเงิน :', x + 8, startY + 8);
 
-        doc.font('THSarabun')
-           .fontSize(9)
-           .text('ชำระเงินสด ราคาพิเศษ :', x + 8, startY + 25);
-
         doc.font('THSarabun-Bold')
-           .fontSize(11)
-           .fillColor('#000')
-           .text(`${totalText} บาท`, x + 8, startY + 45);
+           .fontSize(9)
+           .text(`ชำระเงินสด ราคาพิเศษ : ${totalText} บาท`, x + 8, startY + 25);
+
     }
 }
 
