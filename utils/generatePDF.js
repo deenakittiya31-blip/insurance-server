@@ -253,13 +253,13 @@ function getTotalPremiumWithCompulsory(ins) {
 function drawPaymentSection(doc, insurances, startY = 600) {
     const boxWidth = 165;
     const startX = 225;
-    const gapX = 5;             // ระยะห่างระหว่างกล่อง
+    const gapX = 20;             // ระยะห่างระหว่างกล่อง
 
    
 
     for (let i = 0; i < insurances.length; i++) {
         const ins = insurances[i];
-         const x = startX + (i * (boxWidth + gapX));
+        const x = startX + (i * gapX);
 
         const total = getTotalPremiumWithCompulsory(ins);
         const totalText = total.toLocaleString('th-TH');
