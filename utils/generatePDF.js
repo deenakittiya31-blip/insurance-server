@@ -95,6 +95,8 @@ async function generatePDF(res, carData, insurances, qId) {
      // --- ตารางข้อมูล ---
     await drawTableContent(doc, insurances);
 
+    drawPaymentSection(doc, insurances, 590);
+
     // --- Footer ---
     drawFooter(doc, carData, insurances);
 
@@ -212,8 +214,7 @@ async function drawTableContent(doc, insurances) {
 
                 //กรณีเป็นแถวผลรวม
                 if (row.sumKeys) {
-                    const nums = row.sumKeys.map(k => parseFloat(ins.fields[k] || 0));
-                    const total = nums.reduce((a, b) => a + b, 0);
+                    const total = getTotalPremiumWithCompulsory(ins)
                     value = total || '-';
                 }
                 //กรณี field ปกติ
@@ -241,6 +242,43 @@ async function drawTableContent(doc, insurances) {
     }
 
     return tableY;
+}
+
+function getTotalPremiumWithCompulsory(ins) {
+    const premium = parseFloat(ins.fields?.premium_total || 0);
+    const compulsory = parseFloat(ins.fields?.compulsory_amount || 0);
+    return premium + compulsory;
+}
+
+function drawPaymentSection(doc, insurances, startY = 600) {
+    const boxWidth = 165;
+    const boxHeight = 90;
+    const startX = 30;
+
+    for (let i = 0; i < insurances.length; i++) {
+        const ins = insurances[i];
+        const x = startX + (i * (boxWidth + 10));
+
+        const total = getTotalPremiumWithCompulsory(ins);
+        const totalText = total.toLocaleString('th-TH');
+
+        // กล่อง
+        doc.rect(x, startY, boxWidth, boxHeight).stroke('#999');
+
+        doc.font('THSarabun-Bold')
+           .fontSize(9)
+           .fillColor('#333')
+           .text('วิธีชำระเงิน :', x + 8, startY + 8);
+
+        doc.font('THSarabun')
+           .fontSize(9)
+           .text('ชำระเงินสด ราคาพิเศษ :', x + 8, startY + 25);
+
+        doc.font('THSarabun-Bold')
+           .fontSize(11)
+           .fillColor('#000')
+           .text(`${totalText} บาท`, x + 8, startY + 45);
+    }
 }
 
 function drawFooter(doc, carData, insurances) {
