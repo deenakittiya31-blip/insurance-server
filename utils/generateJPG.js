@@ -40,11 +40,11 @@ async function generateJPG({ carData, insurances, qId }) {
     ctx.fillText(`ปีรถยนต์ : ${carData.year_ad} (พ.ศ. ${carData.year_be})`, 120, 660);
 
     // Logos
-    const logoStartX = 1050;
+    const logoStartX = 1100;
     const logoY = 400;
     const logoSize = 150;
     for (let i = 0; i < Math.min(insurances.length, 3); i++) {
-        const x = logoStartX + (i * (logoSize + 200));
+        const x = logoStartX + (i * (logoSize + 400));
         if (insurances[i].company_logo) {
             try {
                 const img = await loadRemoteImage(insurances[i].company_logo);
@@ -57,7 +57,7 @@ async function generateJPG({ carData, insurances, qId }) {
 
     drawTableCanvas(ctx, insurances)
 
-    drawPaymentSection(ctx, insurances, 2600);
+    drawPaymentSection(ctx, insurances, 2300);
 
     // --- Footer ---
     drawFooter(ctx, carData, insurances);
@@ -66,8 +66,8 @@ async function generateJPG({ carData, insurances, qId }) {
 }
 
 function drawPaymentSection(ctx, insurances, startY = 2600) {
-    const startX = 850;
-    const gapX = 450;
+    const startX = 950;
+    const gapX = 550;
 
     ctx.textBaseline = 'top';
 
@@ -98,13 +98,13 @@ function drawFooter(ctx, carData) {
     ctx.fillText(
         `ชื่อผู้เสนอราคา : ${carData.offer || '-'}`,
         120,
-        3070
+        3050
     );
 
     ctx.fillText(
         `วันที่ออกเอกสาร : ${new Date(carData.created_at_th).toLocaleString('th-TH')}`,
         120,
-        3140
+        3110
     );
 
     // บริษัท
@@ -116,18 +116,18 @@ function drawFooter(ctx, carData) {
     ctx.fillText(
         '44/170 ปริญลักษณ์ เพชรเกษม 69 ถนนเลียบฯ ฝั่งเหนือ',
         120,
-        3230
+        3240
     );
     ctx.fillText(
         'แขวงหนองแขม เขตหนองแขม กรุงเทพมหานคร 10160',
         120,
-        3265
+        3275
     );
 
     // Contact
     ctx.font = 'bold 30px Sarabun-Bold';
-    ctx.fillText('095-065-8887', 120, 3320);
-    ctx.fillText('@deena', 700, 3320);
+    ctx.fillText('095-065-8887', 150, 3420);
+    ctx.fillText('@deena', 950, 3420);
 }
 
 
