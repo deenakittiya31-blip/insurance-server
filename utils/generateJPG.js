@@ -25,25 +25,27 @@ async function generateJPG({ carData, insurances, qId }) {
     const bg = await loadImage(path.join(__dirname, '../assets/bg_qt.jpg'));
     ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
 
-    // ===== Header =====
-    ctx.fillStyle = '#000';
-    ctx.font = 'bold 42px Sarabun';
-    ctx.fillText(`ใบเสนอราคา ${qId}`, 120, 120);
+    // Header
+    ctx.fillStyle = '#fff';
+    ctx.font = '32px Sarabun-Bold';
+    ctx.fillText(`หมายเลขใบเสนอราคา : ${qId} | ประเภท : ${carData.usage}`, 50, 67);
 
-    ctx.font = '32px Sarabun';
-    ctx.fillText(`เรียน : ${carData.to_name || 'คุณลูกค้า'}`, 120, 180);
-    ctx.fillText(`ยี่ห้อ : ${carData.car_brand}`, 120, 240);
-    ctx.fillText(`รุ่น : ${carData.car_model}`, 120, 300);
-    ctx.fillText(`ปี : ${carData.year_ad}`, 120, 360);
+    ctx.font = '32px Sarabun-Bold';
+    ctx.fillText(`เรียน : ${carData.to_name || 'คุณลูกค้า'}`, 50, 90);
+    ctx.fillText(`ยี่ห้อรถยนต์ : ${carData.car_brand}`, 50, 120);
+    ctx.fillText(`รุ่นรถยนต์ : ${carData.car_model}`, 50, 135);
+    ctx.fillText(`ปีรถยนต์ : ${carData.year_ad} (พ.ศ. ${carData.year_be})`, 50, 150);
 
-    // ===== Logos =====
-    let x = 1500;
+    // Logos
+    const logoStartX = 250;
+    const logoY = 120;
+    const logoSize = 40;
     for (let i = 0; i < Math.min(insurances.length, 3); i++) {
+        const x = logoStartX + (i * (logoSize + 85));
         if (insurances[i].company_logo) {
             try {
                 const img = await loadRemoteImage(insurances[i].company_logo);
-                ctx.drawImage(img, x, 200, 160, 160);
-                x += 220;
+                ctx.drawImage(img, x, logoY, { width: logoSize, height: logoSize });
             } catch (err) {
                 console.log('Logo load fail', err.message);
             }

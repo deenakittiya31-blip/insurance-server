@@ -29,16 +29,16 @@ async function generatePDF(res, carData, insurances, qId) {
     });
 
     // Register Thai Font
-        doc.registerFont(
-            'THSarabun',
-            path.join(__dirname, '../fonts/Sarabun-Medium.ttf')
-        );
-        doc.registerFont(
-            'THSarabun-Bold',
-            path.join(__dirname, '../fonts/Sarabun-Bold.ttf')
-        );
+    doc.registerFont(
+        'THSarabun',
+        path.join(__dirname, '../fonts/Sarabun-Medium.ttf')
+    );
+    doc.registerFont(
+        'THSarabun-Bold',
+        path.join(__dirname, '../fonts/Sarabun-Bold.ttf')
+    );
 
-        doc.font('THSarabun').fillColor('#333333');
+    doc.font('THSarabun').fillColor('#333333');
 
             // --- ข้อมูลเอกสาร ---
     doc.font('THSarabun-Bold')
