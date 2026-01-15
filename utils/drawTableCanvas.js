@@ -44,7 +44,7 @@ function drawTableCanvas(ctx, insurances) {
 
             // Values for each company
             for (let j = 0; j < insurances.length; j++) {
-                const x = tableX + col1 + (j * colData);
+                const x = tableX + colLabel + (j * colData);
                 const ins = insurances[j];
                 
                 let value = '-';
