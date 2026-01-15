@@ -11,11 +11,11 @@ function formatNumber(value) {
 
 function drawTableCanvas(ctx, insurances) {
     const tableX = 120;
-    let tableY = 520;
+    let tableY = 700;
     const tableWidth = 2200;
     const rowHeight = 40;
 
-    const colLabel = 500;
+    const colLabel = 600;
     const colData = (tableWidth - colLabel) / insurances.length;
 
     ctx.strokeStyle = '#000';
@@ -26,7 +26,7 @@ function drawTableCanvas(ctx, insurances) {
         // Section Header
         // ctx.strokeRect(tableX, tableY, tableWidth, rowHeight);
         
-        ctx.font = 'bold 28px Sarabun-Bold';
+        ctx.font = 'bold 32px Sarabun-Bold';
         // ctx.strokeRect(tableX, tableY, tableWidth, rowHeight);
         ctx.fillText(section.title, tableX + 10, tableY + 28);
         tableY += rowHeight;
@@ -39,7 +39,7 @@ function drawTableCanvas(ctx, insurances) {
             // ctx.strokeRect(tableX, tableY, tableWidth, rowHeight);
             
    // label
-            ctx.font = '26px Sarabun';
+            ctx.font = '32px Sarabun';
             ctx.fillText(row.label, tableX + 10, tableY + 28);
 
             // Values for each company
