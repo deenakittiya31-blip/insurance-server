@@ -11,7 +11,7 @@ function formatNumber(value) {
 
 function drawTableCanvas(ctx, insurances) {
     const tableX = 120;
-    let tableY = 700;
+    let tableY = 750;
     const tableWidth = 2200;
     const rowHeight = 60;
 
@@ -23,11 +23,8 @@ function drawTableCanvas(ctx, insurances) {
 
     // วาดแต่ละ section
     for (const section of tableSchema) {
-        // Section Header
-        // ctx.strokeRect(tableX, tableY, tableWidth, rowHeight);
-        
+        // Section Header       
         ctx.font = 'bold 34px Sarabun-Bold';
-        // ctx.strokeRect(tableX, tableY, tableWidth, rowHeight);
         ctx.fillText(section.title, tableX + 10, tableY + 28);
         tableY += rowHeight;
 
@@ -35,10 +32,7 @@ function drawTableCanvas(ctx, insurances) {
         for (let i = 0; i < section.rows.length; i++) {
             const row = section.rows[i];
             
-            // Row background
-            // ctx.strokeRect(tableX, tableY, tableWidth, rowHeight);
-            
-   // label
+            // label
             ctx.font = '32px Sarabun';
             ctx.fillText(row.label, tableX + 10, tableY + 28);
 
@@ -71,7 +65,7 @@ function drawTableCanvas(ctx, insurances) {
                 }
 
                 ctx.textAlign = 'center';
-                ctx.fillText(value, x + colData / 2, tableY + 28);
+                ctx.fillText(value, x + 200, tableY + 28);
             }
 
             ctx.textAlign = 'left';
