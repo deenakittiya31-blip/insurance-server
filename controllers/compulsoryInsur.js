@@ -80,16 +80,18 @@ exports.update = async(req, res) => {
 
         const old = result.rows[0]
 
-        await db.query('UPDATE compulsory_insurance SET car_type_id = $1, code = $2, net_price = $3, vat = $4, stamp = $5, total = $6, detail = $7 WHERE id = $8', [
-            car_type_id     !== undefined ? Number(car_type_id) : old.car_type_id, 
-            code          !== undefined ?? old.code,
-            net_price       !== undefined ? Number(net_price)   : old.net_price, 
-            vat             !== undefined ? Number(vat)         : old.vat, 
-            stamp           !== undefined ? Number(stamp)       : old.stamp, 
-            total           !== undefined ? Number(total)       : old.total, 
-            detail          !== undefined ?? old.detail,
-            id
-        ])
+        await db.query('UPDATE compulsory_insurance SET car_type_id = COALESCE($1 car_type_id), code = COALESCE($2, code), net_price = COALESCE($3, net_price), vat = COALESCE($4, vat), stamp = COALESCE($5, stamp), total = COALESCE($6, total), detail = COALESCE($7, detail) WHERE id = $8',
+            [
+                car_type_id ?? null,
+                code ?? null,
+                net_price ?? null,
+                vat ?? null,
+                stamp ?? null,
+                total ?? null,
+                detail ?? null,
+                id
+            ]
+        )
 
         res.json({msg: 'แก้ไข พ.ร.บ. รถสำเร็จ'})  
     } catch (err) {

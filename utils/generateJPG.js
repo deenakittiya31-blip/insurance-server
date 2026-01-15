@@ -44,7 +44,7 @@ async function generateJPG({ carData, insurances, qId }) {
     const logoY = 400;
     const logoSize = 150;
     for (let i = 0; i < Math.min(insurances.length, 3); i++) {
-        const x = logoStartX + (i * (logoSize + 200));
+        const x = logoStartX + (i * (logoSize + 400));
         if (insurances[i].company_logo) {
             try {
                 const img = await loadRemoteImage(insurances[i].company_logo);
@@ -126,7 +126,7 @@ function drawFooter(ctx, carData) {
 
     // Contact
     ctx.font = 'bold 30px Sarabun-Bold';
-    ctx.fillText('095-065-8887', 180, 3400);
+    ctx.fillText('095-065-8887', 200, 3400);
     ctx.fillText('@deena', 950, 3400);
 }
 
