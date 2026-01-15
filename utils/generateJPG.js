@@ -40,11 +40,11 @@ async function generateJPG({ carData, insurances, qId }) {
     ctx.fillText(`ปีรถยนต์ : ${carData.year_ad} (พ.ศ. ${carData.year_be})`, 120, 660);
 
     // Logos
-    const logoStartX = 1100;
+    const logoStartX = 1080;
     const logoY = 400;
     const logoSize = 150;
     for (let i = 0; i < Math.min(insurances.length, 3); i++) {
-        const x = logoStartX + (i * (logoSize + 400));
+        const x = logoStartX + (i * (logoSize + 200));
         if (insurances[i].company_logo) {
             try {
                 const img = await loadRemoteImage(insurances[i].company_logo);
@@ -85,7 +85,7 @@ function drawPaymentSection(ctx, insurances, startY = 2600) {
         ctx.fillText('ชำระเงินสด ราคาพิเศษ :', x, startY + 45);
 
         ctx.font = '32px Sarabun';
-        ctx.fillText(`${totalText} บาท`, x, startY + 45); //95
+        ctx.fillText(`${totalText} บาท`, x, startY + 95);
     }
 }
 
