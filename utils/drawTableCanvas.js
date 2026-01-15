@@ -18,16 +18,17 @@ function drawTableCanvas(ctx, insurances) {
     const colLabel = 500;
     const colData = (tableWidth - colLabel) / insurances.length;
 
+    ctx.strokeStyle = '#000';
+    ctx.fillStyle = '#000';
+
     // วาดแต่ละ section
     for (const section of tableSchema) {
         // Section Header
-        ctx.rect(tableX, tableY, tableWidth, rowHeight)
+        ctx.strokeRect(tableX, tableY, tableWidth, rowHeight);
         
-        ctx.fontSize(9)
-           .font('THSarabun-Bold')
-           .fillColor('#000000')
-
-        ctx.text(section.title, tableX + 5, tableY + 5, { width: col1 - 10 }); ////tableY + 5
+        ctx.font = 'bold 28px Sarabun-Bold';
+        ctx.strokeRect(tableX, tableY, tableWidth, rowHeight);
+        ctx.fillText(section.title, tableX + 10, tableY + 28);
         tableY += rowHeight;
 
         // Rows
@@ -35,14 +36,11 @@ function drawTableCanvas(ctx, insurances) {
             const row = section.rows[i];
             
             // Row background
-            ctx.rect(tableX, tableY, tableWidth, rowHeight)
-
-            // Label
-            ctx.fontSize(9)
-               .font('THSarabun')
-               .fillColor('#000000')
+            ctx.strokeRect(tableX, tableY, tableWidth, rowHeight);
             
-            ctx.text(row.label, tableX + 5, tableY + 7, { width: col1 - 10 }); //tableY + 7
+   // label
+            ctx.font = '26px Sarabun';
+            ctx.fillText(row.label, tableX + 10, tableY + 28);
 
             // Values for each company
             for (let j = 0; j < insurances.length; j++) {
@@ -72,12 +70,11 @@ function drawTableCanvas(ctx, insurances) {
                     value += ` (${ins.fields.additional_personal_permanent_driver_number} คน)`;
                 }
 
-                ctx.fontSize(9)
-                   .fillColor('#000000')
-                
-                ctx.text(value, x + 40, tableY + 7, { width: colData - 10, align: 'center' });
+                ctx.textAlign = 'center';
+                ctx.fillText(value, x + colData / 2, tableY + 28);
             }
 
+            ctx.textAlign = 'left';
             tableY += rowHeight;
         }
     }

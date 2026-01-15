@@ -1,7 +1,17 @@
-const { createCanvas, loadImage } = require('canvas');
+const { createCanvas, loadImage, registerFont } = require('canvas');
 const axios = require('axios');
 const path = require('path');
 const { drawTableCanvas } = require('./drawTableCanvas');
+
+registerFont(
+    path.join(__dirname, '../fonts/Sarabun-Medium.ttf'),
+    { family: 'Sarabun' }
+);
+
+registerFont(
+        path.join(__dirname, '../fonts/Sarabun-Bold.ttf'),
+    { family: 'Sarabun-Bold' }
+);
 
 async function loadRemoteImage(url) {
     const res = await axios.get(url, { responseType: 'arraybuffer' });
@@ -31,7 +41,7 @@ async function generateJPG({ carData, insurances, qId }) {
     for (let i = 0; i < Math.min(insurances.length, 3); i++) {
         if (insurances[i].company_logo) {
             try {
-                const img = await loadImage(insurances[i].company_logo);
+                const img = await loadRemoteImage(insurances[i].company_logo);
                 ctx.drawImage(img, x, 200, 160, 160);
                 x += 220;
             } catch (err) {
