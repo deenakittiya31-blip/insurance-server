@@ -33,14 +33,14 @@ async function generateJPG({ carData, insurances, qId }) {
     ctx.fillStyle = '#000';
     ctx.font = '32px Sarabun-Bold';
     ctx.fillText(`เรียน : ${carData.to_name || 'คุณลูกค้า'}`, 120, 410);// space 30
-    ctx.fillText(`รายละเอียด : ${carData.details || '-'}`, 120, 450);
-    ctx.fillText(`ยี่ห้อรถยนต์ : ${carData.car_brand}`, 120, 500);
-    ctx.fillText(`รุ่นรถยนต์ : ${carData.car_model}`, 120, 540);
-    ctx.fillText(`ปีรถยนต์ : ${carData.year_ad} (พ.ศ. ${carData.year_be})`, 120, 580);
+    ctx.fillText(`รายละเอียด : ${carData.details || '-'}`, 120, 470);
+    ctx.fillText(`ยี่ห้อรถยนต์ : ${carData.car_brand}`, 120, 540);
+    ctx.fillText(`รุ่นรถยนต์ : ${carData.car_model}`, 120, 600);
+    ctx.fillText(`ปีรถยนต์ : ${carData.year_ad} (พ.ศ. ${carData.year_be})`, 120, 660);
 
     // Logos
     const logoStartX = 250;
-    const logoY = 300;
+    const logoY = 600;
     const logoSize = 40;
     for (let i = 0; i < Math.min(insurances.length, 3); i++) {
         const x = logoStartX + (i * (logoSize + 50));
