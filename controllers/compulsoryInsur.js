@@ -72,15 +72,7 @@ exports.update = async(req, res) => {
     const { id } = req.params;
 
     try {
-        const result = await db.query('SELECT * FROM compulsory_insurance WHERE id = $1', [id])
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ message: 'ไม่พบข้อมูล' })
-        }
-
-        const old = result.rows[0]
-
-        await db.query('UPDATE compulsory_insurance SET car_type_id = COALESCE($1 car_type_id), code = COALESCE($2, code), net_price = COALESCE($3, net_price), vat = COALESCE($4, vat), stamp = COALESCE($5, stamp), total = COALESCE($6, total), detail = COALESCE($7, detail) WHERE id = $8',
+        await db.query('UPDATE compulsory_insurance SET car_type_id = COALESCE($1, car_type_id), code = COALESCE($2, code), net_price = COALESCE($3, net_price), vat = COALESCE($4, vat), stamp = COALESCE($5, stamp), total = COALESCE($6, total), detail = COALESCE($7, detail) WHERE id = $8',
             [
                 car_type_id ?? null,
                 code ?? null,
