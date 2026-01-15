@@ -4,7 +4,7 @@ const path = require('path');
 const { getTotalPremiumWithCompulsory } = require('./getTotalPremiumWithCompulsory');
 const tableSchema = require('./tableSchema');
 
-async function generatePDF(res, carData, insurances, qId, output) {
+async function generatePDF(res, carData, insurances, qId) {
     const doc = new PDFDocument({
         size: 'A4',
         margin: 0,  //ต้องตั้ง margin เป็น 0 เพื่อให้รูปเต็มหน้า

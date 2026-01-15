@@ -110,15 +110,7 @@ exports.comparePDF = async(req, res) => {
         const carData = carResult.rows[0];
        
            //สร้าง PDF
-        await generatePDF({
-            carData,
-            insurances: grouped.insurances,
-            qId: id,
-            output: {
-                type: 'stream',
-                res
-            }
-        });
+        await generatePDF(res, carData, grouped.insurances, id);
 
     } catch (err) {
         console.log(err)
