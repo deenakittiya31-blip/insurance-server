@@ -40,11 +40,11 @@ async function generateJPG({ carData, insurances, qId }) {
     ctx.fillText(`ปีรถยนต์ : ${carData.year_ad} (พ.ศ. ${carData.year_be})`, 120, 660);
 
     // Logos
-    const logoStartX = 850;
-    const logoY = 600;
-    const logoSize = 100;
+    const logoStartX = 1050;
+    const logoY = 400;
+    const logoSize = 150;
     for (let i = 0; i < Math.min(insurances.length, 3); i++) {
-        const x = logoStartX + (i * (logoSize + 80));
+        const x = logoStartX + (i * (logoSize + 200));
         if (insurances[i].company_logo) {
             try {
                 const img = await loadRemoteImage(insurances[i].company_logo);
@@ -57,7 +57,7 @@ async function generateJPG({ carData, insurances, qId }) {
 
     drawTableCanvas(ctx, insurances)
 
-    drawPaymentSection(ctx, insurances, 550);
+    drawPaymentSection(ctx, insurances, 2600);
 
     // --- Footer ---
     drawFooter(ctx, carData, insurances);
@@ -82,10 +82,10 @@ function drawPaymentSection(ctx, insurances, startY = 2600) {
         ctx.fillText('วิธีชำระเงิน :', x, startY);
 
         ctx.font = '32px Sarabun';
-        ctx.fillText('ชำระเงินสด ราคาพิเศษ :', x, startY);
+        ctx.fillText('ชำระเงินสด ราคาพิเศษ :', x, startY + 45);
 
         ctx.font = '32px Sarabun';
-        ctx.fillText(`${totalText} บาท`, x, startY);
+        ctx.fillText(`${totalText} บาท`, x, startY + 95);
     }
 }
 
@@ -98,36 +98,36 @@ function drawFooter(ctx, carData) {
     ctx.fillText(
         `ชื่อผู้เสนอราคา : ${carData.offer || '-'}`,
         120,
-        3000
+        3070
     );
 
     ctx.fillText(
         `วันที่ออกเอกสาร : ${new Date(carData.created_at_th).toLocaleString('th-TH')}`,
         120,
-        3050
+        3140
     );
 
     // บริษัท
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 30px Sarabun-Bold';
-    ctx.fillText('DEENA BROCKER (ดีน่า โบรคเกอร์)', 120, 3120);
+    ctx.fillText('DEENA BROCKER (ดีน่า โบรคเกอร์)', 120, 3195);
 
     ctx.font = '26px Sarabun';
     ctx.fillText(
         '44/170 ปริญลักษณ์ เพชรเกษม 69 ถนนเลียบฯ ฝั่งเหนือ',
         120,
-        3160
+        3230
     );
     ctx.fillText(
         'แขวงหนองแขม เขตหนองแขม กรุงเทพมหานคร 10160',
         120,
-        3195
+        3265
     );
 
     // Contact
     ctx.font = 'bold 30px Sarabun-Bold';
-    ctx.fillText('095-065-8887', 120, 3250);
-    ctx.fillText('@deena', 400, 3250);
+    ctx.fillText('095-065-8887', 120, 3320);
+    ctx.fillText('@deena', 700, 3320);
 }
 
 
