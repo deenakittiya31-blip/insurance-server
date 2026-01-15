@@ -47,7 +47,7 @@ async function generateJPG({ carData, insurances, qId }) {
         if (insurances[i].company_logo) {
             try {
                 const img = await loadRemoteImage(insurances[i].company_logo);
-                ctx.drawImage(img, x, logoY, { width: logoSize, height: logoSize });
+                ctx.drawImage(img, x, logoY, logoSize, logoSize);
             } catch (err) {
                 console.log('Logo load fail', err.message);
             }

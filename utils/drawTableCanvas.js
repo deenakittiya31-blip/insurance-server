@@ -12,7 +12,7 @@ function formatNumber(value) {
 function drawTableCanvas(ctx, insurances) {
     const tableX = 120;
     let tableY = 715;
-    const tableWidth = 2600;
+    const tableWidth = 2400;
     const rowHeight = 65;
 
     const colLabel = 800;
@@ -20,6 +20,7 @@ function drawTableCanvas(ctx, insurances) {
 
     ctx.strokeStyle = '#000';
     ctx.fillStyle = '#000';
+    ctx.textBaseline = 'middle';
 
     // วาดแต่ละ section
     for (const section of tableSchema) {
@@ -65,7 +66,7 @@ function drawTableCanvas(ctx, insurances) {
                 }
 
                 ctx.textAlign = 'center';
-                ctx.fillText(value, x + 200, tableY + 28);
+                ctx.fillText(value, x + colData / 2, tableY + rowHeight / 2);
             }
 
             ctx.textAlign = 'left';
