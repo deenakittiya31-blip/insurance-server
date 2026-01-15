@@ -27,14 +27,14 @@ async function generateJPG({ carData, insurances, qId }) {
 
     // Header
     ctx.fillStyle = '#fff';
-    ctx.font = '32px Sarabun-Bold';
-    ctx.fillText(`หมายเลขใบเสนอราคา : ${qId} | ประเภท : ${carData.usage}`, 50, 67);
+    ctx.font = '34px Sarabun-Bold';
+    ctx.fillText(`หมายเลขใบเสนอราคา : ${qId} | ประเภท : ${carData.usage}`, 120, 305);
 
     ctx.font = '32px Sarabun-Bold';
-    ctx.fillText(`เรียน : ${carData.to_name || 'คุณลูกค้า'}`, 50, 90);
-    ctx.fillText(`ยี่ห้อรถยนต์ : ${carData.car_brand}`, 50, 120);
-    ctx.fillText(`รุ่นรถยนต์ : ${carData.car_model}`, 50, 135);
-    ctx.fillText(`ปีรถยนต์ : ${carData.year_ad} (พ.ศ. ${carData.year_be})`, 50, 150);
+    ctx.fillText(`เรียน : ${carData.to_name || 'คุณลูกค้า'}`, 120, 365);
+    ctx.fillText(`ยี่ห้อรถยนต์ : ${carData.car_brand}`, 120, 407);
+    ctx.fillText(`รุ่นรถยนต์ : ${carData.car_model}`, 120, 135);
+    ctx.fillText(`ปีรถยนต์ : ${carData.year_ad} (พ.ศ. ${carData.year_be})`, 120, 150);
 
     // Logos
     const logoStartX = 250;

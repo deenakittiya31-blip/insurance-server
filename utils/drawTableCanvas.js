@@ -24,10 +24,10 @@ function drawTableCanvas(ctx, insurances) {
     // วาดแต่ละ section
     for (const section of tableSchema) {
         // Section Header
-        ctx.strokeRect(tableX, tableY, tableWidth, rowHeight);
+        // ctx.strokeRect(tableX, tableY, tableWidth, rowHeight);
         
         ctx.font = 'bold 28px Sarabun-Bold';
-        ctx.strokeRect(tableX, tableY, tableWidth, rowHeight);
+        // ctx.strokeRect(tableX, tableY, tableWidth, rowHeight);
         ctx.fillText(section.title, tableX + 10, tableY + 28);
         tableY += rowHeight;
 
@@ -36,7 +36,7 @@ function drawTableCanvas(ctx, insurances) {
             const row = section.rows[i];
             
             // Row background
-            ctx.strokeRect(tableX, tableY, tableWidth, rowHeight);
+            // ctx.strokeRect(tableX, tableY, tableWidth, rowHeight);
             
    // label
             ctx.font = '26px Sarabun';
