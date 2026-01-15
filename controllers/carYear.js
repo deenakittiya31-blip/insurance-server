@@ -33,7 +33,7 @@ exports.list = async(req, res) => {
 
 exports.listSelect = async(req, res) => {
     try {
-        const result = await db.query('SELECT id, year_be, year_ad FROM car_year')
+        const result = await db.query('SELECT id, year_be, year_ad FROM car_year order by id desc')
          if (result.rows.length === 0) {
             return res.json({ data: [] })
         }
