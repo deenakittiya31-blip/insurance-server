@@ -38,10 +38,10 @@ async function generateJPG({ carData, insurances, qId }) {
 
     // Logos
     const logoStartX = 250;
-    const logoY = 120;
+    const logoY = 300;
     const logoSize = 40;
     for (let i = 0; i < Math.min(insurances.length, 3); i++) {
-        const x = logoStartX + (i * (logoSize + 85));
+        const x = logoStartX + (i * (logoSize + 50));
         if (insurances[i].company_logo) {
             try {
                 const img = await loadRemoteImage(insurances[i].company_logo);
