@@ -11,9 +11,9 @@ function formatNumber(value) {
 
 function drawTableCanvas(ctx, insurances) {
     const tableX = 120;
-    let tableY = 720;
+    let tableY = 715;
     const tableWidth = 2600;
-    const rowHeight = 70;
+    const rowHeight = 65;
 
     const colLabel = 800;
     const colData = (tableWidth - colLabel) / insurances.length;
@@ -65,7 +65,7 @@ function drawTableCanvas(ctx, insurances) {
                 }
 
                 ctx.textAlign = 'center';
-                ctx.fillText(value, x + 300, tableY + 28);
+                ctx.fillText(value, x + 200, tableY + 28);
             }
 
             ctx.textAlign = 'left';
