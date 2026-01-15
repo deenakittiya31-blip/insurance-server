@@ -67,7 +67,7 @@ async function generateJPG({ carData, insurances, qId }) {
 
 function drawPaymentSection(ctx, insurances, startY = 2600) {
     const startX = 950;
-    const gapX = 550;
+    const gapX = 500;
 
     ctx.textBaseline = 'top';
 
@@ -85,7 +85,7 @@ function drawPaymentSection(ctx, insurances, startY = 2600) {
         ctx.fillText('ชำระเงินสด ราคาพิเศษ :', x, startY + 45);
 
         ctx.font = '32px Sarabun';
-        ctx.fillText(`${totalText} บาท`, x, startY + 95);
+        ctx.fillText(`${totalText} บาท`, x, startY + 45); //95
     }
 }
 
@@ -126,8 +126,8 @@ function drawFooter(ctx, carData) {
 
     // Contact
     ctx.font = 'bold 30px Sarabun-Bold';
-    ctx.fillText('095-065-8887', 150, 3420);
-    ctx.fillText('@deena', 950, 3420);
+    ctx.fillText('095-065-8887', 180, 3400);
+    ctx.fillText('@deena', 950, 3400);
 }
 
 
