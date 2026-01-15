@@ -7,7 +7,7 @@ const { generateJPG } = require('../utils/generateJPG');
 
 exports.createCompare = async(req, res) => {
     try {
-        const { to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer } = req.body;
+        const { to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer, sub_car_model } = req.body;
 
         //สร้างเลข q_id
         const now = new Date()
@@ -27,16 +27,17 @@ exports.createCompare = async(req, res) => {
 
        // 1. insert พร้อมข้อมูลรถ และเอา id ออกมา
         const insertResult = await db.query(
-            'INSERT INTO quotation_compare(q_id, to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING q_id',
+            'INSERT INTO quotation_compare(q_id, to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer, sub_car_model) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING q_id',
             [
                 q_id,
                 to_name,
                 details,
                 Number(car_brand_id),
-                Number(car_model_id),
+                car_model_id ? Number(car_model_id) : null,
                 Number(car_year_id),
                 Number(car_usage_id),
-                offer
+                offer,
+                sub_car_model ?? null
             ]
         )
 
@@ -71,7 +72,7 @@ exports.getDetailCompare = async(req, res) => {
             return res.status(404).json({ msg: 'ไม่พบข้อมูล' })
         }
 
-        const result = await db.query('select qc.q_id, cb.name as car_brand, cm.name as car_model, cu.id as usageId, cu.usage_name as usage, cy.year_be, cy.year_ad from quotation_compare as qc join car_brand as cb on qc.car_brand_id = cb.id join car_model as cm on qc.car_model_id = cm.id join car_usage as cu on qc.car_usage_id = cu.id join car_year as cy on qc.car_year_id = cy.id where qc.q_id::text = $1',[id])
+        const result = await db.query('select qc.q_id, cb.name as car_brand, cm.name as car_model, qc.sub_car_model, cu.id as usageId, cu.usage_name as usage, cy.year_be, cy.year_ad from quotation_compare as qc join car_brand as cb on qc.car_brand_id = cb.id join car_model as cm on qc.car_model_id = cm.id join car_usage as cu on qc.car_usage_id = cu.id join car_year as cy on qc.car_year_id = cy.id where qc.q_id::text = $1',[id])
 
 
         console.log('ข้อมูลที่ใช้ในการดึง ocr : ',result.rows[0])
