@@ -3,6 +3,7 @@ const { generatePDF } = require('../utils/generatePDF');
 const { groupQuotationData } = require('../utils/groupQuotationData');
 const path = require('path');
 const fs = require('fs');
+const { generateJPG } = require('../utils/generateJPG');
 
 exports.createCompare = async(req, res) => {
     try {
@@ -153,46 +154,20 @@ exports.compareJPG = async(req, res) => {
         const grouped = groupQuotationData(quotationResult.rows);
         const carData = carResult.rows[0];
 
-        const tmpDir = path.join(__dirname, '../tmp');
-        const pdfPath = path.join(tmpDir, `${id}.pdf`);
-        const imageDir = path.join(tmpDir, id);
-
-        //สร้าง tmp dir ถ้ายังไม่มี
-        if (!fs.existsSync(tmpDir)) {
-            fs.mkdirSync(tmpDir, { recursive: true });
-        }
-
-        await generatePDF({
-            carData,
+        const buffer = await generateJPG({
+            carData: carResult.rows[0],
             insurances: grouped.insurances,
-            qId: id,
-            output: {
-                type: 'file',
-                path: pdfPath
-            }
+            qId: id
         });
 
-        const imagePath = await pdfToJpg(pdfPath, imageDir);
+        res.setHeader('Content-Type', 'image/jpeg');
+        res.setHeader(
+            'Content-Disposition',
+            `attachment; filename=quotation_${id}.jpg`
+        );
 
-        res.download(imagePath, `quotation_${id}.jpg`, async (err) => {
+        res.end(buffer);
 
-            // ===== cleanup =====
-            try {
-                if (fs.existsSync(pdfPath)) {
-                    fs.unlinkSync(pdfPath);
-                }
-
-                if (fs.existsSync(imageDir)) {
-                    fs.rmSync(imageDir, { recursive: true, force: true });
-                }
-            } catch (cleanupErr) {
-                console.error('Temp cleanup error:', cleanupErr);
-            }
-
-            if (err) {
-                console.error('Download error:', err);
-            }
-        });
 
     } catch (err) {
         console.log(err)

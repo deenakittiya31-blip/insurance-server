@@ -1,9 +1,10 @@
 const PDFDocument = require('pdfkit');
 const axios = require('axios');
 const path = require('path');
-const fs = require('fs');
+const { getTotalPremiumWithCompulsory } = require('./getTotalPremiumWithCompulsory');
+const tableSchema = require('./tableSchema');
 
-async function generatePDF({carData, insurances, qId, output}) {
+async function generatePDF(res, carData, insurances, qId, output) {
     const doc = new PDFDocument({
         size: 'A4',
         margin: 0,  //ต้องตั้ง margin เป็น 0 เพื่อให้รูปเต็มหน้า
@@ -11,27 +12,23 @@ async function generatePDF({carData, insurances, qId, output}) {
             Title: `ใบเสนอราคา ${qId}`,
         }
     });
-
-    if(output.type === 'stream'){ 
-        output.res.setHeader('Content-Type', 'application/pdf');
-        output.res.setHeader(
-            'Content-Disposition',
-            `attachment; filename=quotation_${qId}.pdf`
-        );
-        doc.pipe(output.res);
-    } else {
-        doc.pipe(fs.createWriteStream(output.path));
-    }
     
-    try {
-        //วางรูป Backgroundจากไฟล์ local
-        const templatePath = path.join(__dirname, '../assets/bg_qt.jpg');
-        doc.image(templatePath, 0, 0, {
-            width: 595.28, 
-            height: 841.89
-        });
 
-    // Register Thai Font (สำคัญมาก!)
+    // ===== ตั้ง header ก่อน pipe =====
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=quotation_${qId}.pdf`);
+    doc.pipe(res);
+
+    try {
+  
+    //วางรูป Backgroundจากไฟล์ local
+    const templatePath = path.join(__dirname, '../assets/bg_qt.jpg');
+    doc.image(templatePath, 0, 0, {
+        width: 595.28, 
+        height: 841.89
+    });
+
+    // Register Thai Font
         doc.registerFont(
             'THSarabun',
             path.join(__dirname, '../fonts/Sarabun-Medium.ttf')
@@ -43,67 +40,63 @@ async function generatePDF({carData, insurances, qId, output}) {
 
         doc.font('THSarabun').fillColor('#333333');
 
-            //ข้อมูลเอกสาร
-        doc.font('THSarabun-Bold')
-            .fontSize(9)
-            .fillColor('#ffffff')
-            .text(`หมายเลขใบเสนอราคา : ${qId} | ประเภท : ${carData.usage}`, 50, 67);
+            // --- ข้อมูลเอกสาร ---
+    doc.font('THSarabun-Bold')
+       .fontSize(9)
+       .fillColor('#ffffff')
+       .text(`หมายเลขใบเสนอราคา : ${qId} | ประเภท : ${carData.usage}`, 50, 67);
 
-        doc.font('THSarabun-Bold')
-            .fontSize(8)
-            .fillColor('#333333')
-            .text(`เรียน ลูกค้า : ${carData.to_name || 'คุณลูกค้า'}`, 50, 90);
+    doc.font('THSarabun-Bold')
+       .fontSize(8)
+       .fillColor('#333333')
+       .text(`เรียน ลูกค้า : ${carData.to_name || 'คุณลูกค้า'}`, 50, 90);
 
-        doc.font('THSarabun-Bold')
-            .fillColor('#333333')
-            .fontSize(8)
-            .text(`รายละเอียด : ${carData.details || '-'}`, 50, 105);
+    doc.font('THSarabun-Bold')
+       .fillColor('#333333')
+       .fontSize(8)
+       .text(`รายละเอียด : ${carData.details || '-'}`, 50, 105);
 
-        //ข้อมูลรถห่างละ 15 
-        doc.font('THSarabun-Bold')
-            .fillColor('#333333')
-            .fontSize(8)
-            .text(`ยี่ห้อรถยนต์ : ${carData.car_brand}`, 50, 120);
-        doc.font('THSarabun-Bold')
-            .fillColor('#333333')
-            .fontSize(8)
-            .text(`รุ่นรถยนต์ : ${carData.car_model}`, 50, 135);
-        doc.font('THSarabun-Bold')
-            .fillColor('#333333')
-            .fontSize(8)
-            .text(`ปีรถยนต์ : ${carData.year_ad} (พ.ศ. ${carData.year_be})`, 50, 150);
+    // --- ข้อมูลรถ --- ห่างละ 15 
+    doc.font('THSarabun-Bold')
+       .fillColor('#333333')
+       .fontSize(8)
+       .text(`ยี่ห้อรถยนต์ : ${carData.car_brand}`, 50, 120);
+    doc.font('THSarabun-Bold')
+       .fillColor('#333333')
+       .fontSize(8)
+       .text(`รุ่นรถยนต์ : ${carData.car_model}`, 50, 135);
+    doc.font('THSarabun-Bold')
+       .fillColor('#333333')
+       .fontSize(8)
+       .text(`ปีรถยนต์ : ${carData.year_ad} (พ.ศ. ${carData.year_be})`, 50, 150);
 
-        //Logo บริษัท
-        const logoStartX = 250;
-        const logoY = 120;
-        const logoSize = 40;
+     // --- Logo บริษัท ---
+    const logoStartX = 250;
+    const logoY = 120;
+    const logoSize = 40;
     
-        for (let i = 0; i < Math.min(insurances.length, 3); i++) {
-            const x = logoStartX + (i * (logoSize + 85));
-            if (insurances[i].company_logo) {
-                try {
-                    const logoBuffer = await downloadImage(insurances[i].company_logo);
-                    doc.image(logoBuffer, x, logoY, { width: logoSize, height: logoSize });
-                } catch (err) {
-                    // ถ้าโหลด logo ไม่ได้ ก็ข้ามไป
-                    console.log('Logo load failed:', err.message);
-                }
+    for (let i = 0; i < Math.min(insurances.length, 3); i++) {
+        const x = logoStartX + (i * (logoSize + 85));
+        if (insurances[i].company_logo) {
+            try {
+                const logoBuffer = await downloadImage(insurances[i].company_logo);
+                doc.image(logoBuffer, x, logoY, { width: logoSize, height: logoSize });
+            } catch (err) {
+                // ถ้าโหลด logo ไม่ได้ ก็ข้ามไป
+                console.log('Logo load failed:', err.message);
             }
         }
+    }
 
-        //ตารางข้อมูล
-        await drawTableContent(doc, insurances);
+     // --- ตารางข้อมูล ---
+    await drawTableContent(doc, insurances);
 
-        drawPaymentSection(doc, insurances, 550);
+    drawPaymentSection(doc, insurances, 550);
 
-        //Footer
-        drawFooter(doc, carData, insurances);
+    // --- Footer ---
+    drawFooter(doc, carData, insurances);
 
-        doc.end();
-
-        await new Promise(resolve => doc.on('end', resolve));
-
-        return output.type === 'file' ? output.path : true;
+    doc.end();
     } catch (err) {
         console.error('PDF generation error:', err);
         doc.end();
@@ -137,59 +130,59 @@ async function drawTableContent(doc, insurances) {
     const col1 = 150;  // Label column
     const colData = (tableWidth - col1) / insurances.length;  // Data columns
 
-    // กำหนดข้อมูลแต่ละ section
-    const sections = [
-        {
-            title: 'ข้อมูลเบี้ยประกัน',
-            rows: [
-                { label: 'บริษัทประกันภัย', key: 'insurance_company', field: 'company_name' },
-                { label: 'ประเภทประกันภัย', key: 'insurance_type' },
-                { label: 'ประเภทซ่อม', key: 'repair_type' },
-                { label: 'ชื่อเบี้ยประกันภัย', key: 'premium_code' },
-                { label: 'รหัสเบี้ยประกัน', key: 'quotation_number' },
-            ]
-        },
-        {
-            title: 'คุ้มครองรถเรา',
-            rows: [
-                { label: '  ความเสียหายต่อตัวรถยนต์', key: 'car_own_damage', format: true },
-                { label: '  รถยนต์สูญหาย ไฟไหม้', key: 'car_fire_theft', format: true },
-                { label: '  ความเสียหายส่วนแรก', key: 'car_own_damage_deductible', format: true },
-                { label: '  ', key: '', format: true },
-            ]
-        },
-        {
-            title: 'คุ้มครองคู่กรณี',
-            rows: [
-                { label: '  ความเสียหายต่อชีวิต ร่างกาย', key: 'thirdparty_injury_death_per_person', format: true },
-                { label: '  ความเสียหายต่อชีวิต ร่างกาย สูงสุด', key: 'thirdparty_injury_death_per_accident', format: true },
-                { label: '  ความเสียหายต่อทรัพย์สิน', key: 'thirdparty_property', format: true },
-            ]
-        },
-        {
-            title: 'คุ้มครองคนในรถ',
-            rows: [
-                { label: '  อุบัติเหตุส่วนบุคคล', key: 'additional_personal_permanent_driver_cover', format: true, seats: true },
-                { label: '  รักษาพยาบาล', key: 'additional_medical_expense_cover', format: true, seats: true },
-                { label: '  ประกันตัวผู้ขับขี่', key: 'additional_bail_bond', format: true },
-            ]
-        },
-        {
-            title: 'ราคาเบี้ยประกัน',
-            rows: [
-                { label: '  เบี้ยประกัน', key: 'premium_total', format: true },
-                { label: '  พรบ.', key: 'compulsory_amount', format: true },
-                {
-                    label: '  เบี้ยประกันรวม พรบ.',
-                    sumKeys: ['premium_total', 'compulsory_amount'],
-                    format: true
-                },
-            ]
-        },
-    ];
+    // // กำหนดข้อมูลแต่ละ section
+    // const sections = [
+    //     {
+    //         title: 'ข้อมูลเบี้ยประกัน',
+    //         rows: [
+    //             { label: 'บริษัทประกันภัย', key: 'insurance_company', field: 'company_name' },
+    //             { label: 'ประเภทประกันภัย', key: 'insurance_type' },
+    //             { label: 'ประเภทซ่อม', key: 'repair_type' },
+    //             { label: 'ชื่อเบี้ยประกันภัย', key: 'premium_code' },
+    //             { label: 'รหัสเบี้ยประกัน', key: 'quotation_number' },
+    //         ]
+    //     },
+    //     {
+    //         title: 'คุ้มครองรถเรา',
+    //         rows: [
+    //             { label: '  ความเสียหายต่อตัวรถยนต์', key: 'car_own_damage', format: true },
+    //             { label: '  รถยนต์สูญหาย ไฟไหม้', key: 'car_fire_theft', format: true },
+    //             { label: '  ความเสียหายส่วนแรก', key: 'car_own_damage_deductible', format: true },
+    //             { label: '  ', key: '', format: true },
+    //         ]
+    //     },
+    //     {
+    //         title: 'คุ้มครองคู่กรณี',
+    //         rows: [
+    //             { label: '  ความเสียหายต่อชีวิต ร่างกาย', key: 'thirdparty_injury_death_per_person', format: true },
+    //             { label: '  ความเสียหายต่อชีวิต ร่างกาย สูงสุด', key: 'thirdparty_injury_death_per_accident', format: true },
+    //             { label: '  ความเสียหายต่อทรัพย์สิน', key: 'thirdparty_property', format: true },
+    //         ]
+    //     },
+    //     {
+    //         title: 'คุ้มครองคนในรถ',
+    //         rows: [
+    //             { label: '  อุบัติเหตุส่วนบุคคล', key: 'additional_personal_permanent_driver_cover', format: true, seats: true },
+    //             { label: '  รักษาพยาบาล', key: 'additional_medical_expense_cover', format: true, seats: true },
+    //             { label: '  ประกันตัวผู้ขับขี่', key: 'additional_bail_bond', format: true },
+    //         ]
+    //     },
+    //     {
+    //         title: 'ราคาเบี้ยประกัน',
+    //         rows: [
+    //             { label: '  เบี้ยประกัน', key: 'premium_total', format: true },
+    //             { label: '  พรบ.', key: 'compulsory_amount', format: true },
+    //             {
+    //                 label: '  เบี้ยประกันรวม พรบ.',
+    //                 sumKeys: ['premium_total', 'compulsory_amount'],
+    //                 format: true
+    //             },
+    //         ]
+    //     },
+    // ];
 
     // วาดแต่ละ section
-    for (const section of sections) {
+    for (const section of tableSchema) {
         // Section Header
         doc.rect(tableX, tableY, tableWidth, rowHeight)
         
@@ -255,17 +248,9 @@ async function drawTableContent(doc, insurances) {
     return tableY;
 }
 
-function getTotalPremiumWithCompulsory(ins) {
-    const premium = parseFloat(ins.fields?.premium_total || 0);
-    const compulsory = parseFloat(ins.fields?.compulsory_amount || 0);
-    return premium + compulsory;
-}
-
 function drawPaymentSection(doc, insurances, startY = 600) {
     const startX = 220;
-    const gapX = 120;             // ระยะห่างระหว่างกล่อง
-
-   
+    const gapX = 120; // ระยะห่างระหว่างกล่อง
 
     for (let i = 0; i < insurances.length; i++) {
         const ins = insurances[i];
