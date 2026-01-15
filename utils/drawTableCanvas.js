@@ -13,7 +13,7 @@ function drawTableCanvas(ctx, insurances) {
     const tableX = 120;
     let tableY = 715;
     const tableWidth = 2400;
-    const rowHeight = 65;
+    const rowHeight = 60;
 
     const colLabel = 800;
     const colData = (tableWidth - colLabel) / insurances.length;
