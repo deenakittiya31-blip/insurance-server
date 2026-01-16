@@ -26,6 +26,20 @@ exports.listModel = async(req, res) => {
     }
 }
 
+exports.readModel = async(req, res) => {
+    try {
+        const { id } = req.params;
+
+        const result = await db.query(`select id, key_name, description, example_value from company_theme where company_id = $1 order by id`, [id])
+        
+        
+        res.json({data: result.rows[0]})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({msg: 'Server error'})
+    }
+}
+
 exports.removeModel = async(req, res) => {
     try {
         const {id} = req.params;
