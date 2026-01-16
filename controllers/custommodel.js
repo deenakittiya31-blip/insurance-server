@@ -33,7 +33,7 @@ exports.readModel = async(req, res) => {
         const result = await db.query(`select id, key_name, description, example_value from company_theme where company_id = $1 order by id`, [id])
         
         
-        res.json({data: result.rows[0]})
+        res.json({data: result.rows})
     } catch (err) {
         console.log(err)
         res.status(500).json({msg: 'Server error'})
