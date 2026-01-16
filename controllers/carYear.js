@@ -22,7 +22,7 @@ exports.list = async(req, res) => {
 
         const result = await db.query('SELECT id, year_be, year_ad FROM car_year order by id desc LIMIT $1 OFFSET $2', [per_page, offset])
 
-         const countResult = await db.query('SELECT COUNT(*)::int as total FROM car_year')
+        const countResult = await db.query('SELECT COUNT(*)::int as total FROM car_year')
 
         res.json({ data: result.rows, total: countResult.rows[0].total })
     } catch (err) {

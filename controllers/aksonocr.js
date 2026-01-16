@@ -7,6 +7,13 @@ exports.akson = async(req, res) => {
     try {
         const {image, company_id, compare_id, doc_id} = req.body;
 
+        //ตรวจสอบว่ามีเอกสารอยู่กี่ฉบับถ้าเกิน 3 res.status ออก
+         const quotationCheck = await db.query('select * from quotation where compare_id = $1', [compare_id])
+
+        if(quotationCheck.rows.length >= 3) {
+            return res.status(400).json({msg: 'สามารถอัปโหลดเอกสารได้ไม่เกิน 3 ฉบับ'})
+        }
+
         if (!image) {
             return res.status(400).json({
             success: false,
@@ -111,22 +118,16 @@ exports.createQuotation = async(req, res) => {
 
 exports.testdata = async(req, res) => {
     try {
-        const { company_id} = req.body;
+        const { compare_id} = req.body;
 
-        const resultCustom  = await db.query('select key_name, description, example_value from company_theme where company_id = $1',[company_id])
-        const resultAddition  = await db.query('select additional from additional_theme where company_id = $1',[company_id])
+        const quotationCheck = await db.query('select id from quotation where compare_id = $1', [compare_id])
+    
 
-        //แปลงให้ตรงกับสิ่งที่ akson ต้องการ
-        const customFields =  resultCustom.rows.map(item => ({
-            key: item.key_name,
-            description: item.description,
-            example: item.example_value
-        }))
-        
-        const additionalInstructions = resultAddition.rows[0]?.additional || ''
+        console.log(quotationCheck.rows)
 
-        console.log(additionalInstructions)
-        console.log(customFields)
+        if(quotationCheck.rows.length > 3) {
+            console.log('อัปโหลดเกินจ้ะ')
+        }
     } catch (error) {
         console.log(error)
     }
