@@ -96,7 +96,6 @@ exports.remove = async(req, res) => {
     try {
         const {id} = req.params
 
-        console.log(id)
         await db.query('DELETE FROM compulsory_insurance WHERE id = $1', [id])
 
         res.json({msg: 'ลบ พ.ร.บ. รถสำเร็จ'})

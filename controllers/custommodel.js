@@ -15,7 +15,7 @@ exports.listModel = async(req, res) => {
         const per_page = Number(req.query.per_page) || 5
         const offset = (page - 1) * per_page
 
-        const result = await db.query(`select distinct ct.company_id, ic.namecompany from company_theme as ct join insurance_company as ic on ct.company_id = ic.id LIMIT $1 OFFSET $2`, [per_page, offset])
+        const result = await db.query(`select distinct ct.company_id, ic.namecompany from company_theme as ct join insurance_company as ic on ct.company_id = ic.id ORDER BY ct.company_id LIMIT $1 OFFSET $2`, [per_page, offset])
         
         const countResult = await db.query(`select count(distinct ct.company_id) as total_company from company_theme ct join insurance_company ic on ct.company_id = ic.id;`)
 
@@ -28,7 +28,11 @@ exports.listModel = async(req, res) => {
 
 exports.removeModel = async(req, res) => {
     try {
-        console.log('updateModelFields hello')
+        const {id} = req.params;
+
+        await db.query('DELETE FROM company_theme WHERE company_id = $1', [id])
+
+        res.json({msg: 'ลบโมเดลบริษัทสำเร็จ'})
     } catch (err) {
         console.log(err)
         res.status(500).json({msg: 'Server error'})
