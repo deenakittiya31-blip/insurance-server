@@ -6,7 +6,7 @@ exports.createFieldsModel = async(req, res) => {
 
         await db.query('insert into company_theme (company_id, key_name, description, example_value) values ($1, $2, $3, $4)', 
             [
-                company_id,
+                Number(company_id),
                 key_name, 
                 description, 
                 example_value
