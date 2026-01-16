@@ -19,6 +19,40 @@ exports.createFieldsModel = async(req, res) => {
     }
 }
 
+exports.createModel = async(req, res) => {
+    const { company_id, fields } = req.body;
+
+    if (!company_id || !Array.isArray(fields) || fields.length === 0) {
+        return res.status(400).json({ msg: 'ข้อมูลไม่ครบ' })
+    }
+
+    try {
+        for (const field of fields) {
+            const { key_name, description, example_value } = field;
+
+            await db.query(
+                `insert into company_theme 
+                 (company_id, key_name, description, example_value) 
+                 values ($1, $2, $3, $4)`,
+                [
+                    Number(company_id),
+                    key_name,
+                    description,
+                    example_value
+                ]
+            );
+        }  
+
+        res.json({ 
+            success: true,
+            msg: 'สร้างโมเดลสำเร็จ'
+        })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({msg: 'Server error'})
+    }
+}
+
 exports.listModel = async(req, res) => {
     try {
         const page = Number(req.query.page) || 1
