@@ -63,6 +63,19 @@ exports.removeModel = async(req, res) => {
     }
 }
 
+exports.removeFieldModel = async(req, res) => {
+    try {
+        const {id} = req.params;
+
+        await db.query('DELETE FROM company_theme WHERE id = $1', [id])
+
+        res.json({msg: 'ลบฟิลด์ดึงข้อมูลสำเร็จ'})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({msg: 'Server error'})
+    }
+}
+
 exports.readFieldsModel = async(req, res) => {
     const {id} = req.params;
 
