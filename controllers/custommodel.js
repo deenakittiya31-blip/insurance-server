@@ -1,8 +1,18 @@
 const db = require('../config/database')
 
-exports.createModelAndFields = async(req, res) => {
+exports.createFieldsModel = async(req, res) => {
     try {
-        console.log('crate Model hello')
+        const {company_id, key_name, description, example_value} = req.body;
+
+        await db.query('insert into company_theme (company_id, key_name, description, example_value) values ($1, $2, $3, $4)', 
+            [
+                company_id,
+                key_name, 
+                description, 
+                example_value
+            ])
+
+        res.json({msg: 'เพิ่มฟิลด์ดึงข้อมูลสำเร็จ'})
     } catch (err) {
         console.log(err)
         res.status(500).json({msg: 'Server error'})
