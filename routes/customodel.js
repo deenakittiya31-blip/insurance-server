@@ -8,6 +8,6 @@ router.get('/list-model/page', authCheck, roleCheck(['admin']), listModel)
 router.get('/read-model/:id', authCheck, roleCheck(['admin']), readModel)
 router.get('/read-fieldsmodel/:id', authCheck, roleCheck(['admin']), readFieldsModel)
 router.delete('/delete-model/:id', authCheck, roleCheck(['admin']), removeModel)
-router.patch('/update-model/:id', authCheck, roleCheck(['admin']), updateModelFields)
+router.patch('/update-fieldsmodel/:id', authCheck, roleCheck(['admin']), updateModelFields)
 
 module.exports = router
