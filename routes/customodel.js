@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.post('/create-modelandfields', authCheck, roleCheck(['admin']), createModelAndFields)
 router.get('/list-model/page', authCheck, roleCheck(['admin']), listModel)
-router.get('/read-model', authCheck, roleCheck(['admin']), readModel)
+router.get('/read-model/:id', authCheck, roleCheck(['admin']), readModel)
 router.delete('/delete-model/:id', authCheck, roleCheck(['admin']), removeModel)
 router.patch('/update-model/:id', authCheck, roleCheck(['admin']), updateModelFields)
 
