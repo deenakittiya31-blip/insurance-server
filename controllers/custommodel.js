@@ -1,4 +1,5 @@
-const db = require('../config/database')
+const db = require('../config/database');
+const { dataQuotation, additional } = require('../utils/dataQuotation');
 
 exports.createFieldsModel = async(req, res) => {
     try {
@@ -20,14 +21,15 @@ exports.createFieldsModel = async(req, res) => {
 }
 
 exports.createModel = async(req, res) => {
-    const { company_id, fields } = req.body;
+    const { company_id } = req.body;
 
-    if (!company_id || !Array.isArray(fields) || fields.length === 0) {
-        return res.status(400).json({ msg: 'ข้อมูลไม่ครบ' })
+    if (!company_id) {
+        return res.status(400).json({ msg: 'company_id is required' });
     }
 
     try {
-        for (const field of fields) {
+
+        for (const field of dataQuotation) {
             const { key_name, description, example_value } = field;
 
             await db.query(
@@ -41,7 +43,9 @@ exports.createModel = async(req, res) => {
                     example_value
                 ]
             );
-        }  
+        } 
+        
+        await db.query(`insert intoadditional_theme (company_id, additional) values ($1, $2)`, [company_id, additional])
 
         res.json({ 
             success: true,
