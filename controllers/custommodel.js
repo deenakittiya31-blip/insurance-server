@@ -80,7 +80,7 @@ exports.readModel = async(req, res) => {
 
         const result = await db.query(`select id, key_name, description, example_value from company_theme where company_id = $1 order by id`, [id])
 
-        const additional = await db.query(`select additional from additional_theme where company_id = $1`, [id])
+        const additional = await db.query(`select id, additional from additional_theme where company_id = $1`, [id])
         
         
         res.json({data: result.rows, additional: additional.rows[0]})
