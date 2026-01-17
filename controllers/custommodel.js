@@ -45,7 +45,7 @@ exports.createModel = async(req, res) => {
             );
         } 
         
-        await db.query(`insert intoadditional_theme (company_id, additional) values ($1, $2)`, [company_id, additional])
+        await db.query(`insert into additional_theme (company_id, additional) values ($1, $2)`, [company_id, additional])
 
         res.json({ 
             success: true,
