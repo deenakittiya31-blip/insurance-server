@@ -79,9 +79,11 @@ exports.readModel = async(req, res) => {
         const { id } = req.params;
 
         const result = await db.query(`select id, key_name, description, example_value from company_theme where company_id = $1 order by id`, [id])
+
+        const additional = await db.query(`select additional from additional_theme where company_id = $1`, [id])
         
         
-        res.json({data: result.rows})
+        res.json({data: result.rows, additional: additional.rows[0]})
     } catch (err) {
         console.log(err)
         res.status(500).json({msg: 'Server error'})
@@ -128,8 +130,9 @@ exports.readFieldsModel = async(req, res) => {
 }
 
 exports.updateModelFields = async(req, res) => {
-            const {id} = req.params;
-            const {key_name, description, example_value} = req.body;
+    const {id} = req.params;
+    const {key_name, description, example_value} = req.body;
+
     try {
         await db.query('update company_theme set key_name = coalesce($1, key_name), description = coalesce($2, description), example_value = coalesce($3, example_value) where id = $4',
             [
@@ -140,6 +143,24 @@ exports.updateModelFields = async(req, res) => {
             ]
         )
         res.json({msg: 'แก้ไขฟิลด์ข้อมูลสำเร็จ'})  
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({msg: 'Server error'})
+    }
+}
+
+exports.updateAdditional = async(req, res) => {
+    const {id} = req.params;
+    const {additional} = req.body;
+
+    try {
+        await db.query('update additional_theme set additional = coalesce($1, additional) where id = $2',
+            [
+                additional ?? null,
+                id
+            ]
+        )
+        res.json({msg: 'แก้ไขข้อมูลคำแนะนำเพิ่มเติมสำเร็จ'})  
     } catch (err) {
         console.log(err)
         res.status(500).json({msg: 'Server error'})
