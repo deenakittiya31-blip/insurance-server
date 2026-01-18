@@ -4,7 +4,7 @@ const { removeQuotation, createQuotationFields, createFields, readQuotationField
 const router = express.Router();
 
 router.post('/create-quotation/fields', authCheck, roleCheck(['admin']), createQuotationFields)
-router.get('/read-quotation/fields', authCheck, roleCheck(['admin']), readQuotationFields)
+router.get('/read-quotation/fields/:id', authCheck, roleCheck(['admin']), readQuotationFields)
 router.put('/update-quotation/fields', authCheck, roleCheck(['admin']), updateQuotationField)
 //สำหรับสร้าง quotation และ fields แบบ key-in
 router.post('/create-quotationandfields', authCheck, roleCheck(['admin']), createFields)
