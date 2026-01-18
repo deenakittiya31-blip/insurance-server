@@ -3,12 +3,18 @@ const db = require('../config/database')
 //สร้างข้อมูลในตาราง quotation_fields
 exports.createQuotationFields = async(req, res) => {
     const { quotation_id, fields } = req.body
-
-    if (!quotation_id || !fields) {
-        return res.status(400).json({ message: 'ข้อมูลไม่ครบ' })
-    }
-
     try {
+        if (!quotation_id || !fields) {
+            return res.status(400).json({ message: 'ข้อมูลไม่ครบ' })
+        }
+
+        //เช็คว่ามี quotation_id นี้มีอยู่ในฐานข้อมูลไหม ถ้ามีให้ลบแล้วเพิ่มใหม่
+        const check = await db.query('select id from quotation_field where quotation_id = $1', [quotation_id])
+
+        if(check.rowCount > 0) {
+            await db.query('delete from quotation_field where quotation_id = $1', quotation_id)
+        }
+
         for (const [field_code, field_value] of Object.entries(fields)) {
             if (!field_value) continue
 
