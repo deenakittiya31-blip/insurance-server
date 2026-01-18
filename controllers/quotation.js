@@ -1,5 +1,6 @@
 const db = require('../config/database')
 
+//สร้างข้อมูลในตาราง quotation_fields
 exports.createQuotationFields = async(req, res) => {
     const { quotation_id, fields } = req.body
 
@@ -30,6 +31,7 @@ exports.createQuotationFields = async(req, res) => {
     }
 }
 
+//สร้างข้อมูลที่ตาราง quotation พร้อมกับบันทึกข้อมูลที่ได้จากการ key-in
 exports.createFields = async(req, res) => {
     const { compare_id, company_id, fields, doc_id } = req.body
 
@@ -80,6 +82,33 @@ exports.removeQuotation = async(req, res) => {
         await db.query('DELETE FROM quotation WHERE id = $1', [id])
 
         res.json({ success: true })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({msg: 'Server error'})
+    }
+}
+
+exports.readQuotationFields = async(req, res) => {
+    try {
+        const { id } = req.params;
+
+        const result = await db.query(`select id as fieldId,  field_code, field_value from quotation_field where quotation_id = $1 order by id asc`, [id])
+
+         res.json({data: result.rows})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({msg: 'Server error'})
+    }
+}
+
+exports.updateQuotationField = async(req, res) => {
+    try {
+        const { id } = req.params;
+        const { field_value } = req.body;
+
+        await db.query(`update quotation_field set field_value = coalesce($1, field_value) where id = $2`, [field_value, id])
+
+        res.json({msg: 'แก้ไขข้อมูลสำเร็จ'})  
     } catch (err) {
         console.log(err)
         res.status(500).json({msg: 'Server error'})

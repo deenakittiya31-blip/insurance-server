@@ -116,20 +116,4 @@ exports.createQuotation = async(req, res) => {
     }
 }
 
-exports.testdata = async(req, res) => {
-    try {
-        const { compare_id} = req.body;
-
-        const quotationCheck = await db.query('select id from quotation where compare_id = $1', [compare_id])
-    
-
-        console.log(quotationCheck.rows)
-
-        if(quotationCheck.rows.length > 3) {
-            console.log('อัปโหลดเกินจ้ะ')
-        }
-    } catch (error) {
-        console.log(error)
-    }
-}
 
