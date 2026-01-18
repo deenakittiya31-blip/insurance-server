@@ -136,7 +136,7 @@ async function drawTableContent(doc, insurances) {
         doc.rect(tableX, tableY, tableWidth, rowHeight)
         
         doc.fontSize(9)
-           .font('THSarabun-Bold')
+           .font('THSarabun')
            .fillColor('#000000')
 
         doc.text(section.title, tableX + 5, tableY + 5, { width: col1 - 10 }); ////tableY + 5

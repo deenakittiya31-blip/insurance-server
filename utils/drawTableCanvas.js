@@ -25,7 +25,7 @@ function drawTableCanvas(ctx, insurances) {
     // วาดแต่ละ section
     for (const section of tableSchema) {
         // Section Header       
-        ctx.font = 'bold 34px Sarabun-Bold';
+        ctx.font = '32px Sarabun';
         ctx.fillText(section.title, tableX + 10, tableY + 28);
         tableY += rowHeight;
 
