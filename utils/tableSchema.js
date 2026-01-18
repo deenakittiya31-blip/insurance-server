@@ -15,7 +15,7 @@ module.exports = [
                 { label: '  ความเสียหายต่อตัวรถยนต์', key: 'car_own_damage', format: true },
                 { label: '  รถยนต์สูญหาย ไฟไหม้', key: 'car_fire_theft', format: true },
                 { label: '  ความเสียหายส่วนแรก', key: 'car_own_damage_deductible', format: true },
-                { label: '  ', key: '', format: true },
+                { label: '-', key: '', format: true },
             ]
         },
         {
