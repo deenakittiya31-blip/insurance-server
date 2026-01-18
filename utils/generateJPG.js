@@ -41,7 +41,7 @@ async function generateJPG({ carData, insurances, qId }) {
 
     // Logos
     const logoStartX = 1080;
-    const logoY = 400;
+    const logoY = 540;
     const logoSize = 150;
     for (let i = 0; i < Math.min(insurances.length, 3); i++) {
         const x = logoStartX + (i * (logoSize + 400));

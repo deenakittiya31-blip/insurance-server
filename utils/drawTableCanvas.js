@@ -11,9 +11,9 @@ function formatNumber(value) {
 
 function drawTableCanvas(ctx, insurances) {
     const tableX = 120;
-    let tableY = 710;
+    let tableY = 708;
     const tableWidth = 2400;
-    const rowHeight = 65;
+    const rowHeight = 63;
 
     const colLabel = 800;
     const colData = (tableWidth - colLabel) / insurances.length;

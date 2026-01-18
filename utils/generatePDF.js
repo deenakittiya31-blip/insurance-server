@@ -122,9 +122,9 @@ function formatNumber(value) {
 
 async function drawTableContent(doc, insurances) {
     const tableX = 30;
-    let tableY = 165;
+    let tableY = 163;
     const tableWidth = 515;
-    const rowHeight = 15;
+    const rowHeight = 16;
 
     // Column widths
     const col1 = 150;  // Label column
