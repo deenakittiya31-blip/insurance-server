@@ -6,6 +6,5 @@ const router = express.Router()
 //อันนี้เป็นแบบสร้าง quotation พร้อม ocr
 router.post('/akson', authCheck, roleCheck(['admin']), akson)
 router.post('/quotation', authCheck, roleCheck(['admin']), createQuotation)
-router.get('/data', testdata)
 
 module.exports = router
