@@ -124,7 +124,7 @@ async function drawTableContent(doc, insurances) {
     const tableX = 30;
     let tableY = 163; //165
     const tableWidth = 515;
-    const rowHeight = 15.5;
+    const rowHeight = 16;// 15
 
     // Column widths
     const col1 = 150;  // Label column
@@ -154,7 +154,7 @@ async function drawTableContent(doc, insurances) {
                .font('THSarabun')
                .fillColor('#000000')
             
-            doc.text(row.label, tableX + 5, tableY + 5, { width: col1 - 10 }); //tableY + 7
+            doc.text(row.label, tableX + 5, tableY + 4.5, { width: col1 - 10 }); //tableY + 7
 
             // Values for each company
             for (let j = 0; j < insurances.length; j++) {
