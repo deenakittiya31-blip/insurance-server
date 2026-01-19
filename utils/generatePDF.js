@@ -124,7 +124,7 @@ async function drawTableContent(doc, insurances) {
     const tableX = 30;
     let tableY = 163; //165
     const tableWidth = 515;
-    const rowHeight = 15;
+    const rowHeight = 15.5;
 
     // Column widths
     const col1 = 150;  // Label column
