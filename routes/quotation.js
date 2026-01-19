@@ -1,6 +1,6 @@
 const express = require('express')
 const { authCheck, roleCheck } = require('../middleware/authCheck');
-const { removeQuotation, createQuotationFields, createFields, readQuotationFields, updateQuotationField } = require('../controllers/quotation');
+const { removeQuotation, createQuotationFields, createFields } = require('../controllers/quotation');
 const router = express.Router();
 
 router.post('/create-quotation/fields', authCheck, roleCheck(['admin']), createQuotationFields)

@@ -1,9 +1,19 @@
 const db = require('../config/database');
 const { dataQuotation, additional } = require('../utils/dataQuotation');
 
+//ต้องไปเช็คที่ main_field ก่อนว่ามีไหมถ้าไม่ให้เพิ่มเข้าไปด้วยก่อนเพิ่มเข้าตาราง company_theme
 exports.createFieldsModel = async(req, res) => {
     try {
         const {company_id, key_name, description, example_value} = req.body;
+
+        const haveMainField = await db.query(`select field_code from main_fields where field_code ILIKE '%' || $1 || '%'`, [key_name])
+
+        if(haveMainField.rowCount === 0) {
+            await db.query('insert into main_fields (field_code, field_name, description) values ($1, $2, $3)', 
+                [
+                    key_name, description, example_value
+                ])
+        }
 
         await db.query('insert into company_theme (company_id, key_name, description, example_value) values ($1, $2, $3, $4)', 
             [
