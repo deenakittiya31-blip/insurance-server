@@ -12,7 +12,7 @@ exports.createQuotationFields = async(req, res) => {
         const check = await db.query('select id from quotation_field where quotation_id = $1', [quotation_id])
 
         if(check.rowCount > 0) {
-            await db.query('delete from quotation_field where quotation_id = $1', quotation_id)
+            await db.query('delete from quotation_field where quotation_id = $1', [quotation_id])
         }
 
         for (const [field_code, field_value] of Object.entries(fields)) {
@@ -85,36 +85,15 @@ exports.removeQuotation = async(req, res) => {
     try {
         const {id} = req.params
 
-        await db.query('DELETE FROM quotation WHERE id = $1', [id])
+        const check = await db.query('select id from quotation_field where quotation_id = $1', [id])
+
+        if(check.rowCount > 0) {
+            await db.query('delete from quotation_field where quotation_id = $1', [id])
+        }
+
+        await db.query('delete from quotation where id = $1', [id])
 
         res.json({ success: true })
-    } catch (err) {
-        console.log(err)
-        res.status(500).json({msg: 'Server error'})
-    }
-}
-
-exports.readQuotationFields = async(req, res) => {
-    try {
-        const { id } = req.params;
-
-        const result = await db.query(`select id as fieldId,  field_code, field_value from quotation_field where quotation_id = $1 order by id asc`, [id])
-
-         res.json({data: result.rows})
-    } catch (err) {
-        console.log(err)
-        res.status(500).json({msg: 'Server error'})
-    }
-}
-
-exports.updateQuotationField = async(req, res) => {
-    try {
-        const { id } = req.params;
-        const { field_value } = req.body;
-
-        await db.query(`update quotation_field set field_value = coalesce($1, field_value) where id = $2`, [field_value, id])
-
-        res.json({msg: 'แก้ไขข้อมูลสำเร็จ'})  
     } catch (err) {
         console.log(err)
         res.status(500).json({msg: 'Server error'})
