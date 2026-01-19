@@ -12,7 +12,7 @@ exports.createQuotationFields = async(req, res) => {
         const check = await db.query('select id from quotation_field where quotation_id = $1', [quotation_id])
 
         if(check.rowCount > 0) {
-            await db.query('delete from quotation_field where quotation_id = $1', [quotation_id])
+            await db.query('delete from quotation_field where quotation_id = $1', quotation_id)
         }
 
         for (const [field_code, field_value] of Object.entries(fields)) {
@@ -73,6 +73,7 @@ exports.createFields = async(req, res) => {
         
         res.json({ 
             success: true,
+            quotationId: quotation_id,
             msg: 'บันทึกสำเร็จ'
         })
     } catch (err) {
