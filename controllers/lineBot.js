@@ -13,27 +13,20 @@ exports.lineBotReply = async(req, res) => {
 
     try {
        if(event.type === 'follow') {
-            const replyToken = event.replyToken
-
-            const welcomeMessage = {
-                type: 'text',
-                text: `สวัสดีค่ะ! ยินดีต้อนรับสู่ deena สามารถกดปุ่มด้านล่างเพื่อลงทะเบียนได้เลยค่ะ :)`,
-                quickReply: {
-                    items: [
-                        {
-                            type: 'action',
-                            action: {
-                                type: 'uri',
-                                label: 'ลงทะเบียนสมาชิก',
-                                uri: 'https://liff.line.me/2008929214-oMQadweJ'
-                            }
-                        }
-                    ]
-                }
-            }
-            await reply(replyToken, welcomeMessage)
-            return
+            await sendRegisterButton(event.replyToken)
        }
+
+        //ผู้ใช้พิมพ์ขอสมัครเอง
+        if (event.type === 'message' && event.message.type === 'text') {
+            const text = event.message.text
+
+            if (
+                text.includes('สมัคร') ||
+                text.includes('ลงทะเบียน')
+            ) {
+                await sendRegisterButton(event.replyToken)
+            }
+        }
 
        //ถ้าเป็น message ปกติ
        if(event.type === 'message' && event.message.type === 'text') {
@@ -64,4 +57,25 @@ const reply = async(replyToken, msgObj) => {
         }
     )
 };
+
+const sendRegisterButton = async (replyToken) => {
+    const message = {
+        type: 'text',
+        text: 'กรุณากดปุ่มด้านล่างเพื่อลงทะเบียนเป็นสมาชิกค่ะ 😊',
+        quickReply: {
+            items: [
+                {
+                    type: 'action',
+                    action: {
+                        type: 'uri',
+                        label: 'ลงทะเบียนสมาชิก',
+                        uri: 'https://liff.line.me/2008929214-oMQadweJ'
+                    }
+                }
+            ]
+        }
+    }
+
+    await reply(replyToken, message)
+}
 
