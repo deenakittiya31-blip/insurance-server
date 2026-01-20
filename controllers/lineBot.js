@@ -7,6 +7,8 @@ const LINE_HEADER = {
 };
 
 exports.lineBotReply = async(req, res) => {
+    res.sendStatus(200)
+    
     try {
         if (req.method === "POST"){
             await reply(req.body);
