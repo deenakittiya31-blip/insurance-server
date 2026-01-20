@@ -12,29 +12,39 @@ exports.lineBotReply = async(req, res) => {
     if(!event) return
 
     try {
-       if(event.type === 'message' && event.message.type === 'text') {
-            const userMessage = event.message.text //ข้อความที่ผู้ใช้พิมพ์มา
+       if(event.type === 'follow') {
             const replyToken = event.replyToken
 
-            if(userMessage.includes('สวัสดี')) {
-                const quickReplyMessage = {
-                    type: 'text',
-                    text: `สวัสดีค่ะ! ยินดีต้อนรับสู่ deena  สามารถเลือกปุ่มด้านล่างเพื่อสอบถามข้อมูลเบี้ยประกันได้เลยค่ะ :)`,
-                    quickReply: {
-                        items: [
-                            {
-                                type: 'action',
-                                action: {
-                                    type: 'uri',
-                                    label: 'ลงทะเบียนเพื่อรับข้อมูล',
-                                    uri: 'https://insuurance-client.vercel.app'
-                                }
+            const welcomeMessage = {
+                type: 'text',
+                text: `สวัสดีค่ะ! ยินดีต้อนรับสู่ deena สามารถกดปุ่มด้านล่างเพื่อลงทะเบียนได้เลยค่ะ :)`,
+                quickReply: {
+                    items: [
+                        {
+                            type: 'action',
+                            action: {
+                                type: 'uri',
+                                label: 'ลงทะเบียนสมาชิก',
+                                uri: 'https://liff.line.me/2008929214-oMQadweJ'
                             }
-                        ]
-                    }
+                        }
+                    ]
                 }
+            }
+            await reply(replyToken, welcomeMessage)
+            return
+       }
 
-                 await reply(replyToken, quickReplyMessage)
+       //ถ้าเป็น message ปกติ
+       if(event.type === 'message' && event.message.type === 'text') {
+            const userMessage = event.message.text
+            const replyToken = event.replyToken
+
+            if (userMessage.includes('สวัสดี')) {
+                await reply(replyToken, {
+                    type: 'text',
+                    text: 'สวัสดีค่ะ 😊'
+                })
             }
        }
     } catch (err) {
