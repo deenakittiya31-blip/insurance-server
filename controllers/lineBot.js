@@ -21,6 +21,7 @@ exports.lineBotReply = async(req, res) => {
 }
 
 const reply = async(bodyResponse) => {
+console.log('line log', LINE_HEADER)
   return axios.post(LINE_MESSAGING_API, 
         { 
             replyToken: bodyResponse.events[0].replyToken, 
