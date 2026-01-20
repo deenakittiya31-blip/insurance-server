@@ -1,4 +1,3 @@
-const request = require("request-");
 const axios = require('axios');
 
 const LINE_MESSAGING_API = "https://api.line.me/v2/bot/message/reply";
