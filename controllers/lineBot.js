@@ -6,7 +6,7 @@ const LINE_HEADER = {
   Authorization: `Bearer ${process.env.CHANNEL_ACCESS_TOKEN}`
 };
 
-exports.lineBotReply = async(req, res) => {
+exports.lineBotReply = async(req, res, e) => {
     res.sendStatus(200)
     let contents = JSON.parse(e.postData.contents);
     let event = contents.events[0];
