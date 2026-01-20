@@ -24,7 +24,12 @@ const reply = async(bodyResponse) => {
   return axios.post(LINE_MESSAGING_API, 
         { 
             replyToken: bodyResponse.events[0].replyToken, 
-            messages: [{ type: text, text: JSON.stringify(bodyResponse) }] 
+            messages: [
+                { 
+                    type: 'text', 
+                    text: JSON.stringify(bodyResponse) 
+                }
+            ] 
         }, 
         { 
             headers: LINE_HEADER 
