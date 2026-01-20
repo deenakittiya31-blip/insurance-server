@@ -6,22 +6,22 @@ const LINE_HEADER = {
   Authorization: `Bearer ${process.env.CHANNEL_ACCESS_TOKEN}`
 };
 
-exports.lineBotReply = async(req, res, e) => {
+exports.lineBotReply = async(req, res) => {
     res.sendStatus(200)
-    let contents = JSON.parse(e.postData.contents);
-    let event = contents.events[0];
+    const event = req.body.events?.[0]
+    if(!event) return
 
     try {
-       if(event.typ === 'message' && event.message.type === 'text') {
-            let userMessage = event.message.text //ข้อความที่ผู้ใช้พิมพ์มา
-            let replyToken = event.replyToken
+       if(event.type === 'message' && event.message.type === 'text') {
+            const userMessage = event.message.text //ข้อความที่ผู้ใช้พิมพ์มา
+            const replyToken = event.replyToken
 
             if(userMessage.includes('สวัสดี')) {
-                let quickReplyMessage = {
+                const quickReplyMessage = {
                     type: 'text',
                     text: `สวัสดีค่ะ! ยินดีต้อนรับสู่ deena  สามารถเลือกปุ่มด้านล่างเพื่อสอบถามข้อมูลเบี้ยประกันได้เลยค่ะ :)`,
                     quickReply: {
-                        item: [
+                        items: [
                             {
                                 type: 'action',
                                 action: {
