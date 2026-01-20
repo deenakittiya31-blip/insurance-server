@@ -28,7 +28,7 @@ const reply = async(bodyResponse) => {
             replyToken: bodyResponse.events[0].replyToken, 
             messages: [
                 { 
-                    type: 'image', 
+                    type: 'text', 
                     text: JSON.stringify(bodyResponse) 
                 }
             ] 
