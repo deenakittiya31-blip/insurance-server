@@ -8,7 +8,7 @@ const LINE_HEADER = {
 
 exports.lineBotReply = async(req, res) => {
     res.sendStatus(200)
-    
+
     try {
         if (req.method === "POST"){
             await reply(req.body);
@@ -23,13 +23,12 @@ exports.lineBotReply = async(req, res) => {
 }
 
 const reply = async(bodyResponse) => {
-console.log('line log', LINE_HEADER)
   return axios.post(LINE_MESSAGING_API, 
         { 
             replyToken: bodyResponse.events[0].replyToken, 
             messages: [
                 { 
-                    type: 'text', 
+                    type: 'image', 
                     text: JSON.stringify(bodyResponse) 
                 }
             ] 
