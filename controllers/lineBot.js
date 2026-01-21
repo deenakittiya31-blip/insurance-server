@@ -85,7 +85,7 @@ exports.lineBotReply = async(req, res) => {
 }
 
 const reply = async(replyToken, msgObj) => {
-  return axios.post(LINE_MESSAGING_API, 
+  const res = await axios.post(LINE_MESSAGING_API, 
         { 
             replyToken: replyToken, 
             messages: [msgObj] 
@@ -94,6 +94,8 @@ const reply = async(replyToken, msgObj) => {
             headers: LINE_HEADER 
         }
     )
+    console.log('LINE reply success')
+    return res
 };
 
 const sendRegisterButton = async (replyToken) => {
