@@ -1,8 +1,9 @@
 const express = require('express');
 const { registerMember, listMember } = require('../controllers/member');
-const roter = express.Router();
+const { authCheck, roleCheck } = require('../middleware/authCheck');
+const router = express.Router();
 
-roter.post('/register-member', registerMember)
-roter.get('/list-member', listMember)
+router.post('/register-member', registerMember)
+router.get('/list-member', authCheck , roleCheck, listMember)
 
-module.exports = roter
+module.exports = router
