@@ -9,6 +9,7 @@ const LINE_HEADER = {
 
 exports.lineBotReply = async(req, res) => {
     res.sendStatus(200)
+    console.log('is work start')
     const event = req.body.events?.[0]
     if(!event) return
 
@@ -44,7 +45,7 @@ exports.lineBotReply = async(req, res) => {
 
                 //ไม่พบ user
                 if(result.rowCount === 0) {
-                    console.log('ทำงาน')
+                    console.log('ทำงาน ก่อนทำบันทึกลงฐาน')
                     await db.query(`
                         INSERT INTO member (user_id, is_friend, is_registered)
                         VALUES ($1, true, false)
@@ -69,7 +70,7 @@ exports.lineBotReply = async(req, res) => {
             }
 
             if (text.includes('สวัสดี')) {
-                console.log('ทำงาน')
+                console.log('ทำงาน สวัสดี')
                 await reply(replyToken, {
                     type: 'text',
                     text: 'สวัสดีค่ะ ติดต่อเรื่องอะไรคะ'
