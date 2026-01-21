@@ -26,7 +26,7 @@ exports.registerMember = async(req, res) => {
         )
 
          // ส่ง Flex Message ต้อนรับ
-        await pushWelcomeFlex(user_id, first_name)
+        await pushWelcomeFlex(user_id, display_name)
 
         res.json({ success: true })
     } catch (err) {
