@@ -66,6 +66,7 @@ exports.lineBotReply = async(req, res) => {
             }
 
             if (text.includes('สวัสดี')) {
+                console.log('ทำงาน')
                 await reply(replyToken, {
                     type: 'text',
                     text: 'สวัสดีค่ะ ติดต่อเรื่องอะไรคะ'
