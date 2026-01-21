@@ -37,7 +37,7 @@ exports.registerMember = async(req, res) => {
 
 exports.listMember = async(req, res) => {
     try {
-        const result = await db.query('select * from member order by asc')
+        const result = await db.query('select * from member order by id asc')
 
         res.json({data: result.rows})
     } catch (err) {
