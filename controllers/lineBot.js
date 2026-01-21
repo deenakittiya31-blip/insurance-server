@@ -7,6 +7,7 @@ const LINE_HEADER = {
 };
 
 exports.lineBotReply = async(req, res) => {
+    console.log('WEBHOOK HIT', JSON.stringify(req.body))
     res.sendStatus(200)
     const event = req.body.events?.[0]
     if(!event) return
