@@ -8,10 +8,12 @@ const LINE_HEADER = {
 };
 
 exports.lineBotReply = async(req, res) => {
-    res.sendStatus(200)
     console.log('is work start')
+    console.log('TOKEN:', process.env.CHANNEL_ACCESS_TOKEN)
     const event = req.body.events?.[0]
-    if(!event) return
+    if (!event) {
+      return res.sendStatus(200)
+    }
 
     try {
        if(event.type === 'follow') {
@@ -79,7 +81,7 @@ exports.lineBotReply = async(req, res) => {
             return
             }
         }
-
+    res.sendStatus(200)
     } catch (err) {
         console.error(err.response?.data || err.message)
     }
