@@ -34,3 +34,14 @@ exports.registerMember = async(req, res) => {
         res.status(500).json({message: 'Server error'})
     }
 }
+
+exports.listMember = async(req, res) => {
+    try {
+        const result = await db.query('select * from member order by asc')
+
+        res.json({data: result.rows})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({ message: 'Server error'})
+    }
+}
