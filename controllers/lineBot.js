@@ -45,10 +45,12 @@ exports.lineBotReply = async(req, res) => {
                 //ไม่พบ user
                 if(result.rowCount === 0) {
                     console.log('ทำงาน')
-                   await reply(replyToken, {
-                        type: 'text',
-                        text: 'กรุณาเพิ่มเพื่อนก่อนนะคะ 😊'
-                    })
+                    await db.query(`
+                        INSERT INTO member (user_id, is_friend, is_registered)
+                        VALUES ($1, true, false)
+                    `, [userId])
+
+                    await sendRegisterButton(replyToken)
                     return
                 }
 
