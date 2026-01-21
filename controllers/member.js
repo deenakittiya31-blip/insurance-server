@@ -1,9 +1,9 @@
 const db = require('../config/database');
-const { pushWelcomeFlex } = require('../services/lineService');
+const { pushWelcomeFlex, sendImage } = require('../services/lineService');
 
 exports.registerMember = async(req, res) => {
     try {
-        const { first_name, last_name, phone, display_name, picture_url } = req.body;
+        const { user_id, first_name, last_name, phone, display_name, picture_url } = req.body;
 
         if(!user_id || !phone){
             return res.status(400).json({message: 'ข้อมูลไม่ถูกต้อง'})
@@ -42,5 +42,24 @@ exports.listMember = async(req, res) => {
     } catch (err) {
         console.log(err)
         res.status(500).json({ message: 'Server error'})
+    }
+}
+
+exports.sendImageToMember = async(req, res) => {
+    try {
+        const { members, imageUrl  } = req.body;
+
+        if (!Array.isArray(members)) {
+            return res.status(400).json({ message: 'member ต้องเป็น array' })
+        }
+
+        for(const userId of members) {
+            await sendImage(userId, imageUrl )
+        }
+
+        res.json({msg: 'ส่งแล้ว'})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'Server error'})
     }
 }
