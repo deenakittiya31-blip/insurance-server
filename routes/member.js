@@ -4,6 +4,6 @@ const { authCheck, roleCheck } = require('../middleware/authCheck');
 const router = express.Router();
 
 router.post('/register-member', registerMember)
-router.get('/list-member', authCheck , roleCheck, listMember)
+router.get('/list-member', authCheck , roleCheck(['admin']), listMember)
 
 module.exports = router
