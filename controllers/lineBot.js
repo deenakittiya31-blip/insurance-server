@@ -70,11 +70,12 @@ exports.lineBotReply = async(req, res) => {
             }
 
             if (text.includes('สวัสดี')) {
-                console.log('ทำงาน สวัสดี')
+                console.log('before reply')
                 await reply(replyToken, {
                     type: 'text',
-                    text: 'สวัสดีค่ะ ติดต่อเรื่องอะไรคะ'
+                    text: 'ทดสอบค่ะ'
                 })
+                console.log('after reply')
             return
             }
         }
