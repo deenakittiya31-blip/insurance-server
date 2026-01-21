@@ -6,7 +6,7 @@ const LINE_HEADER = {
   Authorization: `Bearer ${process.env.CHANNEL_ACCESS_TOKEN}`
 };
 
-exports.pushWelcomeFlex = async(userId, display_name) => {
+exports.pushWelcomeFlex = async(userId, display_name, picture_url) => {
     return axios.post(LINE_PUSH_API,
         {
             to: userId,
@@ -18,9 +18,9 @@ exports.pushWelcomeFlex = async(userId, display_name) => {
                         type: 'bubble',
                         hero: {
                             type: "image",
-                            url: "https://scdn.line-apps.com/n/channel_devcenter/img/fx/01_1_cafe.png",
+                            url: "https://pbs.twimg.com/media/G_K0JVpbMAEVCo9?format=png&name=small",
                             size: "full",
-                            aspectRatio: "20:13",
+                            aspectRatio: "9:8",
                             aspectMode: "cover"
                         },
                         body: {
@@ -37,7 +37,7 @@ exports.pushWelcomeFlex = async(userId, display_name) => {
                                             contents: [
                                                 {
                                                     type: "image",
-                                                    url: "https://i.pinimg.com/736x/51/eb/5d/51eb5df04c52796463cb147b5c8e5bd0.jpg",
+                                                    url: `${picture_url}`,
                                                     aspectMode: "cover",
                                                     size: "full"
                                                 }
