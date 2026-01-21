@@ -1,4 +1,5 @@
 const axios = require('axios');
+const db = require('../config/database')
 
 const LINE_MESSAGING_API = "https://api.line.me/v2/bot/message/reply";
 const LINE_HEADER = {
@@ -7,46 +8,74 @@ const LINE_HEADER = {
 };
 
 exports.lineBotReply = async(req, res) => {
-    console.log('WEBHOOK HIT', JSON.stringify(req.body))
     res.sendStatus(200)
     const event = req.body.events?.[0]
     if(!event) return
 
     try {
        if(event.type === 'follow') {
-            await sendRegisterButton(event.replyToken)
+            const userId = event.source.userId
+            const replyToken = event.replyToken
+
+            //ยังไม่ลงทะเบียน
+            await db.query(`
+                    INSERT INTO member (user_id, is_friend, is_registered)
+                    VALUES ($1, true, false)
+                    ON CONFLICT (user_id) DO UPDATE
+                    SET is_friend = true
+                    `, [userId])
+
+            await reply(replyToken, {
+                    type: 'text',
+                    text: `สวัสดีค่ะ ☺️ หากต้องการลงทะเบียนเป็นสมาชิกพิมพ์คำว่า 'สมัคร' หรือ 'ลงทะเบียน' ได้เลยค่ะ`
+                })
             return
        }
 
-        //ผู้ใช้พิมพ์ขอสมัครเอง
+        //ผู้ใช้ส่ง text มา
         if (event.type === 'message' && event.message.type === 'text') {
-            const text = event.message.text
+            const text = event.message.text.trim()
+            const replyToken = event.replyToken
+            const userId = event.source.userId
 
-            if (
-                text.includes('สมัคร') ||
-                text.includes('ลงทะเบียน')
-            ) {
-                await sendRegisterButton(event.replyToken)
+            if (/สมัคร|ลงทะเบียน/.test(text)) {
+
+                const result = await db.query(`select is_registered from member where user_id = $1`, [userId])
+
+                //ไม่พบ user
+                if(result.rowCount === 0) {
+                   await reply(replyToken, {
+                        type: 'text',
+                        text: 'กรุณาเพิ่มเพื่อนก่อนนะคะ 😊'
+                    })
+                    return
+                }
+
+                 //ถ้าลงทะเบียนแล้ว
+                if (result.rows[0].is_registered) {
+                    await reply(replyToken, {
+                        type: 'text',
+                        text: 'คุณเป็นสมาชิกอยู่แล้วค่ะ 😊'
+                    })
+                    return
+                }  
+                
+                //ยังไม่ลงทะเบียนให้ส่ง LIFF ไปให้
+                await sendRegisterButton(replyToken)
                 return
             }
-        }
 
-       //ถ้าเป็น message ปกติ
-       if(event.type === 'message' && event.message.type === 'text') {
-            const userMessage = event.message.text
-            const replyToken = event.replyToken
-
-            if (userMessage.includes('สวัสดี')) {
+            if (text.includes('สวัสดี')) {
                 await reply(replyToken, {
                     type: 'text',
-                    text: 'ติดต่อเรื่องอะไรค่ะ'
+                    text: 'สวัสดีค่ะ ติดต่อเรื่องอะไรคะ'
                 })
             return
             }
-       }
+        }
+
     } catch (err) {
         console.error(err.response?.data || err.message)
-        // res.status(500).send('Error')
     }
 }
 

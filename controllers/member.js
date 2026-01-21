@@ -3,7 +3,7 @@ const { pushWelcomeFlex } = require('../services/lineService');
 
 exports.registerMember = async(req, res) => {
     try {
-        const { user_id, first_name, last_name, phone, display_name, picture_url } = req.body;
+        const { first_name, last_name, phone, display_name, picture_url } = req.body;
 
         if(!user_id || !phone){
             return res.status(400).json({message: 'ข้อมูลไม่ถูกต้อง'})
@@ -11,18 +11,17 @@ exports.registerMember = async(req, res) => {
 
         await db.query(
             `
-            INSERT INTO member 
-            (user_id, display_name, first_name, last_name, phone, picture_url)
-            VALUES ($1,$2,$3,$4,$5,$6)
-            ON CONFLICT (user_id)
-            DO UPDATE SET
-                first_name = EXCLUDED.first_name,
-                last_name = EXCLUDED.last_name,
-                phone = EXCLUDED.phone,
-                display_name = EXCLUDED.display_name,
-                picture_url = EXCLUDED.picture_url
+            update member 
+            set 
+             display_name $2, 
+             first_name $3, 
+             last_name $4, 
+             phone $5, 
+             picture_url $6,
+             is_registered = true
+            where user_id = $1
             `,
-            [user_id, display_name, first_name, last_name, phone, picture_url]
+            [ display_name, first_name, last_name, phone, picture_url ]
         )
 
          // ส่ง Flex Message ต้อนรับ
