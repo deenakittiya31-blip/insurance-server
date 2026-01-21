@@ -14,17 +14,20 @@ exports.lineBotReply = async(req, res) => {
     try {
        if(event.type === 'follow') {
             await sendRegisterButton(event.replyToken)
+            return
        }
 
         //ผู้ใช้พิมพ์ขอสมัครเอง
         if (event.type === 'message' && event.message.type === 'text') {
             const text = event.message.text
+            const replyToken = event.replyToken
 
             if (
                 text.includes('สมัคร') ||
                 text.includes('ลงทะเบียน')
             ) {
                 await sendRegisterButton(event.replyToken)
+                return
             }
         }
 
@@ -38,11 +41,12 @@ exports.lineBotReply = async(req, res) => {
                     type: 'text',
                     text: 'สวัสดีค่ะ 😊'
                 })
+            return
             }
        }
     } catch (err) {
         console.error(err.response?.data || err.message)
-        return res.status(500).send('Error')
+        // res.status(500).send('Error')
     }
 }
 
