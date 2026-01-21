@@ -20,7 +20,6 @@ exports.lineBotReply = async(req, res) => {
         //ผู้ใช้พิมพ์ขอสมัครเอง
         if (event.type === 'message' && event.message.type === 'text') {
             const text = event.message.text
-            const replyToken = event.replyToken
 
             if (
                 text.includes('สมัคร') ||
