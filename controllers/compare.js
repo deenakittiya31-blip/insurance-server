@@ -42,7 +42,7 @@ exports.createCompare = async(req, res) => {
         )
 
        res.json({
-            q_id: insertResult.rows[0].q_id
+            q_id: q_id
         })
 
     } catch (err) {
