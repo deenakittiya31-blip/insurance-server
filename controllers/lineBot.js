@@ -43,39 +43,52 @@ exports.lineBotReply = async(req, res) => {
 
             if (/สมัคร|ลงทะเบียน/.test(text)) {
 
-                const result = await db.query(`select is_registered from member where user_id = $1`, [userId])
+                //เช็กว่าเปิดให้ลงทะเบียนไหม
+                const checkStatusRegister = await db.query(`select status from login where id = '3'`)
 
-                //ไม่พบ user
-                if(result.rowCount === 0) {
-                    console.log('ทำงาน ก่อนทำบันทึกลงฐาน')
-                    await db.query(`
-                        INSERT INTO member (user_id, is_friend, is_registered)
-                        VALUES ($1, true, false)
-                    `, [userId])
+                if(checkStatusRegister.rowCount > 0 && checkStatusRegister.rows[0].status) {
+                    
+                    const result = await db.query(`select is_registered from member where user_id = $1`, [userId])
 
+                    //ไม่พบ user
+                    if(result.rowCount === 0) {
+                        console.log('ทำงาน ก่อนทำบันทึกลงฐาน')
+                        await db.query(`
+                            INSERT INTO member (user_id, is_friend, is_registered)
+                            VALUES ($1, true, false)
+                        `, [userId])
+
+                        await sendRegisterButton(replyToken)
+                        return
+                    }
+
+                    //ถ้าลงทะเบียนแล้ว
+                    if (result.rows[0].is_registered) {
+                        await reply(replyToken, {
+                            type: 'text',
+                            text: 'คุณเป็นสมาชิกอยู่แล้วค่ะ 😊'
+                        })
+                        return
+                    }  
+                
+                    //ยังไม่ลงทะเบียนให้ส่ง LIFF ไปให้
                     await sendRegisterButton(replyToken)
                     return
-                }
-
-                 //ถ้าลงทะเบียนแล้ว
-                if (result.rows[0].is_registered) {
+                } else {
                     await reply(replyToken, {
                         type: 'text',
-                        text: 'คุณเป็นสมาชิกอยู่แล้วค่ะ 😊'
+                        text: 'ตอนนี้ทางเรายังไม่เปิดให้ลงทะเบียนค่ะ ขออภัยด้วยนะคะ'
                     })
                     return
-                }  
-                
-                //ยังไม่ลงทะเบียนให้ส่ง LIFF ไปให้
-                await sendRegisterButton(replyToken)
-                return
+                }
+               
             }
 
             if (text.includes('สวัสดี')) {
                 console.log('before reply')
                 await reply(replyToken, {
                     type: 'text',
-                    text: 'ทดสอบค่ะ'
+                    text: 'สวัสดีค่ะ ติดต่อเรื่องอะไรคะ'
                 })
                 console.log('after reply')
             return
