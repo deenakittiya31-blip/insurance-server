@@ -1,8 +1,6 @@
 const db = require('../config/database');
 const { generatePDF } = require('../utils/generatePDF');
 const { groupQuotationData } = require('../utils/groupQuotationData');
-const path = require('path');
-const fs = require('fs');
 const { generateJPG } = require('../utils/generateJPG');
 
 exports.createCompare = async(req, res) => {
@@ -13,23 +11,15 @@ exports.createCompare = async(req, res) => {
         const now = new Date()
         const year = now.getFullYear()
         const month = String(now.getMonth() + 1).padStart(2, '0')
-
         const yearMonth = `${year}${month}` // 202601
-
-        const countResult = await db.query(
-            `SELECT COUNT(*) FROM quotation_compare WHERE q_id LIKE $1`,
-            [`Q${yearMonth}%`]
-        )
-
-        const running = Number(countResult.rows[0].count) + 1
-        const runningNumber = String(running).padStart(6, '0')
-        const q_id = `Q${yearMonth}${runningNumber}`
 
        // 1. insert พร้อมข้อมูลรถ และเอา id ออกมา
         const insertResult = await db.query(
-            'INSERT INTO quotation_compare(q_id, to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer, sub_car_model) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING q_id',
+            `INSERT INTO quotation_compare(
+                to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer, sub_car_model) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+            RETURNING id`,
             [
-                q_id,
                 to_name,
                 details,
                 Number(car_brand_id),
@@ -41,6 +31,16 @@ exports.createCompare = async(req, res) => {
             ]
         )
 
+        const id = insertResult.rows[0].id
+        const runningNumber = String(id).padStart(6, '0')
+        const q_id = `Q${yearMonth}${runningNumber}`
+
+        //update q_id
+        await db.query(
+            `UPDATE quotation_compare SET q_id = $1 WHERE id = $2`,
+            [q_id, id]
+        )
+
        res.json({
             q_id: insertResult.rows[0].q_id
         })
@@ -48,6 +48,54 @@ exports.createCompare = async(req, res) => {
     } catch (err) {
         console.log(err)
         res.status(500).json({msg: 'Server error'})
+    }
+}
+
+exports.listCompare = async(req, res) => {
+    try {
+        const page = Number(req.query.page || 1);
+        const per_page = Number(req.query.per_page || 5);
+        const offset = (page - 1) * per_page;
+
+        const result = await db.query(
+            `
+            select 
+              qc.q_id, 
+              qc.created_at AT TIME ZONE 'Asia/Bangkok' AS created_at,
+              cu.usage_name as usage, 
+              cy.year_be, cy.year_ad,  
+              cb.name as car_brand, 
+              cm.name as car_model, 
+              qc.sub_car_model 
+            from quotation_compare as qc 
+            left join car_brand as cb on qc.car_brand_id = cb.id 
+            left join car_model as cm on qc.car_model_id = cm.id 
+            left join car_usage as cu on qc.car_usage_id = cu.id 
+            left join car_year as cy on qc.car_year_id = cy.id 
+            order by qc.id asc
+            LIMIT $1 OFFSET $2
+            `,[per_page, offset]
+        )
+
+        const countResult = await db.query('SELECT COUNT(*)::int as total FROM quotation_compare')
+
+        res.json({ data: result.rows, total: countResult.rows[0].total })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'Server error'})
+    }
+}
+
+exports.removeCompare = async(req, res) => {
+    try {
+        const {id} = req.params
+
+        await db.query('DELETE FROM car_year WHERE id = $1', [id])
+
+        res.json({msg: 'ลบปีสำเร็จ'})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'}) 
     }
 }
 
