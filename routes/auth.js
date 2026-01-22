@@ -1,10 +1,11 @@
 const express = require('express')
-const { register, login, loginLine, loginGoogle, currentUser, statusLoginWith, getStatusLoginWith } = require('../controllers/auth')
+const { register, login, loginLine, loginGoogle, currentUser, statusLoginWith, getStatusLoginWith, getLoginWithSetting } = require('../controllers/auth')
 const { authCheck, roleCheck } = require('../middleware/authCheck')
 const router = express.Router()
 
 router.post('/login', login)
 router.put('/status-loginwith/:id', authCheck, roleCheck(['admin']), statusLoginWith)
+router.put('/setting-loginwith', authCheck, roleCheck(['admin']), getLoginWithSetting)
 router.get('/get-loginwith', getStatusLoginWith)
 router.post('/current-user', authCheck, currentUser)
 router.post('/login-line', loginLine)
