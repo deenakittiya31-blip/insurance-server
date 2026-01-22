@@ -13,15 +13,15 @@ exports.registerMember = async(req, res) => {
             `
             update member 
             set 
-             display_name $2, 
-             first_name $3, 
-             last_name $4, 
-             phone $5, 
-             picture_url $6,
+             display_name   = $2, 
+             first_name     = $3, 
+             last_name      = $4, 
+             phone          = $5, 
+             picture_url    = $6,
              is_registered = true
             where user_id = $1
             `,
-            [ display_name, first_name, last_name, phone, picture_url ]
+            [ user_id, display_name, first_name, last_name, phone, picture_url ]
         )
 
          // ส่ง Flex Message ต้อนรับ
