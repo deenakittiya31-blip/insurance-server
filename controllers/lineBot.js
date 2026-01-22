@@ -1,5 +1,6 @@
 const axios = require('axios');
-const db = require('../config/database')
+const db = require('../config/database');
+const { getProfile } = require('../services/lineService');
 
 const LINE_MESSAGING_API = "https://api.line.me/v2/bot/message/reply";
 const LINE_HEADER = {
@@ -20,13 +21,26 @@ exports.lineBotReply = async(req, res) => {
             const userId = event.source.userId
             const replyToken = event.replyToken
 
-            //ยังไม่ลงทะเบียน
+            const profile = await getProfile(userId)
+
             await db.query(`
-                    INSERT INTO member (user_id, is_friend, is_registered)
-                    VALUES ($1, true, false)
+                    INSERT INTO member (
+                        user_id, 
+                        display_name,
+                        picture_url,
+                        is_friend, 
+                        is_registered
+                    )
+                    VALUES ($1, $2, $3, true, false)
                     ON CONFLICT (user_id) DO UPDATE
-                    SET is_friend = true
-                    `, [userId])
+                    SET 
+                        is_friend = true
+                        display_name = EXCLUDED.display_name,
+                        picture_url = EXCLUDED.picture_url
+                    `, [
+                        userId, 
+                        profile.displayName, 
+                        profile.pictureUrl])
 
             await reply(replyToken, {
                     type: 'text',
@@ -52,11 +66,28 @@ exports.lineBotReply = async(req, res) => {
 
                     //ไม่พบ user
                     if(result.rowCount === 0) {
-                        console.log('ทำงาน ก่อนทำบันทึกลงฐาน')
+
+                        let displayName = null
+                        let pictureUrl = null
+
+                        try {
+                            const profile = await getProfile(userId)
+                            displayName = profile.displayName
+                            pictureUrl = profile.pictureUrl
+                        } catch (err) {
+                            console.log('get profile failed', err.message)
+                        }
+
                         await db.query(`
-                            INSERT INTO member (user_id, is_friend, is_registered)
-                            VALUES ($1, true, false)
-                        `, [userId])
+                            INSERT INTO member (
+                                user_id, 
+                                display_name,
+                                picture_url,
+                                is_friend, 
+                                is_registered
+                                )
+                            VALUES ($1, $2, $3, true, false)
+                        `, [userId, displayName, pictureUrl])
 
                         await sendRegisterButton(replyToken)
                         return

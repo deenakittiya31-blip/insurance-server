@@ -100,36 +100,9 @@ exports.sendImage = async(userId, imageUrl ) => {
     }
 }
 
-exports.sendPDF = async(userId, fileUrl ) => {
-    try {
-        const res = await axios.post(LINE_PUSH_API, 
-            {
-                to: userId,
-                messages: [
-                    {                       
-                        type: "template",
-                        altText: "pdf",
-                        template: {
-                            type: "buttons",
-                            actions: [
-                                {
-                                    type: "uri",
-                                    label: "OPEN IN BROWSER",
-                                    uri: fileUrl
-                                }
-                            ],
-                            title: "เอกสาร pdf",
-                            text: "ใบเสนอราคาประกันรถยนต์"
-                        }
-                    }                   
-                ]
-            },
-            { headers: LINE_HEADER }
-        )
-
-        console.log('send pdf success:', userId)
-        return res
-    } catch (error) {
-        console.error('Line error: ', error.response?.data || error.message)   
-    }
+exports.getProfile = async(userId) => {
+    const res = await axios.get(`https://api.line.me/v2/bot/profile/${userId}`, {
+        headers: LINE_HEADER
+    })
+    return res.data
 }
