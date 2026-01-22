@@ -99,3 +99,37 @@ exports.sendImage = async(userId, imageUrl ) => {
         console.error('Line error: ', error.response?.data || error.message)   
     }
 }
+
+exports.sendPDF = async(userId, fileUrl ) => {
+    try {
+        const res = await axios.post(LINE_PUSH_API, 
+            {
+                to: userId,
+                messages: [
+                    {                       
+                        type: "template",
+                        altText: "this is a buttons template",
+                        template: {
+                            type: "buttons",
+                            actions: [
+                                {
+                                    type: "uri",
+                                    label: "OPEN IN BROWSER",
+                                    uri: fileUrl
+                                }
+                            ],
+                            title: "เอกสาร pdf",
+                            text: "ใบเสนอราคาประกันรถยนต์"
+                        }
+                    }                   
+                ]
+            },
+            { headers: LINE_HEADER }
+        )
+
+        console.log('send pdf success:', userId)
+        return res
+    } catch (error) {
+        console.error('Line error: ', error.response?.data || error.message)   
+    }
+}

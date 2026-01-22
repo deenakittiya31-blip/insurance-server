@@ -1,5 +1,5 @@
 const db = require('../config/database');
-const { pushWelcomeFlex, sendImage } = require('../services/lineService');
+const { pushWelcomeFlex, sendImage, sendPDF } = require('../services/lineService');
 
 exports.registerMember = async(req, res) => {
     try {
@@ -45,16 +45,22 @@ exports.listMember = async(req, res) => {
     }
 }
 
-exports.sendImageToMember = async(req, res) => {
+exports.sendDocumentToMember = async(req, res) => {
     try {
-        const { members, imageUrl  } = req.body;
+        const { members, fileUrl, fileType  } = req.body;
 
         if (!Array.isArray(members)) {
             return res.status(400).json({ message: 'member ต้องเป็น array' })
         }
 
         for(const userId of members) {
-            await sendImage(userId, imageUrl )
+            
+            if(fileType === 'application/pdf'){
+                await sendPDF(userId, fileUrl )
+            } else {
+                await sendImage(userId, fileUrl)
+            }
+            
         }
 
         res.json({msg: 'ส่งแล้ว'})
