@@ -106,76 +106,22 @@ exports.sendPDF = async(userId, fileUrl ) => {
             {
                 to: userId,
                 messages: [
-                    {
-  type: "carousel",
-  contents: [
-    {
-      type: "bubble",
-      size: "deca",
-      body: {
-        type: "box",
-        layout: "horizontal",
-        contents: [
-          {
-            type: "box",
-            layout: "horizontal",
-            contents: [
-              {
-                type: "image",
-                url: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/PDF_file_icon.svg/330px-PDF_file_icon.svg.png",
-                aspectMode: "fit",
-                size: "xxs",
-                align: "center"
-              }
-            ],
-            flex: 1,
-            width: "40px",
-            height: "70px",
-            justifyContent: "center",
-            alignItems: "center"
-          },
-          {
-            type: "box",
-            layout: "vertical",
-            contents: [
-              {
-                type: "text",
-                text: "เอกสารใบเสนอราคา",
-                wrap: false,
-                align: "start",
-                gravity: "center"
-              },
-              {
-                type: "button",
-                action: {
-                  type: "uri",
-                  label: "download",
-                  uri: fileUrl,
-                  altUri: {
-                    desktop: fileUrl
-                  }
-                },
-                margin: "none",
-                style: "primary",
-                height: "sm",
-              }
-            ],
-            justifyContent: "center",
-            spacing: "none",
-            margin: "lg"
-          }
-        ],
-        spacing: "lg",
-        paddingAll: "12px"
-      },
-      styles: {
-        footer: {
-          separator: false
-        }
-      }
-    }
-  ]
-}             
+                    {                       
+                        type: "template",
+                        altText: "pdf",
+                        template: {
+                            type: "buttons",
+                            actions: [
+                                {
+                                    type: "uri",
+                                    label: "OPEN IN BROWSER",
+                                    uri: fileUrl
+                                }
+                            ],
+                            title: "เอกสาร pdf",
+                            text: "ใบเสนอราคาประกันรถยนต์"
+                        }
+                    }                   
                 ]
             },
             { headers: LINE_HEADER }
