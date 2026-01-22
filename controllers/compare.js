@@ -5,7 +5,7 @@ const { generateJPG } = require('../utils/generateJPG');
 
 exports.createCompare = async(req, res) => {
     try {
-        const { to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer, sub_car_model } = req.body;
+        const { to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer, sub_car_model, import_by } = req.body;
 
         //สร้างเลข q_id
         const now = new Date()
@@ -16,8 +16,8 @@ exports.createCompare = async(req, res) => {
        // 1. insert พร้อมข้อมูลรถ และเอา id ออกมา
         const insertResult = await db.query(
             `INSERT INTO quotation_compare(
-                to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer, sub_car_model) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+                to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer, sub_car_model, import_by) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
             RETURNING id`,
             [
                 to_name,
@@ -27,7 +27,8 @@ exports.createCompare = async(req, res) => {
                 Number(car_year_id),
                 Number(car_usage_id),
                 offer,
-                sub_car_model ?? null
+                sub_car_model ?? null,
+                import_by
             ]
         )
 
@@ -60,13 +61,15 @@ exports.listCompare = async(req, res) => {
         const result = await db.query(
             `
             select 
+              qc.id,
               qc.q_id, 
               qc.created_at AT TIME ZONE 'Asia/Bangkok' AS created_at,
               cu.usage_name as usage, 
               cy.year_be, cy.year_ad,  
               cb.name as car_brand, 
               cm.name as car_model, 
-              qc.sub_car_model 
+              qc.sub_car_model,
+              qc.import_by 
             from quotation_compare as qc 
             left join car_brand as cb on qc.car_brand_id = cb.id 
             left join car_model as cm on qc.car_model_id = cm.id 
@@ -90,7 +93,7 @@ exports.removeCompare = async(req, res) => {
     try {
         const {id} = req.params
 
-        await db.query('DELETE FROM car_year WHERE id = $1', [id])
+        await db.query('DELETE FROM quotation_compare WHERE id = $1', [id])
 
         res.json({msg: 'ลบปีสำเร็จ'})
     } catch (err) {
