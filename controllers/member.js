@@ -47,7 +47,9 @@ exports.listMember = async(req, res) => {
 
 exports.sendDocumentToMember = async(req, res) => {
     try {
-        const { members, fileUrl } = req.body;
+        const { members, q_id } = req.body;
+
+        const fileUrl = await compareJPG(q_id)
 
         if (!Array.isArray(members)) {
             return res.status(400).json({ message: 'member ต้องเป็น array' })

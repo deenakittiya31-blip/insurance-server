@@ -4,7 +4,7 @@ const { createImages, removeImages, uploadDocument } = require('../controllers/i
 const router = express.Router()
 
 router.post('/images', authCheck, roleCheck(['admin']), createImages)
-router.post('/document', authCheck, roleCheck(['admin']), uploadDocument)
+// router.post('/document', authCheck, roleCheck(['admin']), uploadDocument)
 router.post('/removeImages', authCheck, roleCheck(['admin']), removeImages)
 
 module.exports = router
