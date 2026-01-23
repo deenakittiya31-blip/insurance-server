@@ -4,7 +4,7 @@ const { createCompare, getDetailCompare, comparePDF, compareJPG, listCompare, re
 const router = express.Router();
 
 router.get('/list-compare/page', authCheck, roleCheck(['admin']), listCompare)
-router.get('/search-compare', authCheck, roleCheck(['admin']), searchCompare)
+router.post('/search-compare', authCheck, roleCheck(['admin']), searchCompare)
 router.post('/create-compare', authCheck, roleCheck(['admin']), createCompare)
 router.get('/detail-compare/:id', authCheck, roleCheck(['admin']), getDetailCompare)
 router.get('/edit-compare/:id',  detailCompareEdite)
