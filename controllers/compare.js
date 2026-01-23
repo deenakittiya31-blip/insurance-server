@@ -282,3 +282,27 @@ exports.compareJPG = async(req, res) => {
     }
 }
 
+exports.searchCompare = async(req, res) => {
+    try {
+        const { search } = req.body;
+
+        const result = await db.query(
+            `
+            SELECT *
+            FROM quotation_compare
+            WHERE
+                q_id ILIKE $1 OR
+                to_name ILIKE $1 OR
+                details ILIKE $1 OR
+                offer ILIKE $1
+            ORDER BY created_at DESC
+            `,
+            [`%${search}%`]
+        );
+
+        res.json({data: result.rows})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'Server error'})
+    }
+}
