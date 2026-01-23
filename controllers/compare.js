@@ -89,13 +89,43 @@ exports.listCompare = async(req, res) => {
     }
 }
 
+exports.detailCompareEdite = async(req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await db.query(
+            `
+            select 
+              q.id as quotation_id, 
+              q.company_id, 
+              ic.namecompany as company_name, 
+              ic.logo_url as company_logo, 
+              qf.field_code, 
+              qf.field_value 
+            from quotation_compare as qc 
+            join quotation as q on qc.q_id = q.compare_id 
+            join quotation_field as qf on q.id = qf.quotation_id 
+            join insurance_company as ic on q.company_id = ic.id 
+            where qc.q_id = $1 
+            order by q.id asc, qf.field_code asc
+            `, [id]
+        )
+
+        const grouped = groupQuotationData(result.rows);
+
+        res.json({ data: grouped.insurances })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'Server error'})
+    }
+}
+
 exports.removeCompare = async(req, res) => {
     try {
         const {id} = req.params
 
         await db.query('DELETE FROM quotation_compare WHERE id = $1', [id])
 
-        res.json({msg: 'ลบปีสำเร็จ'})
+        res.json({msg: 'ลบสำเร็จ'})
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
