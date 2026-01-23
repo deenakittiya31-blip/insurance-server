@@ -63,7 +63,7 @@ exports.listCompare = async(req, res) => {
             select 
               qc.id,
               qc.q_id, 
-              qc.created_at AT TIME ZONE 'Asia/Bangkok' AS created_at,
+              qc.created_at,
               cu.usage_name as usage, 
               cy.year_be, cy.year_ad,  
               cb.name as car_brand, 
