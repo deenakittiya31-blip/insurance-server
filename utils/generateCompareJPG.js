@@ -14,14 +14,6 @@ exports.generateCompareJPG = async(q_id) => {
         //รอบสอง query ข้อมูลเอกสาร
         const quotationResult = await db.query(`select q.id AS quotation_id, q.company_id, ic.namecompany AS company_name, ic.logo_url AS company_logo, qf.field_code, qf.field_value from quotation_compare as qc INNER JOIN quotation AS q ON qc.q_id = q.compare_id left join quotation_field as qf on q.id = qf.quotation_id LEFT JOIN insurance_company AS ic ON q.company_id = ic.id where qc.q_id = $1 ORDER BY q.id ASC, qf.field_code ASC`, [q_id])
 
-         // ตรวจสอบว่ามีข้อมูลไหม
-        if (!quotationResult.rows.length) {
-            return res.status(404).json({ 
-                success: false,
-                msg: 'ไม่พบข้อมูลบริษัทประกัน' 
-            });
-        }
-
         //จัดกรุ๊ปข้อมูล
         const grouped = groupQuotationData(quotationResult.rows);
         const carData = carResult.rows[0];
