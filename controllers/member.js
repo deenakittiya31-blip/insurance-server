@@ -1,5 +1,6 @@
 const db = require('../config/database');
-const { pushWelcomeFlex, sendImage, sendPDF } = require('../services/lineService');
+const { pushWelcomeFlex, sendImage } = require('../services/lineService');
+const { generateCompareJPG } = require('../utils/generateCompareJPG');
 const { uploadToCloudinary } = require('./image');
 
 exports.registerMember = async(req, res) => {
@@ -55,7 +56,7 @@ exports.sendDocumentToMember = async(req, res) => {
         }
 
         //1. สร้างรูปภาพ
-        const buffer = await compareJPG(q_id)
+        const buffer = await generateCompareJPG(q_id)
 
         //2. อัปโหลดรูปลง cloudinary ได้ url
         const imageUrl = await uploadToCloudinary(buffer)
