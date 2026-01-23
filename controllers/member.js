@@ -1,5 +1,6 @@
 const db = require('../config/database');
 const { pushWelcomeFlex, sendImage, sendPDF } = require('../services/lineService');
+const { uploadToCloudinary } = require('./image');
 
 exports.registerMember = async(req, res) => {
     try {
@@ -49,17 +50,22 @@ exports.sendDocumentToMember = async(req, res) => {
     try {
         const { members, q_id } = req.body;
 
-        const fileUrl = await compareJPG(q_id)
-
         if (!Array.isArray(members)) {
             return res.status(400).json({ message: 'member ต้องเป็น array' })
         }
 
+        //1. สร้างรูปภาพ
+        const buffer = await compareJPG(q_id)
+
+        //2. อัปโหลดรูปลง cloudinary ได้ url
+        const imageUrl = await uploadToCloudinary(buffer)
+
+        //3. ส่ง line
         for(const userId of members) {           
-                await sendImage(userId, fileUrl)           
+            await sendImage(userId, imageUrl)           
         }
 
-        res.json({msg: 'ส่งแล้ว'})
+        res.json({msg: 'ส่งใบเสนอราคาเรียบร้อย'})
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'Server error'})

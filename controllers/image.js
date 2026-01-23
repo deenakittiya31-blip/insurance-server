@@ -24,30 +24,20 @@ exports.createImages = async (req, res) => {
   }
 }
 
-exports.uploadDocument = async (req, res) => {
-  try {
-    const { image } = req.body
-
-    if (!image) {
-      return res.status(400).json({ message: 'No image' })
-    }
-
-    const result = await cloudinary.uploader.upload(image, {
-      folder: 'line-doc',
-      public_id: `document-${Date.now()}`,
-      resource_type: 'image',
-      format:'png',
-      quality: 100
+exports.uploadToCloudinary = async (buffer) => {
+  return new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+            {
+                folder: 'line-doc',
+                resource_type: 'image',
+                format: 'jpg'
+            },
+            (err, result) => {
+                if (err) reject(err)
+                else resolve(result.secure_url)
+            }
+        ).end(buffer)
     })
-
-    res.json({
-      url: result.secure_url,
-      public_id: result.public_id,
-    })
-  } catch (err) {
-    console.log(err)
-    res.status(500).json({ message: 'server error' })
-  }
 }
 
 // exports.uploadDocument = async (req, res) => {
