@@ -288,14 +288,34 @@ exports.searchCompare = async(req, res) => {
 
         const result = await db.query(
             `
-            SELECT *
-            FROM quotation_compare
+            SELECT 
+              qc.id,
+              qc.q_id, 
+              qc.created_at,
+              qc.to_name,
+              qc.details,
+              cu.usage_name as usage, 
+              cy.year_be, cy.year_ad,  
+              cb.name as car_brand, 
+              cm.name as car_model, 
+              qc.sub_car_model
+            FROM quotation_compare AS qc
+            left join car_brand as cb on qc.car_brand_id = cb.id 
+            left join car_model as cm on qc.car_model_id = cm.id 
+            left join car_usage as cu on qc.car_usage_id = cu.id 
+            left join car_year as cy on qc.car_year_id = cy.id 
             WHERE
-                q_id ILIKE $1 OR
-                to_name ILIKE $1 OR
-                details ILIKE $1 OR
-                offer ILIKE $1
-            ORDER BY created_at DESC
+                qc.q_id ILIKE $1 OR
+                qc.to_name ILIKE $1 OR
+                qc.details ILIKE $1 OR
+                qc.offer ILIKE $1 OR
+                cu.usage_name ILIKE $1 OR
+                cy.year_be::text ILIKE $1 OR
+                cy.year_ad::text ILIKE $1 OR
+                cb.name ILIKE $1 OR
+                cm.name ILIKE $1 OR
+                qc.sub_car_model ILIKE $1 
+            ORDER BY qc.created_at DESC
             `,
             [`%${search}%`]
         );
