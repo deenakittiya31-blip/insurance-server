@@ -72,3 +72,29 @@ exports.sendDocumentToMember = async(req, res) => {
         res.status(500).json({message: 'Server error'})
     }
 }
+
+exports.searchMember = async(req, res) => {
+    try {
+        const { search } = req.body;
+
+        const result = await db.query(
+            `
+            SELECT 
+              *
+            FROM member
+            WHERE
+                display_name ILIKE $1 OR
+                first_name ILIKE $1 OR
+                last_name ILIKE $1 OR
+                phone ILIKE $1]
+            ORDER BY created_at DESC
+            `,
+            [`%${search}%`]
+        );
+
+        res.json({data: result.rows})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'Server error'})
+    }
+}
