@@ -86,7 +86,7 @@ exports.searchMember = async(req, res) => {
                 display_name ILIKE $1 OR
                 first_name ILIKE $1 OR
                 last_name ILIKE $1 OR
-                phone ILIKE $1]
+                phone ILIKE $1
             ORDER BY created_at DESC
             `,
             [`%${search}%`]
