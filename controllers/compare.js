@@ -56,27 +56,31 @@ exports.listCompare = async(req, res) => {
     try {
         const page = Number(req.query.page || 1);
         const per_page = Number(req.query.per_page || 5);
+        const sortKey = req.query.sortKey || 'id';
+        const sortDirection = req.query.sortDirection || 'DESC';
+        const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
         const offset = (page - 1) * per_page;
 
         const result = await db.query(
             `
-            select 
+            SELECT 
               qc.id,
               qc.q_id, 
               qc.created_at,
               qc.to_name,
               qc.details,
-              cu.usage_name as usage, 
+              cu.usage_name AS usage, 
               cy.year_be, cy.year_ad,  
-              cb.name as car_brand, 
-              cm.name as car_model, 
+              cb.name AS car_brand, 
+              cm.name AS car_model, 
               qc.sub_car_model
-            from quotation_compare as qc 
-            left join car_brand as cb on qc.car_brand_id = cb.id 
-            left join car_model as cm on qc.car_model_id = cm.id 
-            left join car_usage as cu on qc.car_usage_id = cu.id 
-            left join car_year as cy on qc.car_year_id = cy.id 
-            order by qc.id asc
+            FROM quotation_compare AS qc 
+            LEFT JOIN car_brand AS cb ON qc.car_brand_id = cb.id 
+            LEFT JOIN car_model AS cm ON qc.car_model_id = cm.id 
+            LEFT JOIN car_usage AS cu ON qc.car_usage_id = cu.id 
+            LEFT JOIN car_year AS cy ON qc.car_year_id = cy.id 
+            ORDER BY ${sortKey} ${validSortDirection} 
             LIMIT $1 OFFSET $2
             `,[per_page, offset]
         )
