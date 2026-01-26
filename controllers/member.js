@@ -68,7 +68,7 @@ exports.readMember = async(req, res) => {
     try {
         const { id } = req.params;
 
-        const result = await db.query('select first_name, last_name, phone where id = $1', [id])
+        const result = await db.query('select first_name, last_name, phone from member where id = $1', [id])
 
         res.json({data: result.rows[0]})
     } catch (err) {
