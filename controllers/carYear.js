@@ -17,10 +17,17 @@ exports.list = async(req, res) => {
     try {
         const page = Number(req.query.page) || 1;
         const per_page = Number(req.query.per_page) || 5;
+        const sortKey = req.query.sortKey || 'id';
+        const sortDirection = req.query.sortDirection || 'DESC';
 
-       const offset = (page - 1) * per_page
+       const offset = (page - 1) * per_page;
 
-        const result = await db.query('SELECT id, year_be, year_ad FROM car_year LIMIT $1 OFFSET $2', [per_page, offset])
+       //validate sortkey
+       const allowedSortKeys = ['id', 'year_be', 'year_ad'];
+        const validSortKey = allowedSortKeys.includes(sortKey) ? sortKey : 'id';
+        const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+        const result = await db.query(`SELECT id, year_be, year_ad FROM car_year ORDER BY ${validSortKey} ${validSortDirection} LIMIT $1 OFFSET $2`, [per_page, offset])
 
         const countResult = await db.query('SELECT COUNT(*)::int as total FROM car_year')
 
