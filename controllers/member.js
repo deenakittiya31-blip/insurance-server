@@ -64,6 +64,52 @@ exports.listMember = async(req, res) => {
     }
 }
 
+exports.readMember = async(req, res) => {
+    try {
+        const { id } = req.params;
+
+        const result = await db.query('select first_name, last_name, phone where id = $1', [id])
+
+        res.json({data: result.rows[0]})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'Server error'})
+    }
+}
+
+exports.updateMember = async(req, res) => {
+    try {
+        const { id } = req.params
+        const { first_name, last_name, phone } = req.body
+
+        await db.query(
+            `update member set first_name = coalesce ($1, first_name), last_name = coalesce ($2, last_name), phone = coalesce ($3, phone) where id = $4`,
+            [
+                first_name  ?? null, 
+                last_name   ?? null, 
+                phone       ?? null, 
+                id
+            ]
+        )
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'Server error'})
+    }
+}
+
+const removeMember = async(req, res) => {
+    try {
+        const { id } = req.params
+
+        await db.query('delete from member where id = $1', [id])
+
+        res.json({msg: 'ลบข้อมูลลูกค้าสำเร็จ'})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'Server error'})
+    }
+}
+
 exports.sendDocumentToMember = async(req, res) => {
     try {
         const { members, q_id } = req.body;

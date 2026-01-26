@@ -82,7 +82,6 @@ exports.createFields = async(req, res) => {
     }
 }
 
-
 exports.removeQuotation = async(req, res) => {
     try {
         const {id} = req.params
