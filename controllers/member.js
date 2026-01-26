@@ -38,7 +38,11 @@ exports.registerMember = async(req, res) => {
 
 exports.listMember = async(req, res) => {
     try {
-        const result = await db.query('select * from member order by id asc')
+        const sortKey = req.query.sortKey || 'id';
+        const sortDirection = req.query.sortDirection || 'DESC';
+        const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+        const result = await db.query(`SELECT * FROM member ORDER BY ${sortKey} ${validSortDirection}`)
 
         res.json({data: result.rows})
     } catch (err) {
