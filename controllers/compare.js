@@ -141,8 +141,6 @@ exports.getDetailCompare = async(req, res) => {
     try {
         const { id } = req.params
 
-        console.log('Received ID:', id, typeof id)
-
         // ตรวจสอบว่ามีข้อมูลในตาราง quotation_compare ก่อน
         const checkExist = await db.query(
             'SELECT * FROM quotation_compare WHERE q_id = $1',

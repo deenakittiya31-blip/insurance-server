@@ -9,8 +9,6 @@ const LINE_HEADER = {
 };
 
 exports.lineBotReply = async(req, res) => {
-    console.log('is work start')
-    console.log('TOKEN:', process.env.CHANNEL_ACCESS_TOKEN)
     const event = req.body.events?.[0]
     if (!event) {
       return res.sendStatus(200)
@@ -47,6 +45,13 @@ exports.lineBotReply = async(req, res) => {
                     text: `สวัสดีค่ะ ☺️ หากต้องการลงทะเบียนเป็นสมาชิกพิมพ์คำว่า 'สมัคร' หรือ 'ลงทะเบียน' ได้เลยค่ะ`
                 })
             return
+       }
+
+       if(event.type === 'message' && ['text', 'image', 'video', 'file', 'location', 'sticker'].includes(event.message.type)){
+            const timestamp = event.timestamp
+            const userId = event.source.userId
+
+            await db.query('UPDATE member SET recent_conversation = $1 WHERE user_id = $2', [timestamp, userId])
        }
 
         //ผู้ใช้ส่ง text มา
