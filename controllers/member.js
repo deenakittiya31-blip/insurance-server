@@ -91,13 +91,15 @@ exports.updateMember = async(req, res) => {
                 id
             ]
         )
+
+        res.json({msg: 'แก้ไขข้อมูลลูกค้าสำเร็จ'})
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'Server error'})
     }
 }
 
-const removeMember = async(req, res) => {
+exports.removeMember = async(req, res) => {
     try {
         const { id } = req.params
 
