@@ -38,13 +38,19 @@ exports.registerMember = async(req, res) => {
 
 exports.listMember = async(req, res) => {
     try {
+        const page = Number(req.query.page || 1);
+        const per_page = Number(req.query.per_page || 5);
         const sortKey = req.query.sortKey || 'id';
         const sortDirection = req.query.sortDirection || 'DESC';
         const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
-        const result = await db.query(`SELECT * FROM member ORDER BY ${sortKey} ${validSortDirection}`)
+        const offset = (page - 1) * per_page;
 
-        res.json({data: result.rows})
+        const result = await db.query(`SELECT * FROM member ORDER BY ${sortKey} ${validSortDirection} LIMIT $1 OFFSET $2`, [per_page, offset])
+
+        const countResult = await db.query('SELECT COUNT(*)::int as total FROM member')
+
+        res.json({data: result.rows, total: countResult.rows[0].total})
     } catch (err) {
         console.log(err)
         res.status(500).json({ message: 'Server error'})
