@@ -88,7 +88,7 @@ exports.updateMember = async(req, res) => {
                 first_name  ?? null, 
                 last_name   ?? null, 
                 phone       ?? null, 
-                note       ?? null, 
+                note        ?? null, 
                 id
             ]
         )

@@ -44,6 +44,22 @@ exports.listSelect = async(req, res) => {
     }
 }
 
+exports.listCompanyTheme = async(req, res) => {
+    try {
+        const result = await db.query(
+            `
+            select distinct  ic.id, ic.logo_url, ic.namecompany 
+            from company_theme as ct 
+            left join insurance_company as ic on ct.company_id = ic.id
+            `)
+
+        res.json({data: result.rows})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'}) 
+    }
+}
+
 exports.read = async(req, res) => {
     try {  
         const {id} = req.params
