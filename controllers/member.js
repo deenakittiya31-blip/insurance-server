@@ -68,7 +68,7 @@ exports.readMember = async(req, res) => {
     try {
         const { id } = req.params;
 
-        const result = await db.query('select first_name, last_name, phone from member where id = $1', [id])
+        const result = await db.query('select first_name, last_name, phone, note from member where id = $1', [id])
 
         res.json({data: result.rows[0]})
     } catch (err) {
@@ -80,14 +80,15 @@ exports.readMember = async(req, res) => {
 exports.updateMember = async(req, res) => {
     try {
         const { id } = req.params
-        const { first_name, last_name, phone } = req.body
+        const { first_name, last_name, phone, note } = req.body
 
         await db.query(
-            `update member set first_name = coalesce ($1, first_name), last_name = coalesce ($2, last_name), phone = coalesce ($3, phone) where id = $4`,
+            `update member set first_name = coalesce ($1, first_name), last_name = coalesce ($2, last_name), phone = coalesce ($3, phone), note = coalesce ($4, note) where id = $5`,
             [
                 first_name  ?? null, 
                 last_name   ?? null, 
                 phone       ?? null, 
+                note       ?? null, 
                 id
             ]
         )
