@@ -120,15 +120,35 @@ exports.sendDocumentToMember = async(req, res) => {
             return res.status(400).json({ message: 'member ต้องเป็น array' })
         }
 
-        //1. สร้างรูปภาพ
-        const buffer = await generateCompareJPG(q_id)
+        let imageId
+        let imageUrl
 
-        //2. อัปโหลดรูปลง cloudinary ได้ url
-        const imageUrl = await uploadToCloudinary(buffer)
+        //1. ค้นรูปภาพที่ตารางรูปภาพก่อน
+        const imageData = await db.query(`select id, quotation_url from image_quotation where compare_id = $1`, [q_id])
 
-        //3. ส่ง line
+        if(imageData.rowCount > 0) {
+
+            // ใช้รูปภาพที่มีอยู่แล้ว
+            imageId = imageData.rows[0].id
+            imageUrl = imageData.rows[0].quotation_url
+        } else {
+
+            //1. สร้างรูปภาพ
+            const buffer = await generateCompareJPG(q_id)
+
+            //2. อัปโหลดรูปลง cloudinary ได้ url
+            const cloudinaryResult = await uploadToCloudinary(buffer)
+
+            const insertResult = await db.query(`insert into image_quotation (compare_id, quotaion_url, quotation_public_id) values ($1, $2, $3) returning id`, [q_id, cloudinaryResult.secure_url, cloudinaryResult.public_id])
+
+            imageId = insertResult.rows[0].id
+            imageUrl = cloudinaryResult.secure_url
+        }
+
         for(const userId of members) {           
-            await sendImage(userId, imageUrl)           
+            await sendImage(userId, imageUrl)     
+
+            await db.query(`insert into history_send_quotation (compare_id, member_id, quotation_img_id) values ($1, $2, $3)`, [q_id, userId, imageId])
         }
 
         res.json({msg: 'ส่งใบเสนอราคาเรียบร้อย'})
