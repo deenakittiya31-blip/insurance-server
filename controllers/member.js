@@ -139,9 +139,9 @@ exports.sendDocumentToMember = async(req, res) => {
             //2. อัปโหลดรูปลง cloudinary ได้ url
             const cloudinaryResult = await uploadToCloudinary(buffer)
 
-            const insertResult = await db.query(`insert into image_quotation (compare_id, quotaion_url, quotation_public_id) values ($1, $2, $3) returning id`, [q_id, cloudinaryResult.secure_url, cloudinaryResult.public_id])
+            const insertResult = await db.query(`insert into image_quotation (compare_id, quotation_url, quotation_public_id) values ($1, $2, $3) returning id`, [q_id, cloudinaryResult.secure_url, cloudinaryResult.public_id])
 
-            imageId = insertResult.rows[0].id
+            imageId = insertResult.rows[0].id 
             imageUrl = cloudinaryResult.secure_url
         }
 
