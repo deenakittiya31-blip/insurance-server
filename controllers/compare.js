@@ -65,21 +65,36 @@ exports.listCompare = async(req, res) => {
         const result = await db.query(
             `
             SELECT 
-              qc.id,
-              qc.q_id, 
-              qc.created_at,
-              qc.to_name,
-              qc.details,
-              cu.usage_name AS usage, 
-              cy.year_be, cy.year_ad,  
-              cb.name AS car_brand, 
-              cm.name AS car_model, 
-              qc.sub_car_model
+                qc.id,
+                qc.q_id, 
+                qc.created_at,
+                qc.to_name,
+                qc.details,
+                cu.usage_name AS usage, 
+                cy.year_be, 
+                cy.year_ad,  
+                cb.name AS car_brand, 
+                cm.name AS car_model, 
+                qc.sub_car_model,
+                COALESCE(
+                  JSON_AGG(
+                    JSON_BUILD_OBJECT(
+                        'picture_url', m.picture_url,
+                        'display_name', m.display_name,
+                        'sent_at', hq.created_at
+                    )
+                  ) FILTER (WHERE m.user_id IS NOT NULL),
+                 '[]'
+                ) AS members
             FROM quotation_compare AS qc 
             LEFT JOIN car_brand AS cb ON qc.car_brand_id = cb.id 
             LEFT JOIN car_model AS cm ON qc.car_model_id = cm.id 
             LEFT JOIN car_usage AS cu ON qc.car_usage_id = cu.id 
             LEFT JOIN car_year AS cy ON qc.car_year_id = cy.id 
+            LEFT JOIN history_send_quotation AS hq ON qc.q_id = hq.compare_id
+            LEFT JOIN member AS m ON hq.member_id = m.user_id
+            GROUP BY qc.id, qc.q_id, qc.created_at, qc.to_name, qc.details, 
+            cu.usage_name, cy.year_be, cy.year_ad, cb.name, cm.name, qc.sub_car_model
             ORDER BY ${sortKey} ${validSortDirection} 
             LIMIT $1 OFFSET $2
             `,[per_page, offset]
