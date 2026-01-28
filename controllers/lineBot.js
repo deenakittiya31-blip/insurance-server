@@ -32,7 +32,7 @@ exports.lineBotReply = async(req, res) => {
                     VALUES ($1, $2, $3, true, false)
                     ON CONFLICT (user_id) DO UPDATE
                     SET 
-                        is_friend = true
+                        is_friend = true,
                         display_name = EXCLUDED.display_name,
                         picture_url = EXCLUDED.picture_url
                     `, [
@@ -47,12 +47,13 @@ exports.lineBotReply = async(req, res) => {
             return
        }
 
-       if(event.type === 'message' && ['text', 'image', 'video', 'file', 'location', 'sticker'].includes(event.message.type)){
-            const timestamp = event.timestamp
-            const userId = event.source.userId
+    //  กิน
+    //    if(event.type === 'message' && ['text', 'image', 'video', 'file', 'location', 'sticker'].includes(event.message.type)){
+    //         const timestamp = event.timestamp
+    //         const userId = event.source.userId
 
-            await db.query('UPDATE member SET recent_conversation = $1 WHERE user_id = $2', [timestamp, userId])
-       }
+    //         await db.query('UPDATE member SET recent_conversation = $1 WHERE user_id = $2', [timestamp, userId])
+    //    }
 
         //ผู้ใช้ส่ง text มา
         if (event.type === 'message' && event.message.type === 'text') {
@@ -66,7 +67,7 @@ exports.lineBotReply = async(req, res) => {
                 const checkStatusRegister = await db.query(`select status from login where id = '3'`)
 
                 if(checkStatusRegister.rowCount > 0 && checkStatusRegister.rows[0].status) {
-                    
+                    //ดึงข้อมูล user
                     const result = await db.query(`select is_registered from member where user_id = $1`, [userId])
 
                     //ไม่พบ user
