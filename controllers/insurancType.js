@@ -49,7 +49,7 @@ exports.list = async(req, res) => {
 
 exports.listSelect = async(req, res) => {
     try {
-        const result = await db.query('SELECT id, nametype FROM insurance_type')
+        const result = await db.query('SELECT id, nametype FROM insurance_type order by id asc')
 
         res.json({ data: result.rows })
     } catch (err) {
