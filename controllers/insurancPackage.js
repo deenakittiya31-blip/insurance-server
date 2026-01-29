@@ -6,12 +6,12 @@ exports.create = async(req, res) => {
 
         await db.query('INSERT INTO insurance_package(company_id, insur_type_id, car_brand_id, car_model_id, usage_car_id, car_year_id, package_name) VALUES($1, $2, $3, $4, $5, $6, $7)', 
             [
-                company_id, 
-                insur_type_id,
+                Number(company_id), 
+                Number(insur_type_id),
                 car_brand_id,
-                car_model_id,
-                usage_car_id,
-                car_year_id,
+                Number(car_model_id),
+                Number(usage_car_id),
+                Number(car_year_id),
                 package_name
             ])
 
