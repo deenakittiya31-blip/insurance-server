@@ -76,6 +76,7 @@ exports.listCompare = async(req, res) => {
                 cb.name AS car_brand, 
                 cm.name AS car_model, 
                 qc.sub_car_model,
+                pq.id as pin,
                 COALESCE(
                   JSON_AGG(
                     JSON_BUILD_OBJECT(
