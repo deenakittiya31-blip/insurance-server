@@ -96,7 +96,7 @@ exports.listCompare = async(req, res) => {
             LEFT JOIN member AS m ON hq.member_id = m.user_id
             LEFT JOIN pin_quotation AS pq ON qc.id = pq.compare_id
             GROUP BY qc.id, qc.q_id, qc.created_at, qc.to_name, qc.details, 
-            cu.usage_name, cy.year_be, cy.year_ad, cb.name, cm.name, qc.sub_car_model
+            cu.usage_name, cy.year_be, cy.year_ad, cb.name, cm.name, qc.sub_car_model, pq.id
             ORDER BY ${sortKey} ${validSortDirection} 
             LIMIT $1 OFFSET $2
             `,[per_page, offset]
