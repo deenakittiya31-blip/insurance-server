@@ -2,11 +2,18 @@ const db = require('../config/database')
 
 exports.create = async(req, res) => {
     try {
-        const { company_id, insurance_type_id, package_name, coverage_amount } = req.body
+        const { company_id, insur_type_id, car_brand_id, car_model_id, usage_car_id, car_year_id, package_name  } = req.body
 
-        const query = 'INSERT INTO insurance_package(company_id, insurance_type_id, package_name, coverage_amount) VALUES($1, $2, $3, $4)';
-
-        await db.query(query, [company_id, insurance_type_id, package_name, coverage_amount])
+        await db.query('INSERT INTO insurance_package(company_id, insur_type_id, car_brand_id, car_model_id, usage_car_id, car_year_id, package_name) VALUES($1, $2, $3, $4, $5, $6, $7)', 
+            [
+                company_id, 
+                insur_type_id,
+                car_brand_id,
+                car_model_id,
+                usage_car_id,
+                car_year_id,
+                package_name
+            ])
 
         res.json({ msg: 'เพิ่มข้อมูลแพ็คเกจสำเร็จ' })
     } catch (err) {
@@ -22,7 +29,7 @@ exports.list = async(req, res) => {
     const offset = (page - 1) * per_page
 
     try {
-        const query = 'SELECT ip.id, ic.namecompany as company, it.nametype as type, package_name, coverage_amount FROM insurance_package as ip INNER JOIN insurance_company as ic ON ip.company_id = ic.id INNER JOIN insurance_type as it ON ip.insurance_type_id = it.id ORDER BY ip.id ASC LIMIT $1 OFFSET $2'
+        const query = 'SELECT ip.id, ic.namecompany as company, it.nametype as type, package_name, coverage_amount FROM insurance_package as ip INNER JOIN insurance_company as ic ON ip.company_id = ic.id INNER JOIN insurance_type as it ON ip.insur_type_id = it.id ORDER BY ip.id ASC LIMIT $1 OFFSET $2'
 
         const result = await db.query(query, [per_page, offset])
 
@@ -38,7 +45,7 @@ exports.list = async(req, res) => {
 exports.listSelect = async(req, res) => {
     try {
         const result = await db.query(
-            'SELECT id, package_name FROM insurance_package' 
+            'SELECT id, package_name FROM insurance_package order by created_at desc' 
         )
 
          res.json({ data: result.rows })
