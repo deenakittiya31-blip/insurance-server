@@ -29,7 +29,24 @@ exports.list = async(req, res) => {
     const offset = (page - 1) * per_page
 
     try {
-        const query = 'SELECT ip.id, ic.namecompany as company, it.nametype as type, package_name, coverage_amount FROM insurance_package as ip INNER JOIN insurance_company as ic ON ip.company_id = ic.id INNER JOIN insurance_type as it ON ip.insur_type_id = it.id ORDER BY ip.id ASC LIMIT $1 OFFSET $2'
+        const query = `
+        SELECT 
+            ip.id, 
+            ic.namecompany as company, 
+            it.nametype as type, package_name, 
+            cu.usage_name AS usage, 
+            cy.year_be, 
+            cy.year_ad,  
+            cb.name AS car_brand, 
+            cm.name AS car_model
+        FROM insurance_package as ip 
+        JOIN insurance_company as ic ON ip.company_id = ic.id 
+        JOIN insurance_type as it ON ip.insur_type_id = it.id 
+        LEFT JOIN car_brand AS cb ON ip.car_brand_id = cb.id 
+        LEFT JOIN car_model AS cm ON ip.car_model_id = cm.id 
+        LEFT JOIN car_usage AS cu ON ip.usage_car_id = cu.id 
+        LEFT JOIN car_year AS cy ON ip.car_year_id = cy.id 
+        ORDER BY ip.id ASC LIMIT $1 OFFSET $2`
 
         const result = await db.query(query, [per_page, offset])
 
