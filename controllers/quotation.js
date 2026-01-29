@@ -100,3 +100,24 @@ exports.removeQuotation = async(req, res) => {
         res.status(500).json({msg: 'Server error'})
     }
 }
+
+exports.pinQuotation = async(req, res) => {
+    try {
+        const { id } = req.params
+
+        const checkPin = await db.query(`select id from pin_quotation where compare_id $1`, [id] )
+
+        if(checkPin.rowCount > 0) {
+            await db.query('delete from pin_quotation where id = $1', [checkPin.rows[0].id])
+
+            return res.json({msg: 'ยกเลิกการปักหมุด'})
+        }
+
+        await db.query(`insert into pin_quotation (compare_id) values ($1)`, [Number(id)])
+
+        res.json({msg: 'ปักหมุดแล้ว'})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({msg: 'Server error'})
+    }
+}
