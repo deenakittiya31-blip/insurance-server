@@ -110,6 +110,64 @@ exports.listCompare = async(req, res) => {
         res.status(500).json({message: 'Server error'})
     }
 }
+exports.listPinCompare = async(req, res) => {
+    try {
+        const page = Number(req.query.page || 1);
+        const per_page = Number(req.query.per_page || 5);
+        const sortKey = req.query.sortKey || 'id';
+        const sortDirection = req.query.sortDirection || 'DESC';
+        const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+        const offset = (page - 1) * per_page;
+
+        const result = await db.query(
+            `
+            SELECT 
+                pq.id as pinId,
+                qc.id,
+                qc.q_id, 
+                qc.created_at,
+                qc.to_name,
+                qc.details,
+                cu.usage_name AS usage, 
+                cy.year_be, 
+                cy.year_ad,  
+                cb.name AS car_brand, 
+                cm.name AS car_model, 
+                qc.sub_car_model,
+                COALESCE(
+                  JSON_AGG(
+                    JSON_BUILD_OBJECT(
+                        'picture_url', m.picture_url,
+                        'display_name', m.display_name,
+                        'sent_at', hq.created_at
+                    )
+                  ) FILTER (WHERE m.user_id IS NOT NULL),
+                 '[]'
+                ) AS members
+            FROM pin_quotation AS pq 
+            JOIN quotation_compare as qc ON pq.compare_id = qc.id
+            LEFT JOIN car_brand AS cb ON qc.car_brand_id = cb.id 
+            LEFT JOIN car_model AS cm ON qc.car_model_id = cm.id 
+            LEFT JOIN car_usage AS cu ON qc.car_usage_id = cu.id 
+            LEFT JOIN car_year AS cy ON qc.car_year_id = cy.id 
+            LEFT JOIN history_send_quotation AS hq ON qc.q_id = hq.compare_id
+            LEFT JOIN member AS m ON hq.member_id = m.user_id
+            GROUP BY pq.id, qc.id, qc.q_id, qc.created_at, qc.to_name, qc.details, 
+            cu.usage_name, cy.year_be, cy.year_ad, cb.name, cm.name, qc.sub_car_model
+            ORDER BY ${sortKey} ${validSortDirection} 
+            LIMIT $1 OFFSET $2
+            `,[per_page, offset]
+        )
+
+        const countResult = await db.query('SELECT COUNT(*)::int as total FROM quotation_compare')
+
+        res.json({ data: result.rows, total: countResult.rows[0].total })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'Server error'})
+    }
+}
 
 exports.detailCompareEdite = async(req, res) => {
     try {
