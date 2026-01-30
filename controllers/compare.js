@@ -123,7 +123,7 @@ exports.listPinCompare = async(req, res) => {
         const result = await db.query(
             `
             SELECT 
-                pq.id as pinId,
+                pq.id as pin,
                 qc.id,
                 qc.q_id, 
                 qc.created_at,
