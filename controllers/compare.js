@@ -84,7 +84,8 @@ exports.listCompare = async(req, res) => {
                     JSON_BUILD_OBJECT(
                         'picture_url', m.picture_url,
                         'display_name', m.display_name,
-                        'sent_at', hq.created_at
+                        'sent_at', hq.created_at,
+                        'compare_no', hq.public_compare_no
                     )
                   ) FILTER (WHERE m.user_id IS NOT NULL),
                  '[]'
