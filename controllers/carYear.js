@@ -20,10 +20,10 @@ exports.list = async(req, res) => {
         const sortKey = req.query.sortKey || 'id';
         const sortDirection = req.query.sortDirection || 'DESC';
 
-       const offset = (page - 1) * per_page;
+        const offset = (page - 1) * per_page;
 
        //validate sortkey
-       const allowedSortKeys = ['id', 'year_be', 'year_ad'];
+        const allowedSortKeys = ['id', 'year_be', 'year_ad'];
         const validSortKey = allowedSortKeys.includes(sortKey) ? sortKey : 'id';
         const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 

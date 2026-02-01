@@ -60,6 +60,8 @@ exports.listCompare = async(req, res) => {
         const sortDirection = req.query.sortDirection || 'DESC';
         const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
+        console.log(per_page)
+
         const offset = (page - 1) * per_page;
 
         const result = await db.query(
