@@ -11,17 +11,18 @@ exports.generateCompareJPG = async(q_id, publicCompare) => {
               qc.q_id, 
               qc.to_name, 
               qc.details, 
-              qc.offer, 
+              us.name as offer, 
               qc.created_at AT TIME ZONE 'Asia/Bangkok' AS created_at_th,
               cb.name as car_brand,
               COALESCE(cm.name, qc.sub_car_model) as car_model,
               cu.usage_name as usage, 
               cy.year_be, cy.year_ad
             from quotation_compare as qc 
-            join car_brand as cb on qc.car_brand_id = cb.id 
+            left join car_brand as cb on qc.car_brand_id = cb.id 
             left join car_model as cm on qc.car_model_id = cm.id
-            join car_usage as cu on qc.car_usage_id = cu.id 
-            join car_year as cy on qc.car_year_id = cy.id
+            left join car_usage as cu on qc.car_usage_id = cu.id 
+            left join car_year as cy on qc.car_year_id = cy.id
+            left join users as us on qc.offer_id = us.user_id
             where qc.q_id = $1`, [q_id])
 
         //รอบสอง query ข้อมูลเอกสาร

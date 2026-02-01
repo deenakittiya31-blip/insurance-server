@@ -5,7 +5,7 @@ const { generateJPG } = require('../utils/generateJPG');
 
 exports.createCompare = async(req, res) => {
     try {
-        const { to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer, sub_car_model, import_by } = req.body;
+        const { to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer_id, sub_car_model, import_by } = req.body;
 
         //สร้างเลข q_id
         const now = new Date()
@@ -16,7 +16,7 @@ exports.createCompare = async(req, res) => {
        // 1. insert พร้อมข้อมูลรถ และเอา id ออกมา
         const insertResult = await db.query(
             `INSERT INTO quotation_compare(
-                to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer, sub_car_model, import_by) 
+                to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer_id, sub_car_model, import_by) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
             RETURNING id`,
             [
@@ -26,7 +26,7 @@ exports.createCompare = async(req, res) => {
                 car_model_id ? Number(car_model_id) : null,
                 Number(car_year_id),
                 Number(car_usage_id),
-                offer,
+                Number(offer_id),
                 sub_car_model ?? null,
                 import_by
             ]
@@ -254,17 +254,18 @@ exports.comparePDF = async(req, res) => {
               qc.q_id, 
               qc.to_name, 
               qc.details, 
-              qc.offer, 
+              us.name as offer, 
               qc.created_at AT TIME ZONE 'Asia/Bangkok' AS created_at_th,
               cb.name as car_brand,
               COALESCE(cm.name, qc.sub_car_model) as car_model,
               cu.usage_name as usage, 
               cy.year_be, cy.year_ad
             from quotation_compare as qc 
-            join car_brand as cb on qc.car_brand_id = cb.id 
+            left join car_brand as cb on qc.car_brand_id = cb.id 
             left join car_model as cm on qc.car_model_id = cm.id
-            join car_usage as cu on qc.car_usage_id = cu.id 
-            join car_year as cy on qc.car_year_id = cy.id
+            left join car_usage as cu on qc.car_usage_id = cu.id 
+            left join car_year as cy on qc.car_year_id = cy.id
+            left join users as us on qc.offer_id = us.user_id
             where qc.q_id = $1`, [id])
 
         if (!carResult.rows.length) {
@@ -305,17 +306,18 @@ exports.compareJPG = async(req, res) => {
               qc.q_id, 
               qc.to_name, 
               qc.details, 
-              qc.offer, 
+              us.name as offer, 
               qc.created_at AT TIME ZONE 'Asia/Bangkok' AS created_at_th,
               cb.name as car_brand,
               COALESCE(cm.name, qc.sub_car_model) as car_model,
               cu.usage_name as usage, 
               cy.year_be, cy.year_ad
             from quotation_compare as qc 
-            join car_brand as cb on qc.car_brand_id = cb.id 
+            left join car_brand as cb on qc.car_brand_id = cb.id 
             left join car_model as cm on qc.car_model_id = cm.id
-            join car_usage as cu on qc.car_usage_id = cu.id 
-            join car_year as cy on qc.car_year_id = cy.id
+            left join car_usage as cu on qc.car_usage_id = cu.id 
+            left join car_year as cy on qc.car_year_id = cy.id
+            left join users as us on qc.offer_id = us.user_id
             where qc.q_id = $1`, [id])
 
         if (!carResult.rows.length) {
