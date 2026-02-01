@@ -121,35 +121,19 @@ exports.sendDocumentToMember = async(req, res) => {
             return res.status(400).json({ message: 'member ต้องเป็น array' })
         }
 
-        let imageId
-        let imageUrl
+        //1. สร้างเลขเอกสรส่งลูกค้า
+        const publicCompare = await createPublicCompare(q_id)
 
-        //1. ค้นรูปภาพที่ตารางรูปภาพก่อน
-        const imageData = await db.query(`select id, quotation_url from image_quotation where compare_id = $1`, [q_id])
+        //2. สร้างรูปภาพ
+        const buffer = await generateCompareJPG(q_id, publicCompare)
 
-        if(imageData.rowCount > 0) {
-
-            // ใช้รูปภาพที่มีอยู่แล้ว
-            imageId = imageData.rows[0].id
-            imageUrl = imageData.rows[0].quotation_url
-        } else {
-
-            //1. สร้างรูปภาพ
-            const buffer = await generateCompareJPG(q_id)
-
-            //2. อัปโหลดรูปลง cloudinary ได้ url
-            const cloudinaryResult = await uploadToCloudinary(buffer)
-
-            const insertResult = await db.query(`insert into image_quotation (compare_id, quotation_url, quotation_public_id) values ($1, $2, $3) returning id`, [q_id, cloudinaryResult.secure_url, cloudinaryResult.public_id])
-
-            imageId = insertResult.rows[0].id 
-            imageUrl = cloudinaryResult.secure_url
-        }
+        //2. อัปโหลดรูปลง cloudinary ได้ url
+        const imgUrl = await uploadToCloudinary(buffer)
 
         for(const userId of members) {           
-            await sendImage(userId, imageUrl)     
+            await sendImage(userId, imgUrl)     
 
-            await db.query(`insert into history_send_quotation (compare_id, member_id, quotation_img_id) values ($1, $2, $3)`, [q_id, userId, imageId])
+            await db.query(`insert into history_send_quotation (compare_id, member_id, public_compare_no) values ($1, $2, $3)`, [q_id, userId, publicCompare])
         }
 
         res.json({msg: 'ส่งใบเสนอราคาเรียบร้อย'})
@@ -183,4 +167,38 @@ exports.searchMember = async(req, res) => {
         console.log(err)
         res.status(500).json({message: 'Server error'})
     }
+}
+
+async function createPublicCompare(quotationId) {
+  return await db.tx(async t => {
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const yearMonth = `${year}${month}`;
+
+       // lock เฉพาะเดือนนั้น
+    const last = await t.oneOrNone(`
+      SELECT version
+      FROM quotation_public_compare
+      WHERE public_compare_no LIKE $1
+      ORDER BY version DESC
+      LIMIT 1
+      FOR UPDATE
+    `, [`QT-${yearMonth}/%`]);
+
+    const nextVersion = last ? last.version + 1 : 1;
+
+    const publicNo = `QT-${yearMonth}/${String(nextVersion).padStart(3, '0')}`;
+
+
+    const inserted = await t.one(`
+      INSERT INTO quotation_public_compare
+        (compare_id, public_compare_no, version)
+      VALUES ($1, $2, $3)
+      RETURNING public_compare_no
+    `, [quotationId, publicNo, nextVersion]);
+
+    return inserted;
+  });
 }

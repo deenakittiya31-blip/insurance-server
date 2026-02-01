@@ -2,7 +2,7 @@ const db = require('../config/database');
 const { generateJPG } = require('./generateJPG');
 const { groupQuotationData } = require('./groupQuotationData');
 
-exports.generateCompareJPG = async(q_id) => {
+exports.generateCompareJPG = async(q_id, publicCompare) => {
 
         //รอบแรก query ข้อมูลรถ
         const carResult = await db.query(
@@ -34,7 +34,7 @@ exports.generateCompareJPG = async(q_id) => {
         const buffer = await generateJPG({
         carData,
         insurances: grouped.insurances,
-        qId: q_id
+        qId: publicCompare
     })
 
     return buffer

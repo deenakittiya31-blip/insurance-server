@@ -34,10 +34,7 @@ exports.uploadToCloudinary = async (buffer) => {
             },
             (err, result) => {
                 if (err) reject(err)
-                else resolve({
-                    secure_url: result.secure_url,
-                    public_id: result.public_id
-                })
+                else resolve(result.secure_url)
             }
         ).end(buffer)
     })
