@@ -268,7 +268,7 @@ exports.comparePDF = async(req, res) => {
             where qc.q_id = $1`, [id])
 
         if (!carResult.rows.length) {
-            return res.status(404).json({ msg: 'ไม่พบข้อมูลรถ' });
+            return res.status(404).send('ไม่พบข้อมูลรถ' );
         }
 
         //รอบสอง query ข้อมูลเอกสาร
@@ -276,10 +276,7 @@ exports.comparePDF = async(req, res) => {
 
          // ตรวจสอบว่ามีข้อมูลไหม
         if (!quotationResult.rows.length) {
-            return res.status(404).json({ 
-                success: false,
-                msg: 'ไม่พบข้อมูลบริษัทประกัน' 
-            });
+            return res.status(404).send('ไม่พบข้อมูลบริษัทประกัน');
         }
 
         //จัดกรุ๊ปข้อมูล
@@ -322,7 +319,7 @@ exports.compareJPG = async(req, res) => {
             where qc.q_id = $1`, [id])
 
         if (!carResult.rows.length) {
-            return res.status(404).json({ msg: 'ไม่พบข้อมูลรถ' });
+            return res.status(404).send('ไม่พบข้อมูลรถ' );
         }
 
         //รอบสอง query ข้อมูลเอกสาร
@@ -330,10 +327,7 @@ exports.compareJPG = async(req, res) => {
 
          // ตรวจสอบว่ามีข้อมูลไหม
         if (!quotationResult.rows.length) {
-            return res.status(404).json({ 
-                success: false,
-                msg: 'ไม่พบข้อมูลบริษัทประกัน' 
-            });
+            return res.status(404).send('ไม่พบข้อมูลบริษัทประกัน');
         }
 
         //จัดกรุ๊ปข้อมูล
