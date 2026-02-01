@@ -170,15 +170,14 @@ exports.searchMember = async(req, res) => {
 }
 
 async function createPublicCompare(quotationId) {
-  return await db.tx(async t => {
-
+  try {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const yearMonth = `${year}${month}`;
 
        // lock เฉพาะเดือนนั้น
-    const last = await t.oneOrNone(`
+    const last = await db.query(`
       SELECT version
       FROM quotation_public_compare
       WHERE public_compare_no LIKE $1
@@ -187,18 +186,22 @@ async function createPublicCompare(quotationId) {
       FOR UPDATE
     `, [`QT-${yearMonth}/%`]);
 
-    const nextVersion = last ? last.version + 1 : 1;
+    const nextVersion = last.rows.length
+      ? last.rows[0].version + 1
+      : 1;
 
     const publicNo = `QT-${yearMonth}/${String(nextVersion).padStart(3, '0')}`;
 
 
-    const inserted = await t.one(`
+    const inserted = await db.query(`
       INSERT INTO quotation_public_compare
         (compare_id, public_compare_no, version)
       VALUES ($1, $2, $3)
       RETURNING public_compare_no
     `, [quotationId, publicNo, nextVersion]);
 
-    return inserted;
-  });
+    return inserted.rows[0].public_compare_no;
+  } catch (err) {
+    console.log(err)
+  }
 }
