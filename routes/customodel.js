@@ -4,16 +4,16 @@ const { listModel, removeModel, updateModelFields, readModel, readFieldsModel, c
 const router = express.Router();
 
 // route ของโมเดลดึงข้อมูลเอกสาร
-router.post('/create-model', authCheck, roleCheck(['admin']), createModel)
-router.get('/list-model/page', authCheck, roleCheck(['admin']), listModel)
-router.delete('/delete-model/:id', authCheck, roleCheck(['admin']), removeModel)
-router.get('/read-model/:id', authCheck, roleCheck(['admin']), readModel)
+router.post('/create-model', authCheck, roleCheck(['admin', 'staff']), createModel)
+router.get('/list-model/page', authCheck, roleCheck(['admin', 'staff']), listModel)
+router.delete('/delete-model/:id', authCheck, roleCheck(['admin', 'staff']), removeModel)
+router.get('/read-model/:id', authCheck, roleCheck(['admin', 'staff']), readModel)
 
 // route ของฟิลด์ที่ใช้ดึงข้อมูลเอกสาร
-router.post('/create-fieldsmodel', authCheck, roleCheck(['admin']), createFieldsModel)
-router.get('/read-fieldsmodel/:id', authCheck, roleCheck(['admin']), readFieldsModel)
-router.patch('/update-fieldsmodel/:id', authCheck, roleCheck(['admin']), updateModelFields)
-router.put('/update-additional/:id', authCheck, roleCheck(['admin']), updateAdditional)
-router.delete('/delete-fieldsmodel/:id', authCheck, roleCheck(['admin']), removeFieldModel)
+router.post('/create-fieldsmodel', authCheck, roleCheck(['admin', 'staff']), createFieldsModel)
+router.get('/read-fieldsmodel/:id', authCheck, roleCheck(['admin', 'staff']), readFieldsModel)
+router.patch('/update-fieldsmodel/:id', authCheck, roleCheck(['admin', 'staff']), updateModelFields)
+router.put('/update-additional/:id', authCheck, roleCheck(['admin', 'staff']), updateAdditional)
+router.delete('/delete-fieldsmodel/:id', authCheck, roleCheck(['admin', 'staff']), removeFieldModel)
 
 module.exports = router
