@@ -381,12 +381,13 @@ exports.searchCompare = async(req, res) => {
             left join car_model as cm on qc.car_model_id = cm.id 
             left join car_usage as cu on qc.car_usage_id = cu.id 
             left join car_year as cy on qc.car_year_id = cy.id 
+            left join users as us on qc.offer_id = us.user_id
             WHERE
                 qc.q_id ILIKE $1 OR
                 qpc.public_compare_no ILIKE $1 OR
                 qc.to_name ILIKE $1 OR
                 qc.details ILIKE $1 OR
-                qc.offer ILIKE $1 OR
+                us.name as offer ILIKE $1 OR
                 cu.usage_name ILIKE $1 OR
                 cy.year_be::text ILIKE $1 OR
                 cy.year_ad::text ILIKE $1 OR
