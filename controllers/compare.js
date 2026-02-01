@@ -365,7 +365,7 @@ exports.searchCompare = async(req, res) => {
 
         const result = await db.query(
             `
-            SELECT 
+            SELECT DISTINCT
               qc.id,
               qc.q_id, 
               qc.created_at,
@@ -376,13 +376,15 @@ exports.searchCompare = async(req, res) => {
               cb.name as car_brand, 
               cm.name as car_model, 
               qc.sub_car_model
-            FROM quotation_compare AS qc
+            FROM quotation_compare AS qc.q_id = qpc.compare_id
+            left join quotation_public_compare as qpc on qc = qpc.
             left join car_brand as cb on qc.car_brand_id = cb.id 
             left join car_model as cm on qc.car_model_id = cm.id 
             left join car_usage as cu on qc.car_usage_id = cu.id 
             left join car_year as cy on qc.car_year_id = cy.id 
             WHERE
                 qc.q_id ILIKE $1 OR
+                qpc.public_compare_no ILIKE $1 OR
                 qc.to_name ILIKE $1 OR
                 qc.details ILIKE $1 OR
                 qc.offer ILIKE $1 OR
