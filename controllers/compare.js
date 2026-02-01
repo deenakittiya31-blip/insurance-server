@@ -387,7 +387,7 @@ exports.searchCompare = async(req, res) => {
                 qpc.public_compare_no ILIKE $1 OR
                 qc.to_name ILIKE $1 OR
                 qc.details ILIKE $1 OR
-                us.name as offer ILIKE $1 OR
+                us.name ILIKE $1 OR
                 cu.usage_name ILIKE $1 OR
                 cy.year_be::text ILIKE $1 OR
                 cy.year_ad::text ILIKE $1 OR
