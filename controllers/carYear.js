@@ -4,7 +4,7 @@ exports.create = async(req, res) => {
     try {
         const { year_be, year_ad } = req.body
 
-        await db.query('INSERT INTO car_year(year_be, year_ad) VALUES($1, $2)', [year_be, year_ad])
+        await db.query('INSERT INTO car_year(year_be, year_ad, is_active) VALUES($1, $2, true)', [year_be, year_ad])
 
         res.json({ msg: 'เพิ่มปีสำเร็จ' })
     } catch (err) {
@@ -27,7 +27,7 @@ exports.list = async(req, res) => {
         const validSortKey = allowedSortKeys.includes(sortKey) ? sortKey : 'id';
         const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
-        const result = await db.query(`SELECT id, year_be, year_ad FROM car_year ORDER BY ${validSortKey} ${validSortDirection} LIMIT $1 OFFSET $2`, [per_page, offset])
+        const result = await db.query(`SELECT id, year_be, year_ad, is_active FROM car_year ORDER BY ${validSortKey} ${validSortDirection} LIMIT $1 OFFSET $2`, [per_page, offset])
 
         const countResult = await db.query('SELECT COUNT(*)::int as total FROM car_year')
 
@@ -40,7 +40,7 @@ exports.list = async(req, res) => {
 
 exports.listSelect = async(req, res) => {
     try {
-        const result = await db.query('SELECT id, year_be, year_ad FROM car_year order by id desc')
+        const result = await db.query('SELECT id, year_be, year_ad FROM car_year WHERE is_active = true ORDER BY id DESC')
          if (result.rows.length === 0) {
             return res.json({ data: [] })
         }
@@ -83,6 +83,22 @@ exports.update = async(req, res) => {
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
+    }
+}
+
+
+exports.is_active = async(req, res) => {
+    try {
+            const {is_active} = req.body
+            const {id} = req.params
+
+            await db.query('UPDATE car_year SET is_active = $1 WHERE id = $2', 
+            [is_active, id])
+
+        res.json({msg: 'อัปเดตประเภทรถยนต์สำเร็จ'})  
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'})
     }
 }
 

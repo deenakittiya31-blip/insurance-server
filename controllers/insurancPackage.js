@@ -18,6 +18,7 @@ exports.create = async(req, res) => {
 
         console.log(placeholders)
 
+        //อย่าลืมเพิ่ม รหัสแพ็กเกจเข้าไปด้วย
         const sql = `
             INSERT INTO insurance_package (${columns.join(', ')})
             VALUES (${placeholders.join(', ')})`

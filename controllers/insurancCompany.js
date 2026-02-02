@@ -4,7 +4,7 @@ const cloudinary = require('../config/cloudinary')
 exports.create = async(req, res) => {
     const { namecompany, code, logo_url, phone, logo_public_id } = req.body
     try {
-        const query = 'INSERT INTO insurance_company(namecompany, code, logo_url, phone, logo_public_id) VALUES($1, $2, $3, $4, $5)';
+        const query = 'INSERT INTO insurance_company(namecompany, code, logo_url, phone, logo_public_id, is_active) VALUES($1, $2, $3, $4, $5, true)';
 
         await db.query(query, [namecompany, code, logo_url, phone, logo_public_id])
 
@@ -22,7 +22,7 @@ exports.list = async(req, res) => {
     const offset = (page - 1) * per_page
 
     try {
-        const result = await db.query('SELECT id, namecompany, logo_url, code, phone, logo_public_id FROM insurance_company ORDER BY id ASC LIMIT $1 OFFSET $2', [per_page, offset])
+        const result = await db.query('SELECT id, namecompany, logo_url, code, phone, logo_public_id, is_active FROM insurance_company ORDER BY id ASC LIMIT $1 OFFSET $2', [per_page, offset])
 
         const countResult = await db.query('SELECT COUNT(*)::int as total FROM insurance_company')
 
@@ -35,7 +35,7 @@ exports.list = async(req, res) => {
 
 exports.listSelect = async(req, res) => {
     try {
-        const result = await db.query('SELECT id, logo_url, namecompany FROM insurance_company')
+        const result = await db.query('SELECT id, logo_url, namecompany FROM insurance_company WHERE is_active = true')
 
         res.json({ data: result.rows })
     } catch (err) {
@@ -102,6 +102,21 @@ exports.update = async(req, res) => {
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
+    }
+}
+
+exports.is_active = async(req, res) => {
+    try {
+            const { is_active } = req.body
+            const { id } = req.params
+
+            await db.query('UPDATE insurance_company SET is_active = $1 WHERE id = $2', 
+            [is_active, id])
+
+        res.json({msg: 'อัปเดตสถานะสำเร็จ'})  
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'})
     }
 }
 

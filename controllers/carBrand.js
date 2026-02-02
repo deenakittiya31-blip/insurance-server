@@ -5,8 +5,8 @@ exports.create = async(req, res) => {
         const { name, logo_url, logo_public_id } = req.body
 
       await db.query(
-      `INSERT INTO car_brand (name, logo_url, logo_public_id)
-       VALUES ($1, $2, $3)`,
+      `INSERT INTO car_brand (name, logo_url, logo_public_id, is_active)
+       VALUES ($1, $2, $3, true)`,
       [name, logo_url, logo_public_id]
     )
 
@@ -35,7 +35,7 @@ exports.list = async(req, res) => {
 
 exports.listSelect = async(req, res) => {
     try {
-        const result = await db.query('SELECT id, name FROM car_brand order by id')
+        const result = await db.query('SELECT id, name FROM car_brand WHERE is_active = true ORDER BY id')
 
         res.json({ data: result.rows })
     } catch (err) {
@@ -80,6 +80,21 @@ exports.update = async(req, res) => {
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
+    }
+}
+
+exports.is_active = async(req, res) => {
+    try {
+            const {is_active} = req.body
+            const {id} = req.params
+
+            await db.query('UPDATE car_brand SET is_active = $1 WHERE id = $2', 
+            [is_active, id])
+
+        res.json({msg: 'อัปเดตสถานะสำเร็จ'})  
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'})
     }
 }
 

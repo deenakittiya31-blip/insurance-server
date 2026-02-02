@@ -4,7 +4,7 @@ exports.create = async(req, res) => {
     try {
         const { usage } = req.body
 
-        await db.query('INSERT INTO car_usage (usage_name) VALUES ($1)', [usage]);
+        await db.query('INSERT INTO car_usage (usage_name, is_active) VALUES ($1, true)', [usage]);
 
         res.json({ msg: 'เพิ่มประเภทการใช้งานรถสำเร็จ' })
     } catch (err) {
@@ -20,7 +20,7 @@ exports.list = async(req, res) => {
     const offset = (page - 1) * per_page
 
     try {
-        const result = await db.query('SELECT id, usage_name FROM car_usage ORDER BY id ASC LIMIT $1 OFFSET $2', [per_page, offset])
+        const result = await db.query('SELECT id, usage_name, is_active FROM car_usage WHERE is_active = true ORDER BY id ASC LIMIT $1 OFFSET $2', [per_page, offset])
 
         const countResult = await db.query('SELECT COUNT(*)::int as total FROM car_usage')
 
@@ -33,7 +33,7 @@ exports.list = async(req, res) => {
 
 exports.listSelect = async(req, res) => {
     try {
-        const result = await db.query('SELECT id, usage_name FROM car_usage')
+        const result = await db.query('SELECT id, usage_name FROM car_usage WHERE is_active = true ORDER BY id ASC')
 
         res.json({  data: result.rows })
     } catch (err) {
@@ -56,6 +56,21 @@ exports.update = async(req, res) => {
     }
 }
 
+exports.is_active = async(req, res) => {
+    try {
+            const { is_active } = req.body
+            const { id } = req.params
+
+            await db.query('UPDATE car_usage SET is_active = $1 WHERE id = $2', 
+            [is_active, id])
+
+        res.json({msg: 'อัปเดตสถานะสำเร็จ'})  
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'})
+    }
+}
+
 exports.remove = async(req, res) => {
     try {
         const {id} = req.params
@@ -74,7 +89,7 @@ exports.createUsageType = async(req, res) => {
     try {
         const { code, car_type_id, car_usage_id, code_usage } = req.body
 
-        await db.query('INSERT INTO car_usage_type (code, car_type_id, car_usage_id, code_usage) VALUES ($1, $2, $3, $4)'
+        await db.query('INSERT INTO car_usage_type (code, car_type_id, car_usage_id, code_usage, is_active) VALUES ($1, $2, $3, $4, true)'
                         , [
                             code, 
                             Number(car_type_id), 
@@ -98,7 +113,7 @@ exports.listUsageType = async(req, res) => {
     try {
         const result = await db.query(
             `
-            SELECT cut.id, cut.code, ct.type AS car_type, cu.usage_name, cut.code_usage
+            SELECT cut.id, cut.code, ct.type AS car_type, cu.usage_name, cut.code_usage, cut.is_active
             FROM car_usage_type AS cut
             JOIN car_type AS ct ON cut.car_type_id = ct.id
             JOIN car_usage AS cu ON cut.car_usage_id = cu.id
@@ -122,6 +137,7 @@ exports.listUsageTypeSelect = async(req, res) => {
             FROM car_usage_type AS cut
             JOIN car_type AS ct ON cut.car_type_id = ct.id
             JOIN car_usage AS cu ON cut.car_usage_id = cu.id
+            WHERE cut.is_active = true
             ORDER BY cut.id ASC
             `)
 
@@ -171,6 +187,21 @@ exports.updateUsageType = async(req, res) => {
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
+    }
+}
+
+exports.statusUsageType = async(req, res) => {
+    try {
+            const { is_active } = req.body
+            const { id } = req.params
+
+            await db.query('UPDATE car_usage_type SET is_active = $1 WHERE id = $2', 
+            [is_active, id])
+
+        res.json({msg: 'อัปเดตสถานะสำเร็จ'})  
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'})
     }
 }
 

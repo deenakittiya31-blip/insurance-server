@@ -4,7 +4,7 @@ exports.create = async(req, res) => {
     try {
         const { brand_id, name } = req.body
 
-        await db.query('INSERT INTO car_model(brand_id, name) VALUES($1, $2)', [brand_id, name])
+        await db.query('INSERT INTO car_model(brand_id, name, is_active) VALUES($1, $2, true)', [brand_id, name])
 
         res.json({ msg: 'เพิ่มรุ่นรถสำเร็จ' })
     } catch (err) {
@@ -20,7 +20,7 @@ exports.list = async(req, res) => {
 
         const offset = (page - 1) * per_page
 
-        const result  = await db.query('select cm.id, cb.id as brand_id, cb.name as brand, cm.name from car_model as cm inner join car_brand as cb on cm.brand_id = cb.id ORDER BY cm.id ASC LIMIT $1 OFFSET $2', [per_page, offset])
+        const result  = await db.query('select cm.id, cb.id as brand_id, cb.name as brand, cm.name, cm.is_active from car_model as cm inner join car_brand as cb on cm.brand_id = cb.id ORDER BY cm.id ASC LIMIT $1 OFFSET $2', [per_page, offset])
 
         const countResult = await db.query('SELECT COUNT(*)::int as total FROM car_model')
 
@@ -42,7 +42,7 @@ exports.listBy = async(req, res) => {
         const result = await db.query(
             `SELECT id, name 
              FROM car_model 
-             WHERE brand_id = $1
+             WHERE brand_id = $1 AND is_active = true
              ORDER BY name ASC`,
             [brand_id]
         )
@@ -103,6 +103,21 @@ exports.update = async(req, res) => {
     } catch (err) {
         console.log(err)
         res.status(500).json({ message: 'server error' })
+    }
+}
+
+exports.is_active = async(req, res) => {
+    try {
+            const {is_active} = req.body
+            const {id} = req.params
+
+            await db.query('UPDATE car_model SET is_active = $1 WHERE id = $2', 
+            [is_active, id])
+
+        res.json({msg: 'อัปเดตสถานะสำเร็จ'})  
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'})
     }
 }
 

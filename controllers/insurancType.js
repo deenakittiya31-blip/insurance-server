@@ -4,7 +4,7 @@ exports.create = async(req, res) => {
     try {
         const { nametype, description } = req.body
 
-        const insertResult = await db.query('INSERT INTO insurance_type(nametype, description) VALUES($1, $2) RETURNING id', [nametype, description])
+        const insertResult = await db.query('INSERT INTO insurance_type(nametype, description, is_active) VALUES($1, $2, true) RETURNING id', [nametype, description])
 
         const id = insertResult.rows[0].id
 
@@ -53,7 +53,7 @@ exports.list = async(req, res) => {
 
 exports.listSelect = async(req, res) => {
     try {
-        const result = await db.query('SELECT id, nametype FROM insurance_type order by id asc')
+        const result = await db.query('SELECT id, nametype FROM insurance_type WHERE is_active = true ORDER BY id ASC')
 
         res.json({ data: result.rows })
     } catch (err) {

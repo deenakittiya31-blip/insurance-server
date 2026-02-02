@@ -152,7 +152,7 @@ exports.update = async(req, res) => {
     }
 }
 
-exports.statusCompulsory = async(res, req) => {
+exports.statusCompulsory = async(req, res) => {
     try {
         const { is_active } = req.body;
         const { id } = req.params;
