@@ -2,17 +2,18 @@ const db = require('../config/database')
 
 exports.create = async(req, res) => {
     try {
-        const { car_type_id, code, net_price, vat, stamp, total, detail } = req.body
+        const { car_type_id, code_main, code_sub, detail, net_price, vat, stamp, total } = req.body
 
-        await db.query('INSERT INTO compulsory_insurance (car_type_id, code, net_price, vat, stamp, total, detail) VALUES ($1, $2, $3, $4, $5, $6, $7)', 
+        await db.query('INSERT INTO compulsory_insurance (car_type_id, code, net_price, vat, stamp, total, detail) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', 
                             [
                                 Number(car_type_id), 
-                                code,
+                                code_main, 
+                                code_sub,
+                                detail,
                                 Number(net_price), 
                                 Number(vat), 
                                 Number(stamp), 
                                 Number(total), 
-                                detail
                             ]
                        );
 
