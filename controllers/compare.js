@@ -122,7 +122,7 @@ exports.listPinCompare = async(req, res) => {
         const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
         const user_id = req.user.user_id
 
-
+console.log(user_id)
         const offset = (page - 1) * per_page;
 
         const result = await db.query(
