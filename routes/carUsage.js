@@ -4,7 +4,7 @@ const { create, list, update, remove, listSelect, createUsageType, listUsageType
 const router = express.Router()
 
 router.post('/create-carusage', authCheck, roleCheck(['admin']), create)
-router.get('/list-carusage/page', list)
+router.get('/list-carusage', list)
 router.get('/list-carusage-select', listSelect)
 router.put('/update-carusage/:id', authCheck, roleCheck(['admin']), update)
 router.delete('/delete-carusage/:id', authCheck, roleCheck(['admin']), remove)
