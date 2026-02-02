@@ -31,7 +31,23 @@ exports.list = async(req, res) => {
     const offset = (page - 1) * per_page
 
     try {
-        const result = await db.query('SELECT ci.id, cu.usage_name as usage, ct.type, ci.code, net_price, vat, stamp, total FROM compulsory_insurance as ci INNER JOIN car_type as ct ON ci.car_type_id = ct.id left join car_usage as cu on ct.car_usage_id = cu.id ORDER BY ci.id ASC LIMIT $1 OFFSET $2', [per_page, offset])
+        const result = await db.query(
+            `
+            select 
+              ci.id, 
+              ci.car_type, 
+              cut.code_usage,
+              ci.code_sub, 
+              ci.net_price,
+              ci.vat, 
+              ci.stamp, 
+              ci.total,
+              ci.is_active 
+            from compulsory_insurance as ci 
+            left join car_usage_type as cut on ci.car_usage_type_id = cut.id 
+            order by ci.id asc
+            limit $1 offset $2
+            `, [per_page, offset])
 
         const countResult = await db.query('SELECT COUNT(*)::int as total FROM compulsory_insurance')
 
@@ -45,7 +61,20 @@ exports.list = async(req, res) => {
 exports.listOption = async(req, res) => {
     const { id } = req.params
     try {
-        const result = await db.query('SELECT ci.id, ct.type, ct.code, total FROM compulsory_insurance as ci INNER JOIN car_type as ct ON ci.car_type_id = ct.id join car_usage as cu on ct.car_usage_id = cu.id where ct.car_usage_id = $1',[id])
+        const result = await db.query(
+            `
+            select 
+              ci.id, 
+              ci.car_type, 
+              cut.code_usage,
+              ci.total 
+            from compulsory_insurance as ci 
+            left join car_usage_type as cut on ci.car_usage_type_id = cut.id
+            left join car_usage as cu on cut.car_usage_id = cu.id
+            where cu.id = $1 and ci.is_active = true
+            order by ci.id asc
+            `
+            ,[id])
 
         console.log(result.rows)
         res.json({ data: result.rows })
