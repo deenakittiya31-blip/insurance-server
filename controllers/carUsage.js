@@ -14,13 +14,8 @@ exports.create = async(req, res) => {
 }
 
 exports.list = async(req, res) => {
-    const page = Number(req.query.page) || 1;
-    const per_page = Number(req.query.per_page) || 5;
-
-    const offset = (page - 1) * per_page
-
     try {
-        const result = await db.query('SELECT id, usage_name, is_active FROM car_usage WHERE is_active = true ORDER BY id ASC LIMIT $1 OFFSET $2', [per_page, offset])
+        const result = await db.query('SELECT id, usage_name, is_active FROM car_usage ORDER BY id ASC')
 
         const countResult = await db.query('SELECT COUNT(*)::int as total FROM car_usage')
 
