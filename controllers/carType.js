@@ -4,7 +4,7 @@ exports.create = async(req, res) => {
     try {
         const { type, code } = req.body
 
-        await db.query('INSERT INTO car_type(type, code) VALUES($1, $2)', [type, code])
+        await db.query('INSERT INTO car_type(type, code, is_active) VALUES($1, $2, true)', [type, code])
 
         res.json({ msg: 'เพิ่มประเภทรถสำเร็จ' })
     } catch (err) {
