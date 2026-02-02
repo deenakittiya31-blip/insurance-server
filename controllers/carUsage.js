@@ -96,7 +96,14 @@ exports.listUsageType = async(req, res) => {
     const offset = (page - 1) * per_page
 
     try {
-        const result = await db.query('SELECT * FROM car_usage_type ORDER BY id ASC LIMIT $1 OFFSET $2', [per_page, offset])
+        const result = await db.query(
+            `
+            SELECT cut.id, cut.code, ct.type AS car_type, cu.usage_name, cut.code_usage
+            FROM car_usage_type AS cut
+            JOIN car_type AS ct ON cut.car_type_id = ct.id
+            JOIN car_usage AS cu ON cut.car_usage_id = cu.id
+            ORDER BY cut.id ASC LIMIT $1 OFFSET $2`, 
+            [per_page, offset])
 
         const countResult = await db.query('SELECT COUNT(*)::int as total FROM car_usage_type')
 
