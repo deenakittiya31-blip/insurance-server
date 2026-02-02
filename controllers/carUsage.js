@@ -139,7 +139,7 @@ exports.updateUsageType = async(req, res) => {
                     code = coalesce ($1, code),
                     car_type_id = coalesce ($2, car_type_id),
                     car_usage_id = coalesce ($3, car_usage_id),
-                    code_usage = coalesce ($4, code_usage),
+                    code_usage = coalesce ($4, code_usage)
                 WHERE id = $5`
                 , [
                     code, 
