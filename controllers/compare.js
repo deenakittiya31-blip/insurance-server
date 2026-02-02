@@ -374,31 +374,33 @@ exports.searchCompare = async(req, res) => {
               qc.created_at,
               qc.to_name,
               qc.details,
-              cu.usage_name as usage, 
+              cu.usage_name AS usage, 
               cy.year_be, cy.year_ad,  
-              cb.name as car_brand, 
-              cm.name as car_model, 
+              cb.name AS car_brand, 
+              cm.name AS car_model, 
               qc.sub_car_model
             FROM quotation_compare AS qc
-            left join quotation_public_compare as qpc on qc.q_id = qpc.compare_id
-            left join car_brand as cb on qc.car_brand_id = cb.id 
-            left join car_model as cm on qc.car_model_id = cm.id 
-            left join car_usage as cu on qc.car_usage_id = cu.id 
-            left join car_year as cy on qc.car_year_id = cy.id 
-            left join users as us on qc.offer_id = us.user_id
+            LEFT JOIN quotation_public_compare AS qpc ON qc.q_id = qpc.compare_id
+            LEFT JOIN car_brand AS cb ON qc.car_brand_id = cb.id 
+            LEFT JOIN car_model AS cm ON qc.car_model_id = cm.id 
+            LEFT JOIN car_usage AS cu ON qc.car_usage_id = cu.id 
+            LEFT JOIN car_year AS cy ON qc.car_year_id = cy.id 
+            LEFT JOIN users AS us ON qc.offer_id = us.user_id
             WHERE
                 qc.offer_id = $1
-                qc.q_id ILIKE $2 OR
-                qpc.public_compare_no ILIKE $2 OR
-                qc.to_name ILIKE $2 OR
-                qc.details ILIKE $2 OR
-                us.name ILIKE $2 OR
-                cu.usage_name ILIKE $2 OR
-                cy.year_be::text ILIKE $2 OR
-                cy.year_ad::text ILIKE $2 OR
-                cb.name ILIKE $2 OR
-                cm.name ILIKE $2 OR
-                qc.sub_car_model ILIKE $2 
+                AND (
+                    qc.q_id ILIKE $2 OR
+                    qpc.public_compare_no ILIKE $2 OR
+                    qc.to_name ILIKE $2 OR
+                    qc.details ILIKE $2 OR
+                    us.name ILIKE $2 OR
+                    cu.usage_name ILIKE $2 OR
+                    cy.year_be::text ILIKE $2 OR
+                    cy.year_ad::text ILIKE $2 OR
+                    cb.name ILIKE $2 OR
+                    cm.name ILIKE $2 OR
+                    qc.sub_car_model ILIKE $2 
+                )
             ORDER BY qc.created_at DESC
             `,
             [user_id, `%${search}%`]
