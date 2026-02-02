@@ -87,7 +87,22 @@ exports.listOption = async(req, res) => {
 exports.read = async(req,res)=>{
     try {
         const { id } = req.params
-        const result = await db.query('SELECT ci.id, ci.car_type_id, ct.type, ci.code, net_price, vat, stamp, total, detail FROM compulsory_insurance as ci INNER JOIN car_type as ct ON ci.car_type_id = ct.id WHERE ci.id = $1', [id])
+        const result = await db.query(
+            `
+            select 
+              ci.id, 
+              ci.car_type, 
+              ci.car_usage_type_id,
+              ci.code_sub, 
+              ci.net_price,
+              ci.vat, 
+              ci.stamp, 
+              ci.total,
+            from compulsory_insurance as ci 
+            left join car_usage_type as cut on ci.car_usage_type_id = cut.id
+            where ci.id = $1
+            `
+            , [id])
 
 
         res.json({data: result.rows[0]})
@@ -98,19 +113,33 @@ exports.read = async(req,res)=>{
 }
 
 exports.update = async(req, res) => {
-    const { car_type_id, code, net_price, vat, stamp, total, detail } = req.body;
+    const { car_type, car_usage_type_id, code_sub, detail, net_price, vat, stamp, total } = req.body;
     const { id } = req.params;
 
     try {
-        await db.query('UPDATE compulsory_insurance SET car_type_id = COALESCE($1, car_type_id), code = COALESCE($2, code), net_price = COALESCE($3, net_price), vat = COALESCE($4, vat), stamp = COALESCE($5, stamp), total = COALESCE($6, total), detail = COALESCE($7, detail) WHERE id = $8',
+        await db.query(
+            `
+            update compulsory_insurance 
+            set 
+                car_type = coalesce($1, car_type),
+                car_usage_type_id = coalesce($2, car_usage_type_id), 
+                code_sub = coalesce($3, code_sub),
+                detail = coalesce($4, detail),
+                net_price = coalesce($5, net_price),
+                vat = coalesce($6, vat),
+                stamp = coalesce($7, stamp) 
+                total = coalesce($8, total) 
+            WHERE id = $9
+            `,
             [
-                car_type_id ?? null,
-                code ?? null,
-                net_price ?? null,
-                vat ?? null,
-                stamp ?? null,
-                total ?? null,
-                detail ?? null,
+                car_type                    ?? null,
+                Number(car_usage_type_id)   ?? null,
+                code_sub                    ?? null,
+                detail                      ?? null,
+                net_price                   ?? null,
+                vat                         ?? null,
+                stamp                       ?? null,
+                total                       ?? null,
                 id
             ]
         )
