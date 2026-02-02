@@ -59,7 +59,7 @@ exports.listCompare = async(req, res) => {
         const sortKey = req.query.sortKey || 'id';
         const sortDirection = req.query.sortDirection || 'DESC';
         const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
-        const user_id = req.user.user_id
+        const user_id = req.user.id
 
         const offset = (page - 1) * per_page;
 
@@ -120,7 +120,7 @@ exports.listPinCompare = async(req, res) => {
         const sortKey = req.query.sortKey || 'id';
         const sortDirection = req.query.sortDirection || 'DESC';
         const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
-        const user_id = req.user.user_id
+        const user_id = req.user.id
 
 console.log(user_id)
         const offset = (page - 1) * per_page;
