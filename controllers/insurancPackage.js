@@ -2,18 +2,27 @@ const db = require('../config/database')
 
 exports.create = async(req, res) => {
     try {
-        const { company_id, insur_type_id, car_brand_id, car_model_id, usage_car_id, car_year_id, package_name  } = req.body
+        const data = req.body
 
-        await db.query('INSERT INTO insurance_package(company_id, insur_type_id, car_brand_id, car_model_id, usage_car_id, car_year_id, package_name) VALUES($1, $2, $3, $4, $5, $6, $7)', 
-            [
-                Number(company_id), 
-                Number(insur_type_id),
-                car_brand_id,
-                Number(car_model_id),
-                Number(usage_car_id),
-                Number(car_year_id),
-                package_name
-            ])
+        if (!data.package_name) {
+            return res.status(400).json({ msg: 'กรุณาระบุชื่อแพ็กเกจ' })
+        }
+
+        //generate เลขที่แพ็กเกจก่อน
+
+        const columns = Object.keys(data)
+        const values = Object.values(data)
+
+        //สร้าง($1, $2, $3 ...)
+        const placeholders = columns.map((_, i) => `$${i + 1}`)
+
+        console.log(placeholders)
+
+        const sql = `
+            INSERT INTO insurance_package (${columns.join(', ')})
+            VALUES (${placeholders.join(', ')})`
+
+        await db.query(sql, values)
 
         res.json({ msg: 'เพิ่มข้อมูลแพ็คเกจสำเร็จ' })
     } catch (err) {

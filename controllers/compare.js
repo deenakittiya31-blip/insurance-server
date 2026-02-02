@@ -59,8 +59,7 @@ exports.listCompare = async(req, res) => {
         const sortKey = req.query.sortKey || 'id';
         const sortDirection = req.query.sortDirection || 'DESC';
         const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
-
-        console.log(per_page)
+        const user_id = req.user.user_id
 
         const offset = (page - 1) * per_page;
 
@@ -98,11 +97,12 @@ exports.listCompare = async(req, res) => {
             LEFT JOIN history_send_quotation AS hq ON qc.q_id = hq.compare_id
             LEFT JOIN member AS m ON hq.member_id = m.user_id
             LEFT JOIN pin_quotation AS pq ON qc.id = pq.compare_id
+            WHERE qc.offer_id = $1
             GROUP BY qc.id, qc.q_id, qc.created_at, qc.to_name, qc.details, 
             cu.usage_name, cy.year_be, cy.year_ad, cb.name, cm.name, qc.sub_car_model, pq.id
             ORDER BY ${sortKey} ${validSortDirection} 
-            LIMIT $1 OFFSET $2
-            `,[per_page, offset]
+            LIMIT $2 OFFSET $3
+            `,[user_id, per_page, offset]
         )
 
         const countResult = await db.query('SELECT COUNT(*)::int as total FROM quotation_compare')
@@ -120,6 +120,8 @@ exports.listPinCompare = async(req, res) => {
         const sortKey = req.query.sortKey || 'id';
         const sortDirection = req.query.sortDirection || 'DESC';
         const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        const user_id = req.user.user_id
+
 
         const offset = (page - 1) * per_page;
 
@@ -156,11 +158,12 @@ exports.listPinCompare = async(req, res) => {
             LEFT JOIN car_year AS cy ON qc.car_year_id = cy.id 
             LEFT JOIN history_send_quotation AS hq ON qc.q_id = hq.compare_id
             LEFT JOIN member AS m ON hq.member_id = m.user_id
+            WHERE qc.offer_id = $1
             GROUP BY pq.id, qc.id, qc.q_id, qc.created_at, qc.to_name, qc.details, 
             cu.usage_name, cy.year_be, cy.year_ad, cb.name, cm.name, qc.sub_car_model
             ORDER BY ${sortKey} ${validSortDirection} 
             LIMIT $1 OFFSET $2
-            `,[per_page, offset]
+            `,[user_id, per_page, offset]
         )
 
         const countResult = await db.query('SELECT COUNT(*)::int as total FROM quotation_compare')
@@ -361,6 +364,7 @@ exports.compareJPG = async(req, res) => {
 exports.searchCompare = async(req, res) => {
     try {
         const { search } = req.body;
+          const user_id = req.user.user_id
 
         const result = await db.query(
             `
@@ -383,20 +387,21 @@ exports.searchCompare = async(req, res) => {
             left join car_year as cy on qc.car_year_id = cy.id 
             left join users as us on qc.offer_id = us.user_id
             WHERE
-                qc.q_id ILIKE $1 OR
-                qpc.public_compare_no ILIKE $1 OR
-                qc.to_name ILIKE $1 OR
-                qc.details ILIKE $1 OR
-                us.name ILIKE $1 OR
-                cu.usage_name ILIKE $1 OR
-                cy.year_be::text ILIKE $1 OR
-                cy.year_ad::text ILIKE $1 OR
-                cb.name ILIKE $1 OR
-                cm.name ILIKE $1 OR
-                qc.sub_car_model ILIKE $1 
+                WHERE qc.offer_id = $1
+                qc.q_id ILIKE $2 OR
+                qpc.public_compare_no ILIKE $2 OR
+                qc.to_name ILIKE $2 OR
+                qc.details ILIKE $2 OR
+                us.name ILIKE $2 OR
+                cu.usage_name ILIKE $2 OR
+                cy.year_be::text ILIKE $2 OR
+                cy.year_ad::text ILIKE $2 OR
+                cb.name ILIKE $2 OR
+                cm.name ILIKE $2 OR
+                qc.sub_car_model ILIKE $2 
             ORDER BY qc.created_at DESC
             `,
-            [`%${search}%`]
+            [user_id, `%${search}%`]
         );
 
         res.json({data: result.rows})
