@@ -4,7 +4,7 @@ exports.create = async(req, res) => {
     try {
         const { car_type, car_usage_type_id, code_sub, detail, net_price, vat, stamp, total } = req.body
 
-        await db.query('INSERT INTO compulsory_insurance (car_type, car_usage_type_id, code_sub, detail net_price, vat, stamp, total) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', 
+        await db.query('INSERT INTO compulsory_insurance (car_type, car_usage_type_id, code_sub, detail, net_price, vat, stamp, total) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', 
                             [
                                 car_type, 
                                 Number(car_usage_type_id), 
