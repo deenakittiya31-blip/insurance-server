@@ -162,7 +162,7 @@ exports.listPinCompare = async(req, res) => {
             GROUP BY pq.id, qc.id, qc.q_id, qc.created_at, qc.to_name, qc.details, 
             cu.usage_name, cy.year_be, cy.year_ad, cb.name, cm.name, qc.sub_car_model
             ORDER BY ${sortKey} ${validSortDirection} 
-            LIMIT $1 OFFSET $2
+            LIMIT $2 OFFSET $3
             `,[user_id, per_page, offset]
         )
 
@@ -387,7 +387,7 @@ exports.searchCompare = async(req, res) => {
             left join car_year as cy on qc.car_year_id = cy.id 
             left join users as us on qc.offer_id = us.user_id
             WHERE
-                WHERE qc.offer_id = $1
+                qc.offer_id = $1
                 qc.q_id ILIKE $2 OR
                 qpc.public_compare_no ILIKE $2 OR
                 qc.to_name ILIKE $2 OR
