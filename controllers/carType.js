@@ -2,9 +2,9 @@ const db = require('../config/database')
 
 exports.create = async(req, res) => {
     try {
-        const { type, code, car_usage_id } = req.body
+        const { type, code } = req.body
 
-        await db.query('INSERT INTO car_type(type, code, car_usage_id) VALUES($1, $2, $3)', [type, code, car_usage_id])
+        await db.query('INSERT INTO car_type(type, code) VALUES($1, $2)', [type, code])
 
         res.json({ msg: 'เพิ่มประเภทรถสำเร็จ' })
     } catch (err) {
