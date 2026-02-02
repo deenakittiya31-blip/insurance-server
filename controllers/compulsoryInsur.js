@@ -152,6 +152,20 @@ exports.update = async(req, res) => {
     }
 }
 
+exports.statusCompulsory = async(res, req) => {
+    try {
+        const { is_active } = req.body;
+        const { id } = req.params;
+
+        await db.query('update compulsory_insurance set is_active = $1 where id = $2', [is_active, id])
+
+        res.json({msg: 'อัปเดตสถานะสำเร็จ'}) 
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'Server error'})
+    }
+}
+
 exports.remove = async(req, res) => {
     try {
         const {id} = req.params
