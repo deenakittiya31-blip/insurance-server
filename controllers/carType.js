@@ -46,7 +46,7 @@ exports.listSelect = async(req, res) => {
 exports.read = async(req,res)=>{
     try {
         const { id } = req.params
-        const result = await db.query('SELECT type, code, car_usage_id FROM car_type WHERE id = $1', [id])
+        const result = await db.query('SELECT type, code FROM car_type WHERE id = $1', [id])
 
 
         res.json({data: result.rows[0]})
@@ -57,18 +57,17 @@ exports.read = async(req,res)=>{
 }
 
 exports.update = async(req, res) => {
-    const { type, code, car_usage_id } = req.body;
+    const { type, code } = req.body;
     const { id } = req.params;
     try {
         const result = await db.query('SELECT * FROM car_type WHERE id = $1', [id])
 
         const old = result.rows[0]
 
-        await db.query('UPDATE car_type SET type = $1, code = $2, car_usage_id = $3 WHERE id = $4', 
+        await db.query('UPDATE car_type SET type = $1, code = $2 WHERE id = $3', 
             [
                 type                ?? old.type,
                 code                ?? old.code, 
-                car_usage_id        !== undefined ? Number(car_usage_id) : old.car_usage_id,
                 id
             ])
 
