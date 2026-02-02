@@ -128,7 +128,7 @@ exports.update = async(req, res) => {
                 detail = coalesce($4, detail),
                 net_price = coalesce($5, net_price),
                 vat = coalesce($6, vat),
-                stamp = coalesce($7, stamp) 
+                stamp = coalesce($7, stamp), 
                 total = coalesce($8, total) 
             WHERE id = $9
             `,
