@@ -99,13 +99,12 @@ exports.read = async(req,res)=>{
               ci.net_price,
               ci.vat, 
               ci.stamp, 
-              ci.total,
+              ci.total
             from compulsory_insurance as ci 
             left join car_usage_type as cut on ci.car_usage_type_id = cut.id
             where ci.id = $1
             `
             , [id])
-
 
         res.json({data: result.rows[0]})
     } catch (err) {
