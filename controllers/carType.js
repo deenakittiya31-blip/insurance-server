@@ -21,7 +21,7 @@ exports.list = async(req, res) => {
 
     try {
         const result = await db.query(
-            'SELECT ct.id, ct.type, ct.code, cu.usage_name FROM car_type as ct JOIN car_usage as cu ON ct.car_usage_id = cu.id ORDER BY id ASC LIMIT $1 OFFSET $2', [per_page, offset])
+            'SELECT * FROM car_type ORDER BY id ASC LIMIT $1 OFFSET $2', [per_page, offset])
 
         const countResult = await db.query('SELECT COUNT(*)::int as total FROM car_type')
 
@@ -34,7 +34,7 @@ exports.list = async(req, res) => {
 
 exports.listSelect = async(req, res) => {
     try {
-        const result = await db.query('SELECT ct.id, ct.type, cu.usage_name as usage FROM car_type as ct join car_usage as cu on ct.car_usage_id = cu.id')
+        const result = await db.query('SELECT * FROM car_type')
 
         res.json({  data: result.rows })
     } catch (err) {
