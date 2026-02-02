@@ -4,9 +4,13 @@ exports.create = async(req, res) => {
     try {
         const { nametype, description } = req.body
 
-        const query = 'INSERT INTO insurance_type(nametype, description) VALUES($1, $2)';
+        const insertResult = await db.query('INSERT INTO insurance_type(nametype, description) VALUES($1, $2) RETURNING id', [nametype, description])
 
-        await db.query(query, [nametype, description])
+        const id = insertResult.rows[0].id
+
+        const type_code = `IT${String(id).padStart(3, '0')}`
+        await db.query('update insurance_type set type_code = $1 where id = $2', [type_code, id])
+
         res.json({ msg: 'เพิ่มข้อมูลสำเร็จ' })
     } catch (err) {
         console.log(err)
@@ -36,7 +40,7 @@ exports.list = async(req, res) => {
     const offset = (page - 1) * per_page
 
     try {
-        const result = await db.query('SELECT id, nametype, description, is_active FROM insurance_type ORDER BY id ASC LIMIT $1 OFFSET $2',[per_page, offset])
+        const result = await db.query('SELECT * FROM insurance_type ORDER BY id ASC LIMIT $1 OFFSET $2',[per_page, offset])
 
          const countResult = await db.query('SELECT COUNT(*)::int as total FROM insurance_type')
 
