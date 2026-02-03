@@ -2,28 +2,77 @@ const db = require('../config/database')
 
 exports.create = async(req, res) => {
     try {
-        const data = req.body
+        const { payments, car_brand_id, car_model_id, car_type_id,
+        compulsory_id, ...packageData } = req.body
 
-        if (!data.package_name) {
+        if (!packageData.package_name) {
             return res.status(400).json({ msg: 'กรุณาระบุชื่อแพ็กเกจ' })
         }
 
-        //generate เลขที่แพ็กเกจก่อน
-
-        const columns = Object.keys(data)
-        const values = Object.values(data)
+        const columns = Object.keys(packageData)
+        const values = Object.values(packageData)
 
         //สร้าง($1, $2, $3 ...)
         const placeholders = columns.map((_, i) => `$${i + 1}`)
 
-        console.log(placeholders)
+        const result = await db.query(`
+         SELECT package_id
+         FROM insurance_package
+         ORDER BY id DESC
+         LIMIT 1
+         FOR UPDATE
+        `);
 
-        //อย่าลืมเพิ่ม รหัสแพ็กเกจเข้าไปด้วย
-        const sql = `
-            INSERT INTO insurance_package (${columns.join(', ')})
-            VALUES (${placeholders.join(', ')})`
+        let nextNumber = 1;
 
-        await db.query(sql, values)
+        if (result.rows.length) {
+            const lastCode = result.rows[0].package_id; // PK00000000012
+            const lastNumber = parseInt(lastCode.replace('PK', ''), 10);
+            nextNumber = lastNumber + 1;
+        }
+
+        const packageCode = `PK${String(nextNumber).padStart(11, '0')}`;
+
+        console.log(packageCode)
+
+        // //อย่าลืมเพิ่ม รหัสแพ็กเกจเข้าไปด้วย
+        // const packageResualt = await db.query(`
+        //     INSERT INTO insurance_package (${columns.join(', ')}, package_id)
+        //     VALUES (${placeholders.join(', ')}, $19)
+        //     RETURNING id
+        //     `, values, packageCode)
+
+        // const packageId = packageResualt.rows[0].id
+        // if (Array.isArray(payments)) {
+        //     for (const p of payments) {
+        //         const {
+        //         payment_method_id,
+        //         discount_percent = 0,
+        //         discount_amount = 0,
+        //         first_payment_amount = null
+        //         } = p
+
+        //         const paymentSql = `
+        //         INSERT INTO insurance_package_payments
+        //         (
+        //             package_id,
+        //             payment_method_id,
+        //             discount_percent,
+        //             discount_amount,
+        //             first_payment_amount
+        //         )
+        //         VALUES ($1, $2, $3, $4, $5)
+        //         `
+
+        //         await db.query(paymentSql, [
+        //             packageId,
+        //             payment_method_id,
+        //             discount_percent,
+        //             discount_amount,
+        //             first_payment_amount
+        //         ])
+        //     }
+        // }
 
         res.json({ msg: 'เพิ่มข้อมูลแพ็คเกจสำเร็จ' })
     } catch (err) {
