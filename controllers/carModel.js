@@ -35,16 +35,18 @@ exports.listBy = async(req, res) => {
     try {
         const { brand_id } = req.query;
 
-         if (!brand_id) {
+         if (!brand_id || brand_id.length === 0) {
             return res.json({ data: [] })
         }
+
+        const brandIds = Array.isArray(brand_id) ? brand_id : [brand_id];
 
         const result = await db.query(
             `SELECT id, name 
              FROM car_model 
-             WHERE brand_id = $1 AND is_active = true
+             WHERE brand_id = ANY($1) AND is_active = true
              ORDER BY name ASC`,
-            [brand_id]
+            [brandIds]
         )
 
         res.json({
@@ -55,6 +57,31 @@ exports.listBy = async(req, res) => {
         res.status(500).json({msg: 'Server errer'})
     }
 }
+
+// exports.listBy = async(req, res) => {
+//     try {
+//         const { brand_id } = req.query;
+
+//          if (!brand_id) {
+//             return res.json({ data: [] })
+//         }
+
+//         const result = await db.query(
+//             `SELECT id, name 
+//              FROM car_model 
+//              WHERE brand_id = $1 AND is_active = true
+//              ORDER BY name ASC`,
+//             [brand_id]
+//         )
+
+//         res.json({
+//             data: result.rows
+//         })
+//     } catch (err) {
+//         console.log(err)
+//         res.status(500).json({msg: 'Server errer'})
+//     }
+// }
 
 exports.read = async(req,res)=>{
     try {
