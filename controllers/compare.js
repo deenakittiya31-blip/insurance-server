@@ -105,7 +105,7 @@ exports.listCompare = async(req, res) => {
             `,[user_id, per_page, offset]
         )
 
-        const countResult = await db.query('SELECT COUNT(*)::int as total FROM quotation_compare')
+        const countResult = await db.query('SELECT COUNT(*)::int as total FROM quotation_compare WHERE qc.offer_id = $1', [user_id])
 
         res.json({ data: result.rows, total: countResult.rows[0].total })
     } catch (err) {
