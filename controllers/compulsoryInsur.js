@@ -86,7 +86,6 @@ exports.listOption = async(req, res) => {
 }
 
 exports.listOptionPackage = async(req, res) => {
-    const { id } = req.params
     try {
         const result = await db.query(
             `
@@ -98,7 +97,7 @@ exports.listOptionPackage = async(req, res) => {
             where ci.is_active = true
             order by ci.id asc
             `
-            ,[id])
+            )
 
         console.log(result.rows)
         res.json({ data: result.rows })
