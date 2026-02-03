@@ -33,7 +33,7 @@ exports.list = async(req, res) => {
 
 exports.listBy = async(req, res) => {
     try {
-        const { brand_id } = req.query;
+        const { brand_id } = req.body;
 
          if (!brand_id || brand_id.length === 0) {
             return res.json({ data: [] })
