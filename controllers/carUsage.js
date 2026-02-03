@@ -128,7 +128,7 @@ exports.listUsageTypeSelect = async(req, res) => {
     try {
         const result = await db.query(
             `
-            SELECT cut.id, ct.type AS car_type, cut.code_usage
+            SELECT cut.id, ct.type AS car_type, cu.usage_name AS usage, cut.code_usage
             FROM car_usage_type AS cut
             JOIN car_type AS ct ON cut.car_type_id = ct.id
             JOIN car_usage AS cu ON cut.car_usage_id = cu.id
