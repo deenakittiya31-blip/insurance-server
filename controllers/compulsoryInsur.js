@@ -85,6 +85,29 @@ exports.listOption = async(req, res) => {
     }
 }
 
+exports.listOptionPackage = async(req, res) => {
+    const { id } = req.params
+    try {
+        const result = await db.query(
+            `
+            select 
+              ci.id, 
+              ci.detail, 
+              ci.code_sub 
+            from compulsory_insurance as ci 
+            where ci.is_active = true
+            order by ci.id asc
+            `
+            ,[id])
+
+        console.log(result.rows)
+        res.json({ data: result.rows })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'}) 
+    }
+}
+
 exports.read = async(req,res)=>{
     try {
         const { id } = req.params
