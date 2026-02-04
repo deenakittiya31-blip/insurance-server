@@ -169,6 +169,7 @@ exports.read = async(req, res) => {
                 ic.namecompany,
                 ip.insurance_type_id,
                 it.nametype,
+                ip.engine_size,
                 ip.promotion,
                 ip.tp_person,
                 ip.tp_person_accident,
