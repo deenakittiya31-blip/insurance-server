@@ -166,7 +166,7 @@ exports.read = async(req, res) => {
                 ip.*,
                 COALESCE(
                     JSON_AGG(
-                        JSON_BUILD_OBJECT(
+                        DISTINCT JSON_BUILD_OBJECT(
                             'payment_method_id', pp.payment_method_id,
                             'discount_percent', pp.discount_percent,
                             'discount_amount', pp.discount_amount,
@@ -177,7 +177,7 @@ exports.read = async(req, res) => {
                 ) AS payments,
                 COALESCE(
                     JSON_AGG(
-                        JSON_BUILD_OBJECT(
+                        DISTINCT JSON_BUILD_OBJECT(
                             'id', cb.id,
                             'name', cb.name
                          )
@@ -186,7 +186,7 @@ exports.read = async(req, res) => {
                 ) AS car_brand_id,
                 COALESCE(
                     JSON_AGG(
-                        JSON_BUILD_OBJECT(
+                        DISTINCT JSON_BUILD_OBJECT(
                             'id', cm.id,
                             'name', cm.name
                         )
@@ -195,7 +195,7 @@ exports.read = async(req, res) => {
                 ) AS car_model_id,
                 COALESCE(
                     JSON_AGG(
-                        JSON_BUILD_OBJECT(
+                        DISTINCT JSON_BUILD_OBJECT(
                             'id', cut.id,
                             'car_type', ct.type,
                             'usage', cu.usage_name,
@@ -206,7 +206,7 @@ exports.read = async(req, res) => {
                 ) AS car_usage_type_id,
                 COALESCE(
                     JSON_AGG(
-                        JSON_BUILD_OBJECT(
+                        DISTINCT JSON_BUILD_OBJECT(
                             'id', ci.id,
                             'detail', ci.detail,
                             'code_sub', ci.code_sub
