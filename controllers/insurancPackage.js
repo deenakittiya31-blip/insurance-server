@@ -307,26 +307,9 @@ exports.readEdit = async(req, res) => {
         const query = 
             `
             SELECT 
-                ip.id,
-                ip.package_name,
-                ip.insurance_company_id,
+                ip.*,
                 ic.namecompany,
-                ip.insurance_type_id,
                 it.nametype,
-                ip.repair_type,
-                ip.engine_size,
-                ip.promotion,
-                ip.tp_person,
-                ip.tp_person_accident,
-                ip.tp_property,
-                ip.flood_cover,
-                ip.damage_deductible,
-                ip.personal_accident,
-                ip.medical_expense,
-                ip.bail_bond,
-                ip.seat_count,
-                ip.is_active,
-                ip.created_at,
                 COALESCE(
                     JSONB_AGG(
                         DISTINCT JSONB_BUILD_OBJECT(
@@ -339,45 +322,10 @@ exports.readEdit = async(req, res) => {
                     ) FILTER (WHERE pp.payment_method_id IS NOT NULL),
                     '[]'::jsonb
                 ) AS payments,
-                COALESCE(
-                    JSONB_AGG(
-                        DISTINCT JSONB_BUILD_OBJECT(
-                            'id', cb.id,
-                            'name', cb.name
-                         )
-                    ) FILTER (WHERE cb.id IS NOT NULL),
-                    '[]'::jsonb
-                ) AS car_brand_id,
-                COALESCE(
-                    JSONB_AGG(
-                        DISTINCT JSONB_BUILD_OBJECT(
-                            'id', cm.id,
-                            'name', cm.name
-                        )
-                    ) FILTER (WHERE cm.id IS NOT NULL),
-                    '[]'::jsonb
-                ) AS car_model_id,
-                COALESCE(
-                    JSONB_AGG(
-                        DISTINCT JSONB_BUILD_OBJECT(
-                            'id', cut.id,
-                            'car_type', ct.type,
-                            'usage', cu.usage_name,
-                            'code_usage', cut.code_usage
-                        )
-                    ) FILTER (WHERE cut.id IS NOT NULL),
-                    '[]'::jsonb
-                ) AS car_usage_type_id,
-                COALESCE(
-                    JSONB_AGG(
-                        DISTINCT JSONB_BUILD_OBJECT(
-                            'id', ci.id,
-                            'detail', ci.detail,
-                            'code_sub', ci.code_sub
-                        )
-                    ) FILTER (WHERE ci.id IS NOT NULL),
-                    '[]'::jsonb
-                ) AS compusory_id
+                COALESCE(ARRAY_AGG(DISTINCT pcb.car_brand_id) FILTER (WHERE pcb.car_brand_id IS NOT NULL), '{}') AS car_brand_ids,
+                COALESCE(ARRAY_AGG(DISTINCT pcm.car_model_id) FILTER (WHERE pcm.car_model_id IS NOT NULL), '{}') AS car_model_ids,
+                COALESCE(ARRAY_AGG(DISTINCT put.car_usage_type_id) FILTER (WHERE put.car_usage_type_id IS NOT NULL), '{}') AS car_usage_type_ids,
+                COALESCE(ARRAY_AGG(DISTINCT pcs.compulsory_id) FILTER (WHERE pcs.compulsory_id IS NOT NULL), '{}') AS compulsory_ids
             FROM insurance_package AS ip
             LEFT JOIN insurance_company AS ic ON ip.insurance_company_id = ic.id
             LEFT JOIN insurance_type AS it ON ip.insurance_type_id = it.id
@@ -398,27 +346,8 @@ exports.readEdit = async(req, res) => {
 
             LEFT JOIN package_payment AS pp ON ip.id = pp.package_id
             LEFT JOIN payment_methods AS pm ON pp.payment_method_id = pm.id
-            WHERE ip.id = $1
-            GROUP BY 
-                ip.id,
-                ip.package_name,
-                ip.insurance_company_id,
-                ic.namecompany,
-                ip.insurance_type_id,
-                it.nametype,
-                ip.repair_type,
-                ip.promotion,
-                ip.tp_person,
-                ip.tp_person_accident,
-                ip.tp_property,
-                ip.flood_cover,
-                ip.damage_deductible,
-                ip.personal_accident,
-                ip.medical_expense,
-                ip.bail_bond,
-                ip.seat_count,
-                ip.is_active,
-                ip.created_at
+            WHERE ip.id = '24'
+            GROUP BY ip.id, ic.namecompany, it.nametype
             `
         const result = await db.query(query, [Number(id)])
 
