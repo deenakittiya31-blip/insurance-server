@@ -14,7 +14,7 @@ exports.create = async(req, res) => {
 }
 exports.list = async(req, res) => {
     try {
-        const result = await db.query('select * from group_member order by desc')
+        const result = await db.query('select * from group_member order by id desc')
 
         res.json({data: result.rows})
     } catch (err) {
