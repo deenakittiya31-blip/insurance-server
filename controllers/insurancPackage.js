@@ -106,30 +106,33 @@ exports.create = async(req, res) => {
 exports.list = async(req, res) => {
     const page = Number(req.query.page) || 1;
     const per_page = Number(req.query.per_page) || 5;
+    const sortKey = req.query.sortKey || 'id';
+    const sortDirection = req.query.sortDirection || 'DESC';
+    const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
     const offset = (page - 1) * per_page
 
     try {
-        const query = `
-        SELECT 
-            ip.id, 
-            ic.namecompany as company, 
-            it.nametype as type, package_name, 
-            cu.usage_name AS usage, 
-            cy.year_be, 
-            cy.year_ad,  
-            cb.name AS car_brand, 
-            cm.name AS car_model
-        FROM insurance_package as ip 
-        JOIN insurance_company as ic ON ip.company_id = ic.id 
-        JOIN insurance_type as it ON ip.insur_type_id = it.id 
-        LEFT JOIN car_brand AS cb ON ip.car_brand_id = cb.id 
-        LEFT JOIN car_model AS cm ON ip.car_model_id = cm.id 
-        LEFT JOIN car_usage AS cu ON ip.usage_car_id = cu.id 
-        LEFT JOIN car_year AS cy ON ip.car_year_id = cy.id 
-        ORDER BY ip.id ASC LIMIT $1 OFFSET $2`
-
-        const result = await db.query(query, [per_page, offset])
+        const result = await db.query(
+            `
+            SELECT 
+                ip.id,
+                ip.created_at,
+                ip.package_id,
+                ip.package_name,
+                ic.namecompany,
+                it.nametype,
+                ip.start_date,
+                ip.end_date,
+                ip.repair_type,
+                ip.is_active
+            FROM insurance_package AS ip
+            JOIN insurance_company AS ic ON ip.insurance_company_id = ic.id
+            JOIN insurance_type AS it ON ip.insurance_type_id = it.id
+            ORDER BY ${sortKey} ${validSortDirection} 
+            LIMIT $1 OFFSET $2
+            `
+            , [per_page, offset])
 
         const countResult = await db.query('SELECT COUNT(*)::int as total FROM insurance_package')
 
@@ -157,7 +160,81 @@ exports.read = async(req, res) => {
     const {id} = req.params
 
     try {
-         const query = 'SELECT id, company_id, insurance_type_id, package_name, coverage_amount FROM insurance_package WHERE id = $1'
+        const query = 
+            `
+            SELECT 
+                ip.*,
+                COALESCE(
+                    JSON_AGG(
+                        JSON_BUILD_OBJECT(
+                            'payment_method_id', pp.payment_method_id,
+                            'discount_percent', pp.discount_percent,
+                            'discount_amount', pp.discount_amount,
+                            'first_payment_amount', pp.first_payment_amount
+                        )
+                    ) FILTER (WHERE pp.id IS NOT NULL),
+                    '[]'
+                ) AS payments,
+                COALESCE(
+                    JSON_AGG(
+                        JSON_BUILD_OBJECT(
+                            'id', cb.id,
+                            'name', cb.name
+                         )
+                    ) FILTER (WHERE cb.is_active = true),
+                    '[]'
+                ) AS car_brand_id,
+                COALESCE(
+                    JSON_AGG(
+                        JSON_BUILD_OBJECT(
+                            'id', cm.id,
+                            'name', cm.name
+                        )
+                    ) FILTER (WHERE cm.is_active = true),
+                    '[]'
+                ) AS car_model_id,
+                COALESCE(
+                    JSON_AGG(
+                        JSON_BUILD_OBJECT(
+                            'id', cut.id,
+                            'car_type', ct.type,
+                            'usage', cu.usage_name,
+                            'code_usage', cut.code_usage
+                        )
+                    ) FILTER (WHERE cut.is_active = true),
+                    '[]'
+                ) AS car_usage_type_id,
+                COALESCE(
+                    JSON_AGG(
+                        JSON_BUILD_OBJECT(
+                            'id', ci.id,
+                            'detail', ci.detail,
+                            'code_sub', ci.code_sub
+                        )
+                    ) FILTER (WHERE ci.is_active = true),
+                    '[]'
+                ) AS compusory_id
+            FROM insurance_package AS ip
+            LEFT JOIN package_car_brand AS pcb ON ip.id = pcb.package_id
+            JOIN car_brand AS cb ON pcb.car_brand_id = cb.id
+
+            LEFT JOIN package_car_model AS pcm ON ip.id = pcm.package_id
+            JOIN car_model AS cm ON pcm.car_model_id = cm.id
+
+            LEFT JOIN package_usage_type AS put ON ip.id = put.package_id
+            JOIN car_usage_type AS cut ON put.car_usage_type_id = cut.id
+            JOIN car_type AS ct ON cut.car_type_id = ct.id
+            JOIN car_usage AS cu ON cut.car_usage_id = cu.id
+
+            LEFT JOIN package_compulsory AS pcs ON ip.id = pcs.package_id
+            JOIN compulsory_insurance AS ci ON pcs.compulsory_id = ci.id
+
+            LEFT JOIN package_payment AS pp ON ip.id = pp.package_id
+            JOIN payment_methods AS pm ON pp.payment_method_id = pm.id
+            WHERE ip.id = $1
+            GROUP BY ip.id, ip.package_name, ip.insurance_company_id, ip.insurance_type_id
+            `
+
         const result = await db.query(query, [Number(id)])
 
          res.json({ data: result.rows[0] })
