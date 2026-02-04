@@ -179,6 +179,7 @@ exports.read = async(req, res) => {
                 ip.personal_accident,
                 ip.medical_expense,
                 ip.bail_bond,
+                ip.seat_count,
                 ip.is_active,
                 ip.created_at,
                 COALESCE(
@@ -269,6 +270,7 @@ exports.read = async(req, res) => {
                 ip.personal_accident,
                 ip.medical_expense,
                 ip.bail_bond,
+                ip.seat_count,
                 ip.is_active,
                 ip.created_at
             `
