@@ -143,6 +143,21 @@ exports.list = async(req, res) => {
     }
 }
 
+exports.is_active = async(req, res) => {
+    try {
+            const { is_active } = req.body
+            const { id } = req.params
+
+            await db.query('UPDATE insurance_package SET is_active = $1 WHERE id = $2', 
+            [is_active, id])
+
+        res.json({msg: 'อัปเดตสถานะสำเร็จ'})  
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'})
+    }
+}
+
 exports.listSelect = async(req, res) => {
     try {
         const result = await db.query(
