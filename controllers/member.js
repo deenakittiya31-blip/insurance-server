@@ -70,8 +70,9 @@ exports.listMember = async(req, res) => {
 
             return res.json({data: result.rows, total: countResult.rows[0].total})
         } else {
-            const result = await db.query(`SELECT * FROM member ORDER BY ${sortKey} ${validSortDirection}`)
-
+            const result = await db.query(
+                    `SELECT * FROM member ORDER BY ${sortKey} ${validSortDirection}`
+            )
             return res.json({data: result.rows})
         }
     
