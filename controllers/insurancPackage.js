@@ -246,7 +246,7 @@ exports.read = async(req, res) => {
 
             LEFT JOIN package_payment AS pp ON ip.id = pp.package_id
             LEFT JOIN payment_methods AS pm ON pp.payment_method_id = pm.id
-            WHERE ip.id = '21'
+            WHERE ip.id = $1
             GROUP BY 
                 ip.id,
                 ip.package_name,
