@@ -166,7 +166,9 @@ exports.read = async(req, res) => {
                 ip.id,
                 ip.package_name,
                 ip.insurance_company_id,
+                ic.namecompany,
                 ip.insurance_type_id,
+                it.nametype,
                 ip.promotion,
                 ip.tp_person,
                 ip.tp_person_accident,
@@ -230,6 +232,9 @@ exports.read = async(req, res) => {
                     '[]'::jsonb
                 ) AS compusory_id
             FROM insurance_package AS ip
+            LEFT JOIN insurance_company AS ic ON ip.insurance_company_id = ic.id
+            LEFT JOIN insurance_type AS it ON ip.insurance_type_id = it.id
+
             LEFT JOIN package_car_brand AS pcb ON ip.id = pcb.package_id
             LEFT JOIN car_brand AS cb ON pcb.car_brand_id = cb.id
 
@@ -251,7 +256,9 @@ exports.read = async(req, res) => {
                 ip.id,
                 ip.package_name,
                 ip.insurance_company_id,
+                ic.namecompany,
                 ip.insurance_type_id,
+                it.nametype,
                 ip.promotion,
                 ip.tp_person,
                 ip.tp_person_accident,
