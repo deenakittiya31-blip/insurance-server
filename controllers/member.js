@@ -47,7 +47,24 @@ exports.listMember = async(req, res) => {
         const offset = (page - 1) * per_page;
         
         if(page && per_page) {
-            const result = await db.query(`SELECT * FROM member ORDER BY ${sortKey} ${validSortDirection} LIMIT $1 OFFSET $2`, [per_page, offset])
+            const result = await db.query(
+                `
+                SELECT 
+                    m.id, 
+                    m.user_id, 
+                    m.display_name, 
+                    m.first_name, 
+                    m.last_name, 
+                    m.phone, 
+                    m.picture_url, 
+                    m.created_at, 
+                    m.note, 
+                    gm.group_name  
+                FROM member AS m 
+                LEFT JOIN group_member AS gm ON m.group_id = gm.id           
+                ORDER BY ${sortKey} ${validSortDirection} 
+                LIMIT $1 OFFSET $2
+                `, [per_page, offset])
 
             const countResult = await db.query('SELECT COUNT(*)::int as total FROM member')
 
