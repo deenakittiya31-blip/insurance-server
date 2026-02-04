@@ -55,7 +55,7 @@ exports.create = async(req, res) => {
             } = p
 
             const paymentSql = `
-                INSERT INTO insurance_package_payments
+                INSERT INTO package_payment
                 (
                     package_id,
                     payment_method_id,
