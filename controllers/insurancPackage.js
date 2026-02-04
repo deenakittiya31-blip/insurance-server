@@ -1,21 +1,20 @@
 const db = require('../config/database')
 
 exports.create = async(req, res) => {
+    const client = await db.connect()
+
     try {
-        const { payments, car_brand_id, car_model_id, car_type_id,
+        await client.query('BEGIN')
+
+        const { payments, car_brand_id, car_model_id, car_usage_type_id,
         compulsory_id, ...packageData } = req.body
 
         if (!packageData.package_name) {
             return res.status(400).json({ msg: 'กรุณาระบุชื่อแพ็กเกจ' })
         }
 
-        const columns = Object.keys(packageData)
-        const values = Object.values(packageData)
-
-        //สร้าง($1, $2, $3 ...)
-        const placeholders = columns.map((_, i) => `$${i + 1}`)
-
-        const result = await db.query(`
+        //generate PK running
+        const result = await client.query(`
          SELECT package_id
          FROM insurance_package
          ORDER BY id DESC
@@ -24,7 +23,6 @@ exports.create = async(req, res) => {
         `);
 
         let nextNumber = 1;
-
         if (result.rows.length) {
             const lastCode = result.rows[0].package_id; // PK00000000012
             const lastNumber = parseInt(lastCode.replace('PK', ''), 10);
@@ -33,52 +31,76 @@ exports.create = async(req, res) => {
 
         const packageCode = `PK${String(nextNumber).padStart(11, '0')}`;
 
-        console.log(packageCode)
+        //insert package
+        const columns = [...Object.keys(packageData), 'package_id']
+        const values = [...Object.values(packageData), packageCode]
+        //สร้าง($1, $2, $3 ...)
+        const placeholders = columns.map((_, i) => `$${i + 1}`)
 
-        // //อย่าลืมเพิ่ม รหัสแพ็กเกจเข้าไปด้วย
-        // const packageResualt = await db.query(`
-        //     INSERT INTO insurance_package (${columns.join(', ')}, package_id)
-        //     VALUES (${placeholders.join(', ')}, $19)
-        //     RETURNING id
-        //     `, values, packageCode)
+        const packageResualt = await client.query(`
+            INSERT INTO insurance_package (${columns.join(', ')})
+            VALUES (${placeholders.join(', ')})
+            RETURNING id
+            `, values)
 
-        // const packageId = packageResualt.rows[0].id
-        // if (Array.isArray(payments)) {
-        //     for (const p of payments) {
-        //         const {
-        //         payment_method_id,
-        //         discount_percent = 0,
-        //         discount_amount = 0,
-        //         first_payment_amount = null
-        //         } = p
+        const packageId = packageResualt.rows[0].id
 
-        //         const paymentSql = `
-        //         INSERT INTO insurance_package_payments
-        //         (
-        //             package_id,
-        //             payment_method_id,
-        //             discount_percent,
-        //             discount_amount,
-        //             first_payment_amount
-        //         )
-        //         VALUES ($1, $2, $3, $4, $5)
-        //         `
+        //insert payment
+        for (const p of payments) {
+            const {
+                payment_method_id,
+                discount_percent = 0,
+                discount_amount = 0,
+                first_payment_amount = null
+            } = p
 
-        //         await db.query(paymentSql, [
-        //             packageId,
-        //             payment_method_id,
-        //             discount_percent,
-        //             discount_amount,
-        //             first_payment_amount
-        //         ])
-        //     }
-        // }
+            const paymentSql = `
+                INSERT INTO insurance_package_payments
+                (
+                    package_id,
+                    payment_method_id,
+                    discount_percent,
+                    discount_amount,
+                    first_payment_amount
+                )
+                VALUES ($1, $2, $3, $4, $5)
+                `
 
+            await client.query(paymentSql, [
+                packageId,
+                payment_method_id,
+                discount_percent,
+                discount_amount,
+                first_payment_amount
+                ])
+        }
+
+        //relation
+        for(const brandId of car_brand_id){
+                await client.query('INSERT INTO package_car_brand (package_id, car_brand_id) VALUES ($1, $2)', [packageId, brandId])
+        }
+
+        for(const modelId of car_model_id){
+                await client.query('INSERT INTO package_car_model (package_id, car_model_id) VALUES ($1, $2)', [packageId, modelId])
+        }
+
+        for(const usageId of car_usage_type_id){
+                await client.query('INSERT INTO package_usage_type (package_id, car_usage_type_id) VALUES ($1, $2)', [packageId, usageId])
+        }
+
+        for(const compulId of compulsory_id){
+                await client.query('INSERT INTO package_compulsory (package_id, compulsory_id) VALUES ($1, $2)', [packageId, compulId])
+        }
+
+        await client.query('COMMIT')
         res.json({ msg: 'เพิ่มข้อมูลแพ็คเกจสำเร็จ' })
     } catch (err) {
+        await client.query('ROLLBACK')
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
-    }
+    } finally {
+        client.release()
+    } 
 }
 
 exports.list = async(req, res) => {
