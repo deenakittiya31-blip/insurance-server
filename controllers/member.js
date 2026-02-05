@@ -71,7 +71,21 @@ exports.listMember = async(req, res) => {
             return res.json({data: result.rows, total: countResult.rows[0].total})
         } else {
             const result = await db.query(
-                    `SELECT * FROM member ORDER BY ${sortKey} ${validSortDirection}`
+                    `
+                    SELECT 
+                        m.id, 
+                        m.user_id, 
+                        m.display_name, 
+                        m.first_name, 
+                        m.last_name, 
+                        m.phone, 
+                        m.picture_url, 
+                        m.created_at, 
+                        m.note, 
+                        gm.group_name  
+                    FROM member AS m 
+                    LEFT JOIN group_member AS gm ON m.group_id = gm.id   
+                    ORDER BY ${sortKey} ${validSortDirection}`
             )
             return res.json({data: result.rows})
         }
@@ -86,7 +100,13 @@ exports.readMember = async(req, res) => {
     try {
         const { id } = req.params;
 
-        const result = await db.query('select first_name, last_name, phone, note from member where id = $1', [id])
+        const result = await db.query(
+            `
+            select first_name, last_name, group_id, gm.group_name,  phone, note
+            from member 
+            left join group_member as gm on member.group_id = gm.id where member.id = $1
+            `
+            , [id])
 
         res.json({data: result.rows[0]})
     } catch (err) {
@@ -98,13 +118,14 @@ exports.readMember = async(req, res) => {
 exports.updateMember = async(req, res) => {
     try {
         const { id } = req.params
-        const { first_name, last_name, phone, note } = req.body
+        const { first_name, last_name, group_id, phone, note } = req.body
 
         await db.query(
-            `update member set first_name = coalesce ($1, first_name), last_name = coalesce ($2, last_name), phone = coalesce ($3, phone), note = coalesce ($4, note) where id = $5`,
+            `update member set first_name = coalesce ($1, first_name), last_name = coalesce ($2, last_name), group_id = coalesce ($3, group_id), phone = coalesce ($4, phone), note = coalesce ($5, note) where id = $6`,
             [
                 first_name  ?? null, 
                 last_name   ?? null, 
+                group_id    ??  null, 
                 phone       ?? null, 
                 note        ?? null, 
                 id

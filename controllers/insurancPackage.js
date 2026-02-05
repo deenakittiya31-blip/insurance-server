@@ -322,10 +322,10 @@ exports.readEdit = async(req, res) => {
                     ) FILTER (WHERE pp.payment_method_id IS NOT NULL),
                     '[]'::jsonb
                 ) AS payments,
-                COALESCE(ARRAY_AGG(DISTINCT pcb.car_brand_id) FILTER (WHERE pcb.car_brand_id IS NOT NULL), '{}') AS car_brand_ids,
-                COALESCE(ARRAY_AGG(DISTINCT pcm.car_model_id) FILTER (WHERE pcm.car_model_id IS NOT NULL), '{}') AS car_model_ids,
-                COALESCE(ARRAY_AGG(DISTINCT put.car_usage_type_id) FILTER (WHERE put.car_usage_type_id IS NOT NULL), '{}') AS car_usage_type_ids,
-                COALESCE(ARRAY_AGG(DISTINCT pcs.compulsory_id) FILTER (WHERE pcs.compulsory_id IS NOT NULL), '{}') AS compulsory_ids
+                COALESCE(ARRAY_AGG(DISTINCT pcb.car_brand_id) FILTER (WHERE pcb.car_brand_id IS NOT NULL), '{}') AS car_brand_id,
+                COALESCE(ARRAY_AGG(DISTINCT pcm.car_model_id) FILTER (WHERE pcm.car_model_id IS NOT NULL), '{}') AS car_model_id,
+                COALESCE(ARRAY_AGG(DISTINCT put.car_usage_type_id) FILTER (WHERE put.car_usage_type_id IS NOT NULL), '{}') AS car_usage_type_id,
+                COALESCE(ARRAY_AGG(DISTINCT pcs.compulsory_id) FILTER (WHERE pcs.compulsory_id IS NOT NULL), '{}') AS compulsory_id
             FROM insurance_package AS ip
             LEFT JOIN insurance_company AS ic ON ip.insurance_company_id = ic.id
             LEFT JOIN insurance_type AS it ON ip.insurance_type_id = it.id
@@ -359,33 +359,125 @@ exports.readEdit = async(req, res) => {
 }
 
 exports.update = async(req, res) => {
-    const {id} = req.params
-    const {company_id, insurance_type_id, package_name, coverage_amount} = req.body
+    const { id } = req.params
+    const client = await db.connect()
 
     try {
-        const result = await db.query('SELECT * FROM  insurance_package WHERE id = $1',[id])
+        await client.query('BEGIN')
 
-        if (result.rows.length === 0) {
+        const { payments, car_brand_id, car_model_id, car_usage_type_id,
+            compulsory_id, ...packageData } = req.body
+
+        // 1. เช็คว่า package มีอยู่จริง
+        const checkResult = await client.query(
+            'SELECT * FROM insurance_package WHERE id = $1', 
+            [id]
+        )
+
+        if (checkResult.rows.length === 0) {
+            await client.query('ROLLBACK')
             return res.status(404).json({ message: 'ไม่พบข้อมูล' })
         }
 
-        const old = result.rows[0]
+        const oldData = checkResult.rows[0]
 
-        await db.query('UPDATE  insurance_package SET company_id = $1, insurance_type_id = $2, package_name = $3, coverage_amount = $4  WHERE id = $5', 
-            [
-                company_id          !== undefined ? Number(company_id)          :  old.company_id,             
-                insurance_type_id   !== undefined ? Number(insurance_type_id)   :  old.insurance_type_id,             
-                package_name        !== undefined ? package_name                : old.package_name,             
-                coverage_amount     !== undefined ? Number(coverage_amount)     :  old.coverage_amount,             
-                id
-            ])
+        // 2. Update insurance_package
+        const columns = Object.keys(packageData)
+        const values = Object.values(packageData)
+        
+        // สร้าง SET clause แบบ dynamic
+        const setClauses = columns.map((col, idx) => {
+            // ใช้ค่าเดิมถ้าไม่ได้ส่งมา
+            return `${col} = COALESCE($${idx + 1}, ${col})`
+        })
 
-        res.json({msg: 'อัปเดตข้อมูลแพ็กเกจสำเร็จ'})
+        const updatePackageSql = `
+            UPDATE insurance_package 
+            SET ${setClauses.join(', ')}
+            WHERE id = $${columns.length + 1}
+        `
+
+        await client.query(updatePackageSql, [...values, id])
+
+        // 3. Delete และ Insert payment methods ใหม่
+        if (payments && payments.length > 0) {
+            await client.query('DELETE FROM package_payment WHERE package_id = $1', [id])
+            
+            for (const p of payments) {
+                const {
+                    payment_method_id,
+                    discount_percent = 0,
+                    discount_amount = 0,
+                    first_payment_amount = null
+                } = p
+
+                await client.query(`
+                    INSERT INTO package_payment
+                    (package_id, payment_method_id, discount_percent, discount_amount, first_payment_amount)
+                    VALUES ($1, $2, $3, $4, $5)
+                `, [id, payment_method_id, discount_percent, discount_amount, first_payment_amount])
+            }
+        }
+
+        // 4. Delete และ Insert car_brand ใหม่
+        if (car_brand_id && car_brand_id.length > 0) {
+            await client.query('DELETE FROM package_car_brand WHERE package_id = $1', [id])
+            
+            for (const brandId of car_brand_id) {
+                await client.query(
+                    'INSERT INTO package_car_brand (package_id, car_brand_id) VALUES ($1, $2)', 
+                    [id, brandId]
+                )
+            }
+        }
+
+        // 5. Delete และ Insert car_model ใหม่
+        if (car_model_id && car_model_id.length > 0) {
+            await client.query('DELETE FROM package_car_model WHERE package_id = $1', [id])
+            
+            for (const modelId of car_model_id) {
+                await client.query(
+                    'INSERT INTO package_car_model (package_id, car_model_id) VALUES ($1, $2)', 
+                    [id, modelId]
+                )
+            }
+        }
+
+        // 6. Delete และ Insert car_usage_type ใหม่
+        if (car_usage_type_id && car_usage_type_id.length > 0) {
+            await client.query('DELETE FROM package_usage_type WHERE package_id = $1', [id])
+            
+            for (const usageId of car_usage_type_id) {
+                await client.query(
+                    'INSERT INTO package_usage_type (package_id, car_usage_type_id) VALUES ($1, $2)', 
+                    [id, usageId]
+                )
+            }
+        }
+
+        // 7. Delete และ Insert compulsory ใหม่
+        if (compulsory_id && compulsory_id.length > 0) {
+            await client.query('DELETE FROM package_compulsory WHERE package_id = $1', [id])
+            
+            for (const compulId of compulsory_id) {
+                await client.query(
+                    'INSERT INTO package_compulsory (package_id, compulsory_id) VALUES ($1, $2)', 
+                    [id, compulId]
+                )
+            }
+        }
+
+        await client.query('COMMIT')
+        res.json({ msg: 'อัปเดตข้อมูลแพ็กเกจสำเร็จ' })
+
     } catch (err) {
+        await client.query('ROLLBACK')
         console.log(err)
-        res.status(500).json({message: 'server errer'}) 
+        res.status(500).json({ message: 'Server error' })
+    } finally {
+        client.release()
     }
-}
+}                                                            
 
 exports.remove = async(req, res) => {
     try {

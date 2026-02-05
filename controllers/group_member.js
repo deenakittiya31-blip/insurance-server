@@ -12,6 +12,7 @@ exports.create = async(req, res) => {
         res.status(500).json({message: 'Server error'})
     }
 }
+
 exports.list = async(req, res) => {
     try {
         const result = await db.query('select * from group_member order by id desc')
@@ -22,6 +23,7 @@ exports.list = async(req, res) => {
         res.status(500).json({message: 'Server error'})
     }
 }
+
 exports.update = async(req, res) => {
     try {
         const { group_name } = req.body
@@ -35,6 +37,7 @@ exports.update = async(req, res) => {
         res.status(500).json({message: 'Server error'})
     }
 }
+
 exports.remove = async(req, res) => {
     try {
         const { id } = req.params
