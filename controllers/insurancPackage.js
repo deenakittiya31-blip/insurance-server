@@ -477,7 +477,6 @@ exports.update = async(req, res) => {
 
         await client.query('COMMIT')
         res.json({ msg: 'อัปเดตข้อมูลแพ็กเกจสำเร็จ' })
-
     } catch (err) {
         await client.query('ROLLBACK')
         console.log(err)
