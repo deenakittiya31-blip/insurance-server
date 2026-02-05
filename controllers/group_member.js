@@ -5,7 +5,12 @@ exports.create = async(req, res) => {
     try {
         const { group_name, logo_url, logo_public_id } = req.body
 
-        await db.query('insert into group_member (group_name, logo_url, logo_public_id) values ($1, $2, $3)', [group_name, logo_url, logo_public_id])
+        console.log('CREATE GROUP CALLED')
+
+        await db.query(
+            `
+            insert into group_member (group_name, logo_url, logo_public_id) values ($1, $2, $3)
+            `, [group_name, logo_url, logo_public_id])
 
         res.json({msg: 'สร้างกลุ่มลูกค้าสำเร็จ'})
     } catch (err) {
@@ -40,7 +45,7 @@ exports.read = async(req, res) => {
 
 exports.update = async(req, res) => {
     try {
-        const { group_name, logo_logo, logo_public_id } = req.body
+        const { group_name, logo_url, logo_public_id } = req.body
         const { id } = req.params
 
         const existing = await db.query('select * from group_member where id = $1', [id])
@@ -50,7 +55,7 @@ exports.update = async(req, res) => {
         await db.query('update group_member set group_name = $1, logo_url = $2, logo_public_id = $3 where id = $4'
             , [
                 group_name          ?? oldGroup.group_name, 
-                logo_logo           ?? oldGroup.logo_logo, 
+                logo_url           ?? oldGroup.logo_url, 
                 logo_public_id      ?? oldGroup.logo_public_id,
                 id
             ])
