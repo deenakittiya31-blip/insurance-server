@@ -1,17 +1,53 @@
 const db = require('../config/database')
 
 exports.create = async(req, res) => {
+    const client = await db.connect()
+
     try {
-        const { package_id, car_usage_id, car_year, premium_price, compulsory_price } = req.body
+        await client.query('BEGIN')
 
-        const query = 'INSERT INTO insurance_premium(package_id, car_usage_id, car_year, premium_price, compulsory_price) VALUES($1, $2, $3, $4, $5)';
+        const { package_id, premium_discount, premiums } = req.body
 
-        await db.query(query, [package_id, car_usage_id, car_year, Number(premium_price), Number(compulsory_price)])
+        for(const p of premiums){
 
+            const result = await client.query(`
+                SELECT premium_id
+                FROM insurance_premium
+                ORDER BY id DESC
+                LIMIT 1
+                FOR UPDATE
+            `);
+
+            let nextNumber = 1;
+            if (result.rows.length) {
+                const lastCode = result.rows[0].premium_id; // PM00000000012
+                const lastNumber = parseInt(lastCode.replace('PM', ''), 10);
+                nextNumber = lastNumber + 1;
+            }
+
+            const premiumCode = `PM${String(nextNumber).padStart(11, '0')}`;
+
+            const columns = [...Object.keys(p), 'premium_id', 'package_id', 'premium_discount']
+            const values = [...Object.values(p), premiumCode, package_id, premium_discount]
+            //สร้าง($1, $2, $3 ...)
+            const placeholders = columns.map((_, i) => `$${i + 1}`)
+
+            await client.query(
+                `
+                INSERT INTO insurance_premium (${columns.join(', ')})
+                VALUES (${placeholders.join(', ')})
+                `, values
+            )
+        }
+
+        await client.query('COMMIT')
         res.json({ msg: 'เพิ่มข้อมูลเบี้ยประกันสำเร็จ' })
     } catch (err) {
+        await client.query('ROLLBACK')
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
+    } finally {
+        client.release()
     }
 }
 
