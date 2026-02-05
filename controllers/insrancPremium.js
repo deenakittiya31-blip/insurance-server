@@ -58,8 +58,55 @@ exports.list = async(req, res) => {
     const offset = (page - 1) * per_page
 
     try {
-        const query = 'SELECT ip.id, ipk.package_name as package, cu.usage_name, ip.car_year as year, ip.premium_price as premium, ip.compulsory_price as compulsory, (ip.premium_price + ip.compulsory_price) as total FROM insurance_premium as ip INNER JOIN insurance_package as ipk ON ip.package_id = ipk.id INNER JOIN car_usage as cu ON ip.car_usage_id = cu.id ORDER BY ip.id ASC LIMIT $1 OFFSET $2'
-        const result = await db.query(query, [per_page, offset])
+        const result = await db.query(
+            `
+           SELECT 
+                ipm.*, 
+                ipk.package_name,
+                ipk.package_id,
+                icp.namecompany,
+                COALESCE(
+                    JSONB_AGG(
+                        DISTINCT JSONB_BUILD_OBJECT(
+                            'code_type', ct.code
+                        )
+                    ) FILTER (WHERE ct.id IS NOT NULL),
+                    '[]'::jsonb
+                ) AS type,
+                COALESCE(
+                    JSONB_AGG(
+                        DISTINCT JSONB_BUILD_OBJECT(
+                            'name_type', ct.type
+                        )
+                    ) FILTER (WHERE ct.id IS NOT NULL),
+                    '[]'::jsonb
+                ) AS name_type
+            FROM insurance_premium AS ipm
+            LEFT JOIN insurance_package AS ipk ON ipm.package_id = ipk.id 
+            LEFT JOIN insurance_company AS icp ON ipk.insurance_company_id = icp.id 
+            LEFT JOIN insurance_type AS it ON ipk.insurance_type_id = it.id 
+
+            LEFT JOIN package_usage_type AS put ON ipk.id = put.package_id
+            LEFT JOIN car_usage_type AS cut ON put.car_usage_type_id = cut.id
+            LEFT JOIN car_type AS ct ON cut.car_type_id = ct.id
+            GROUP BY 
+                ipm.id,
+                ipm.premium_name,
+                ipm.repair_fund_int,
+                ipm.repair_fund_max,
+                ipm.start_year,
+                ipm.max_year,
+                ipm.car_lost_fire,
+                ipm.total_premium,
+                ipm.net_income,
+                ipm.selling_price,
+                ipk.package_name,
+                ipk.package_id,
+                icp.namecompany
+            ORDER BY ipm.id DESC
+            LIMIT $1 OFFSET $2
+            `
+            , [per_page, offset])
 
         const countResult = await db.query('SELECT COUNT(*)::int as total FROM insurance_premium')
 
