@@ -65,6 +65,7 @@ exports.list = async(req, res) => {
                 ipk.package_name,
                 ipk.package_id,
                 icp.namecompany,
+                it.nametype,
                 COALESCE(
                     JSONB_AGG(
                         DISTINCT JSONB_BUILD_OBJECT(
@@ -102,7 +103,8 @@ exports.list = async(req, res) => {
                 ipm.selling_price,
                 ipk.package_name,
                 ipk.package_id,
-                icp.namecompany
+                icp.namecompany,
+                it.nametype
             ORDER BY ipm.id DESC
             LIMIT $1 OFFSET $2
             `
