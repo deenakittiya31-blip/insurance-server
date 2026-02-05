@@ -3,9 +3,9 @@ const cloudinary = require('../config/cloudinary')
 
 exports.create = async(req, res) => {
     try {
-        const { group_name } = req.body
+        const { group_name, logo_url, logo_public_id } = req.body
 
-        await db.query('insert into group_member (group_name, logo_url, logo_public_id) values ($1, $2, $3)', [group_name])
+        await db.query('insert into group_member (group_name, logo_url, logo_public_id) values ($1, $2, $3)', [group_name, logo_url, logo_public_id])
 
         res.json({msg: 'สร้างกลุ่มลูกค้าสำเร็จ'})
     } catch (err) {
