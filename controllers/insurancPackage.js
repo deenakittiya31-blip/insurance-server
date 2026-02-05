@@ -308,8 +308,6 @@ exports.readEdit = async(req, res) => {
             `
             SELECT 
                 ip.*,
-                ic.namecompany,
-                it.nametype,
                 COALESCE(
                     JSONB_AGG(
                         DISTINCT JSONB_BUILD_OBJECT(
@@ -347,7 +345,7 @@ exports.readEdit = async(req, res) => {
             LEFT JOIN package_payment AS pp ON ip.id = pp.package_id
             LEFT JOIN payment_methods AS pm ON pp.payment_method_id = pm.id
             WHERE ip.id = $1
-            GROUP BY ip.id, ic.namecompany, it.nametype
+            GROUP BY ip.id
             `
         const result = await db.query(query, [Number(id)])
 
@@ -379,93 +377,102 @@ exports.update = async(req, res) => {
             return res.status(404).json({ message: 'ไม่พบข้อมูล' })
         }
 
-        const oldData = checkResult.rows[0]
+        if(Object.keys(packageData).length > 0) {
+            // 2. Update insurance_package
+            const columns = Object.keys(packageData)
+            const values = Object.values(packageData)
 
-        // 2. Update insurance_package
-        const columns = Object.keys(packageData)
-        const values = Object.values(packageData)
-        
-        // สร้าง SET clause แบบ dynamic
-        const setClauses = columns.map((col, idx) => {
-            // ใช้ค่าเดิมถ้าไม่ได้ส่งมา
-            return `${col} = COALESCE($${idx + 1}, ${col})`
-        })
+            const setClauses = columns.map((col, idx) => `${col} = $${idx + 1}`)
 
-        const updatePackageSql = `
-            UPDATE insurance_package 
-            SET ${setClauses.join(', ')}
-            WHERE id = $${columns.length + 1}
-        `
+            const updatePackageSql = `
+                UPDATE insurance_package 
+                SET ${setClauses.join(', ')}
+                WHERE id = $${columns.length + 1}
+            `
 
-        await client.query(updatePackageSql, [...values, id])
+            await client.query(updatePackageSql, [...values, id])
+        }
 
-        // 3. Delete และ Insert payment methods ใหม่
-        if (payments && payments.length > 0) {
+        // 3. Update payment methods
+        if (payments !== undefined) {
+            // ลบของเก่าทั้งหมด
             await client.query('DELETE FROM package_payment WHERE package_id = $1', [id])
             
-            for (const p of payments) {
-                const {
-                    payment_method_id,
-                    discount_percent = 0,
-                    discount_amount = 0,
-                    first_payment_amount = null
-                } = p
+            // Insert ของใหม่ (ถ้ามี)
+            if (payments.length > 0) {
+                for (const p of payments) {
+                    const {
+                        payment_method_id,
+                        discount_percent = 0,
+                        discount_amount = 0,
+                        first_payment_amount = null
+                    } = p
 
-                await client.query(`
-                    INSERT INTO package_payment
-                    (package_id, payment_method_id, discount_percent, discount_amount, first_payment_amount)
-                    VALUES ($1, $2, $3, $4, $5)
-                `, [id, payment_method_id, discount_percent, discount_amount, first_payment_amount])
+                    await client.query(`
+                        INSERT INTO package_payment
+                        (package_id, payment_method_id, discount_percent, discount_amount, first_payment_amount)
+                        VALUES ($1, $2, $3, $4, $5)
+                    `, [id, payment_method_id, discount_percent, discount_amount, first_payment_amount])
+                }
             }
         }
 
-        // 4. Delete และ Insert car_brand ใหม่
-        if (car_brand_id && car_brand_id.length > 0) {
+        // 4. Update car_brand
+        if (car_brand_id !== undefined) {
             await client.query('DELETE FROM package_car_brand WHERE package_id = $1', [id])
             
-            for (const brandId of car_brand_id) {
-                await client.query(
-                    'INSERT INTO package_car_brand (package_id, car_brand_id) VALUES ($1, $2)', 
-                    [id, brandId]
-                )
+            if (car_brand_id.length > 0) {
+                for (const brandId of car_brand_id) {
+                    await client.query(
+                        'INSERT INTO package_car_brand (package_id, car_brand_id) VALUES ($1, $2)', 
+                        [id, brandId]
+                    )
+                }
             }
         }
 
-        // 5. Delete และ Insert car_model ใหม่
-        if (car_model_id && car_model_id.length > 0) {
+        // 5. Update car_model
+        if (car_model_id !== undefined) {
             await client.query('DELETE FROM package_car_model WHERE package_id = $1', [id])
             
-            for (const modelId of car_model_id) {
-                await client.query(
-                    'INSERT INTO package_car_model (package_id, car_model_id) VALUES ($1, $2)', 
-                    [id, modelId]
-                )
+            if (car_model_id.length > 0) {
+                for (const modelId of car_model_id) {
+                    await client.query(
+                        'INSERT INTO package_car_model (package_id, car_model_id) VALUES ($1, $2)', 
+                        [id, modelId]
+                    )
+                }
             }
         }
 
-        // 6. Delete และ Insert car_usage_type ใหม่
-        if (car_usage_type_id && car_usage_type_id.length > 0) {
+        // 6. Update car_usage_type
+        if (car_usage_type_id !== undefined) {
             await client.query('DELETE FROM package_usage_type WHERE package_id = $1', [id])
             
-            for (const usageId of car_usage_type_id) {
-                await client.query(
-                    'INSERT INTO package_usage_type (package_id, car_usage_type_id) VALUES ($1, $2)', 
-                    [id, usageId]
-                )
+            if (car_usage_type_id.length > 0) {
+                for (const usageId of car_usage_type_id) {
+                    await client.query(
+                        'INSERT INTO package_usage_type (package_id, car_usage_type_id) VALUES ($1, $2)', 
+                        [id, usageId]
+                    )
+                }
             }
         }
 
-        // 7. Delete และ Insert compulsory ใหม่
-        if (compulsory_id && compulsory_id.length > 0) {
+        // 7. Update compulsory
+        if (compulsory_id !== undefined) {
             await client.query('DELETE FROM package_compulsory WHERE package_id = $1', [id])
             
-            for (const compulId of compulsory_id) {
-                await client.query(
-                    'INSERT INTO package_compulsory (package_id, compulsory_id) VALUES ($1, $2)', 
-                    [id, compulId]
-                )
+            if (compulsory_id.length > 0) {
+                for (const compulId of compulsory_id) {
+                    await client.query(
+                        'INSERT INTO package_compulsory (package_id, compulsory_id) VALUES ($1, $2)', 
+                        [id, compulId]
+                    )
+                }
             }
         }
+
 
         await client.query('COMMIT')
         res.json({ msg: 'อัปเดตข้อมูลแพ็กเกจสำเร็จ' })
