@@ -1,4 +1,5 @@
 const db = require('../config/database')
+const { GET_DETAIL_PACKAGE } = require('../services/packageQueries')
 
 exports.create = async(req, res) => {
     const client = await db.connect()
@@ -161,7 +162,7 @@ exports.is_active = async(req, res) => {
 exports.listSelect = async(req, res) => {
     try {
         const result = await db.query(
-            'SELECT id, package_name FROM insurance_package order by created_at desc' 
+            'SELECT id, package_name FROM insurance_package ORDER BY created_at DESC' 
         )
 
          res.json({ data: result.rows })
@@ -484,7 +485,113 @@ exports.update = async(req, res) => {
     } finally {
         client.release()
     }
-}                                                            
+}     
+
+exports.copy = async(req, res) => {
+    try {
+        const {id} = req.params
+
+        const result = await db.query(GET_DETAIL_PACKAGE, [id])
+        const oldPackage = result.rows[0]
+
+         //destructure 
+        const {
+            id: oldId,
+            package_id,
+            payments,
+            car_brand_id,
+            car_model_id,
+            car_usage_type_id,
+            compulsory_id,
+            ...packageData   
+        } = oldPackage
+
+         //generate PK running
+        const resultId = await db.query(`
+         SELECT package_id
+         FROM insurance_package
+         ORDER BY id DESC
+         LIMIT 1
+         FOR UPDATE
+        `);
+
+        let nextNumber = 1;
+        if (resultId.rows.length) {
+            const lastCode = resultId.rows[0].package_id; // PK00000000012
+            const lastNumber = parseInt(lastCode.replace('PK', ''), 10);
+            nextNumber = lastNumber + 1;
+        }
+
+        const newPackageCode = `PK${String(nextNumber).padStart(11, '0')}`;
+
+        //insert package
+        const columns = [...Object.keys(packageData), 'package_id']
+        const values = [...Object.values(packageData), newPackageCode]
+        const placeholders = columns.map((_, i) => `$${i + 1}`)
+
+        const packageResualt = await db.query(`
+            INSERT INTO insurance_package (${columns.join(', ')})
+            VALUES (${placeholders.join(', ')})
+            RETURNING id
+            `, values)
+
+        const newPackageId = packageResualt.rows[0].id
+
+        for (const p of payments) {
+            const {
+                payment_method_id,
+                discount_percent = 0,
+                discount_amount = 0,
+                first_payment_amount = null
+            } = p
+
+            const paymentSql = `
+                INSERT INTO package_payment
+                (
+                    package_id,
+                    payment_method_id,
+                    discount_percent,
+                    discount_amount,
+                    first_payment_amount
+                )
+                VALUES ($1, $2, $3, $4, $5)
+                `
+
+            await db.query(paymentSql, [
+                newPackageId,
+                payment_method_id,
+                discount_percent,
+                discount_amount,
+                first_payment_amount
+                ])
+        }
+
+        //relation
+        for(const brandId of car_brand_id){
+                await db.query('INSERT INTO package_car_brand (package_id, car_brand_id) VALUES ($1, $2)', [newPackageId, brandId])
+        }
+
+        for(const modelId of car_model_id){
+                await db.query('INSERT INTO package_car_model (package_id, car_model_id) VALUES ($1, $2)', [newPackageId, modelId])
+        }
+
+        for(const usageId of car_usage_type_id){
+                await db.query('INSERT INTO package_usage_type (package_id, car_usage_type_id) VALUES ($1, $2)', [newPackageId, usageId])
+        }
+
+        for(const compulId of compulsory_id){
+                await db.query('INSERT INTO package_compulsory (package_id, compulsory_id) VALUES ($1, $2)', [newPackageId, compulId])
+        }
+
+        res.json({
+            msg: 'คัดลอกแพ็กเกจสำเร็จ',
+            id: newPackageId 
+        })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'}) 
+    }
+}
 
 exports.remove = async(req, res) => {
     try {
