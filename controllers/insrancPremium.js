@@ -79,7 +79,7 @@ exports.list = async(req, res) => {
                         )
                     ) FILTER (WHERE ct.id IS NOT NULL),
                     '[]'::jsonb
-                ) AS type,
+                ) AS type
             FROM insurance_premium AS ipm
             LEFT JOIN insurance_package AS ipk ON ipm.package_id = ipk.id 
             LEFT JOIN insurance_company AS icp ON ipk.insurance_company_id = icp.id 
