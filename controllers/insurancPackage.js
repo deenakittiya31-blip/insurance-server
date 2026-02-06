@@ -149,7 +149,7 @@ exports.list = async(req, res) => {
     }
 }
 
-exports.is_active = async(req, res) => {
+exports.StatusIsActive = async(req, res) => {
     console.log('body', req.body)
     console.log('params', req.params)
     try {

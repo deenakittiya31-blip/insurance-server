@@ -1,6 +1,6 @@
 const express = require('express')
 const { authCheck, roleCheck } = require('../middleware/authCheck')
-const { create, list, update, remove, listSelect, read, readEdit, is_active, copy } = require('../controllers/insurancPackage')
+const { create, list, update, remove, listSelect, read, readEdit, copy, StatusIsActive } = require('../controllers/insurancPackage')
 const router = express.Router()
 
 router.post('/create-package', authCheck, roleCheck(['admin', 'staff']), create)
@@ -10,7 +10,7 @@ router.get('/list-package-select', authCheck, roleCheck(['admin', 'staff']), lis
 router.get('/read-package/:id', authCheck, roleCheck(['admin', 'staff']), read)
 router.get('/readedit-package/:id', authCheck, roleCheck(['admin', 'staff']), readEdit)
 router.patch('/update-package/:id', authCheck, roleCheck(['admin', 'staff']), update)
-router.put('/status-package/:id', authCheck, roleCheck(['admin']), is_active)
+router.put('/status-package/:id', authCheck, roleCheck(['admin']), StatusIsActive)
 router.delete('/delete-package/:id', authCheck, roleCheck(['admin', 'staff']), remove)
 
 module.exports = router
