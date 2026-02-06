@@ -126,6 +126,11 @@ exports.list = async(req, res) => {
                 ip.start_date,
                 ip.end_date,
                 ip.repair_type,
+                (
+                  SELECT COUNT(*)::int 
+                  FROM insurance_premium ipm 
+                  WHERE ipm.package_id = ip.id
+                ) as premium_count,
                 ip.is_active
             FROM insurance_package AS ip
             JOIN insurance_company AS ic ON ip.insurance_company_id = ic.id
