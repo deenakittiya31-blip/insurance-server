@@ -41,6 +41,7 @@ exports.listMember = async(req, res) => {
     try {
         const page = Number(req.query.page);
         const per_page = Number(req.query.per_page);
+        const group_id = Number(req.query.group_id);
         const sortKey = req.query.sortKey || 'id';
         const sortDirection = req.query.sortDirection || 'DESC';
         const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
@@ -86,6 +87,7 @@ exports.listMember = async(req, res) => {
                         gm.group_name  
                     FROM member AS m 
                     LEFT JOIN group_member AS gm ON m.group_id = gm.id   
+                    WHERE group_id = ${group_id}
                     ORDER BY ${sortKey} ${validSortDirection}`
             )
             return res.json({data: result.rows})

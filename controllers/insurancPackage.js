@@ -167,7 +167,11 @@ exports.is_active = async(req, res) => {
 exports.listSelect = async(req, res) => {
     try {
         const result = await db.query(
-            'SELECT id, package_name FROM insurance_package ORDER BY created_at DESC' 
+            `
+            SELECT id, package_id, package_name 
+            FROM insurance_package 
+            WHERE is_active = true
+            ORDER BY id DESC` 
         )
 
          res.json({ data: result.rows })
