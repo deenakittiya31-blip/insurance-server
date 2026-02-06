@@ -27,9 +27,10 @@ exports.lineBotReply = async(req, res) => {
                         display_name,
                         picture_url,
                         is_friend, 
-                        is_registered
+                        is_registered,
+                        group_id
                     )
-                    VALUES ($1, $2, $3, true, false)
+                    VALUES ($1, $2, $3, true, false, 1)
                     ON CONFLICT (user_id) DO UPDATE
                     SET 
                         is_friend = true,
@@ -46,14 +47,6 @@ exports.lineBotReply = async(req, res) => {
                 })
             return
        }
-
-    //  กิน
-    //    if(event.type === 'message' && ['text', 'image', 'video', 'file', 'location', 'sticker'].includes(event.message.type)){
-    //         const timestamp = event.timestamp
-    //         const userId = event.source.userId
-
-    //         await db.query('UPDATE member SET recent_conversation = $1 WHERE user_id = $2', [timestamp, userId])
-    //    }
 
         //ผู้ใช้ส่ง text มา
         if (event.type === 'message' && event.message.type === 'text') {
@@ -90,9 +83,10 @@ exports.lineBotReply = async(req, res) => {
                                 display_name,
                                 picture_url,
                                 is_friend, 
-                                is_registered
+                                is_registered,
+                                group_id
                                 )
-                            VALUES ($1, $2, $3, true, false)
+                            VALUES ($1, $2, $3, true, false, 1)
                         `, [userId, displayName, pictureUrl])
 
                         await sendRegisterButton(replyToken)
