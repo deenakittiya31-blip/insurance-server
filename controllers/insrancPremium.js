@@ -138,8 +138,31 @@ exports.read = async(req, res) => {
     try {  
         const {id} = req.params
         
-        const query = 'SELECT id, package_id, car_usage_id, car_year, premium_price, compulsory_price FROM insurance_premium WHERE id = $1'
-        const result = await db.query(query, [Number(id)])
+        const result = await db.query(
+            `
+            SELECT 
+                ipm.package_id,
+                ipm.premium_discount,
+                COALESCE(
+                    JSONB_AGG(
+                        DISTINCT JSONB_BUILD_OBJECT(
+                            'premium_name', ipm.premium_name,
+                            'repair_fund_int', ipm.repair_fund_int,
+                            'repair_fund_max', ipm.repair_fund_max,
+                            'start_year', ipm.start_year,
+                            'max_year', ipm.max_year,
+                            'car_lost_fire', ipm.car_lost_fire,
+                            'total_premium', ipm.total_premium,
+                            'net_income', ipm.net_income,
+                            'selling_price', ipm.selling_price
+                        )
+                    ) FILTER (WHERE ipm.id IS NOT NULL),
+                    '[]'::jsonb
+                ) AS premiums
+            FROM insurance_premium AS ipm
+            WHERE ipm.id = $1
+            GROUP BY ipm.package_id, ipm.premium_discount
+            `, [Number(id)])
 
          res.json({ data: result.rows[0] })
     } catch (err) {
@@ -150,7 +173,7 @@ exports.read = async(req, res) => {
 
 exports.update = async(req, res) => {
     const {id} = req.params
-    const {package_id, car_usage_id, car_year, premium_price, compulsory_price} = req.body
+    const { package_id, premium_discount, premiums } = req.body
 
     try {
         const result = await db.query('SELECT * FROM  insurance_premium WHERE id = $1',[id])
@@ -159,17 +182,20 @@ exports.update = async(req, res) => {
             return res.status(404).json({ message: 'ไม่พบข้อมูล' })
         }
 
-        const old = result.rows[0]
+        for(const p of premiums) {
+            const columns = [...Object.keys(p), 'package_id', 'premium_discount']
+            const values = [...Object.values(p), package_id, premium_discount]
 
-        await db.query('UPDATE  insurance_premium SET package_id = $1, car_usage_id = $2, car_year = $3, premium_price = $4, compulsory_price = $5  WHERE id = $6', 
-            [
-               package_id         !== undefined ? Number(package_id) :  old.package_id,
-               car_usage_id       !== undefined ? Number(car_usage_id) :  old.car_usage_id,
-               car_year           !== undefined ? Number(car_year) :  old.car_year,
-               premium_price      !== undefined ? Number(premium_price) :  old.premium_price,
-               compulsory_price   !== undefined ? Number(compulsory_price) :  old.compulsory_price,
-               id
-            ])
+            const setClauses = columns.map((col, idx) => `${col} = $${idx + 1}`)
+
+            const updatePremiumSql = `
+                UPDATE insurance_premium 
+                SET ${setClauses.join(', ')}
+                WHERE id = $${columns.length + 1}
+            `
+
+            await db.query(updatePremiumSql, [...values, id])
+        }
 
         res.json({msg: 'อัปเดตข้อมูลเบี้ยประกันสำเร็จ'})
     } catch (err) {
