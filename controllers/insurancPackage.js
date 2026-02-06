@@ -150,6 +150,8 @@ exports.list = async(req, res) => {
 }
 
 exports.is_active = async(req, res) => {
+    console.log('body', req.body)
+    console.log('params', req.params)
     try {
             const { is_active } = req.body
             const { id } = req.params
