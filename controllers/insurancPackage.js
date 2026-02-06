@@ -204,6 +204,11 @@ exports.read = async(req, res) => {
                 ip.seat_count,
                 ip.is_active,
                 ip.created_at,
+                (
+                  SELECT COUNT(*)::int 
+                  FROM insurance_premium ipm 
+                  WHERE ipm.package_id = ip.id
+                ) as premium_count,
                 COALESCE(
                     JSONB_AGG(
                         DISTINCT JSONB_BUILD_OBJECT(
