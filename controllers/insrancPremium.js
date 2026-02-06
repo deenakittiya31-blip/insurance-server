@@ -54,6 +54,9 @@ exports.create = async(req, res) => {
 exports.list = async(req, res) => {
     const page = Number(req.query.page) || 1;
     const per_page = Number(req.query.per_page) || 5;
+    const sortKey = req.query.sortKey || 'id';
+    const sortDirection = req.query.sortDirection || 'DESC';
+    const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
     const offset = (page - 1) * per_page
 
@@ -64,24 +67,19 @@ exports.list = async(req, res) => {
                 ipm.*, 
                 ipk.package_name,
                 ipk.package_id,
+                ipk.start_date,
+                ipk.end_date,
                 icp.namecompany,
                 it.nametype,
                 COALESCE(
                     JSONB_AGG(
                         DISTINCT JSONB_BUILD_OBJECT(
-                            'code_type', ct.code
+                            'code_type', ct.code,
+                            'code_usage', cut.code_usage
                         )
                     ) FILTER (WHERE ct.id IS NOT NULL),
                     '[]'::jsonb
                 ) AS type,
-                COALESCE(
-                    JSONB_AGG(
-                        DISTINCT JSONB_BUILD_OBJECT(
-                            'name_type', ct.type
-                        )
-                    ) FILTER (WHERE ct.id IS NOT NULL),
-                    '[]'::jsonb
-                ) AS name_type
             FROM insurance_premium AS ipm
             LEFT JOIN insurance_package AS ipk ON ipm.package_id = ipk.id 
             LEFT JOIN insurance_company AS icp ON ipk.insurance_company_id = icp.id 
@@ -104,8 +102,10 @@ exports.list = async(req, res) => {
                 ipk.package_name,
                 ipk.package_id,
                 icp.namecompany,
-                it.nametype
-            ORDER BY ipm.id DESC
+                it.nametype,
+                ipk.start_date,
+                ipk.end_date
+            ORDER BY ${sortKey} ${validSortDirection} 
             LIMIT $1 OFFSET $2
             `
             , [per_page, offset])
@@ -116,6 +116,21 @@ exports.list = async(req, res) => {
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
+    }
+}
+
+exports.is_active = async(req, res) => {
+    try {
+            const { is_active } = req.body
+            const { id } = req.params
+
+            await db.query('UPDATE insurance_premium SET is_active = $1 WHERE id = $2', 
+            [is_active, id])
+
+        res.json({msg: 'อัปเดตสถานะสำเร็จ'})  
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'})
     }
 }
 
