@@ -156,6 +156,8 @@ exports.is_active = async(req, res) => {
             const { is_active } = req.body
             const { id } = req.params
 
+            console.log('is_active:', is_active, 'type:', typeof is_active) 
+
             await db.query('UPDATE insurance_package SET is_active = $1 WHERE id = $2', 
             [is_active, id])
 
