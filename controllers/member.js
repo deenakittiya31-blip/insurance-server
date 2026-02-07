@@ -240,13 +240,24 @@ exports.searchMember = async(req, res) => {
         const result = await db.query(
             `
             SELECT 
-              *
-            FROM member
+                m.id,
+                m.user_id,
+                m.display_name,
+                m.first_name,
+                m.last_name,
+                m.phone,
+                m.picture_url,
+                m.created_at,
+                m.group_id,
+                gm.group_name
+            FROM member AS m
+            LEFT JOIN group_member AS gm ON m.group_id = gm.id
             WHERE
-                display_name ILIKE $1 OR
-                first_name ILIKE $1 OR
-                last_name ILIKE $1 OR
-                phone ILIKE $1
+                m.display_name ILIKE $1 OR
+                m.first_name ILIKE $1 OR
+                m.last_name ILIKE $1 OR
+                gm.group_name ILIKE $1 OR
+                m.phone ILIKE $1
             ORDER BY created_at DESC
             `,
             [`%${search}%`]
