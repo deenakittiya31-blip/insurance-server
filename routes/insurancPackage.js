@@ -10,7 +10,7 @@ router.get('/list-package-select', authCheck, roleCheck(['admin', 'staff']), lis
 router.get('/read-package/:id', authCheck, roleCheck(['admin', 'staff']), read)
 router.get('/readedit-package/:id', authCheck, roleCheck(['admin', 'staff']), readEdit)
 router.patch('/update-package/:id', authCheck, roleCheck(['admin', 'staff']), update)
-router.put('/status-package/:id', authCheck, roleCheck(['admin']), StatusIsActive)
+router.put('/status-package/:id', authCheck, roleCheck(['admin', 'staff']), StatusIsActive)
 router.delete('/delete-package/:id', authCheck, roleCheck(['admin', 'staff']), remove)
 
 module.exports = router

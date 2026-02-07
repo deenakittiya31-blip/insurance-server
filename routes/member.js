@@ -1,10 +1,11 @@
 const express = require('express');
-const { registerMember, listMember , sendDocumentToMember, searchMember, readMember, updateMember, removeMember } = require('../controllers/member');
+const { registerMember, listMember , sendDocumentToMember, searchMember, readMember, updateMember, removeMember, listMemberForMessage } = require('../controllers/member');
 const { authCheck, roleCheck } = require('../middleware/authCheck');
 const router = express.Router();
 
 router.post('/register-member', registerMember)
 router.get('/list-members', authCheck , roleCheck(['admin', 'staff']), listMember)
+router.get('/list-members/message', listMemberForMessage)
 router.get('/read-member/:id', authCheck , roleCheck(['admin', 'staff']), readMember)
 router.patch('/update-member/:id', authCheck , roleCheck(['admin', 'staff']), updateMember)
 router.delete('/delete-member/:id', authCheck , roleCheck(['admin', 'staff']), removeMember)

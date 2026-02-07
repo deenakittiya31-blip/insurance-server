@@ -41,57 +41,105 @@ exports.listMember = async(req, res) => {
     try {
         const page = Number(req.query.page);
         const per_page = Number(req.query.per_page);
-        const group_id = Number(req.query.group_id);
         const sortKey = req.query.sortKey || 'id';
         const sortDirection = req.query.sortDirection || 'DESC';
         const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
-        const offset = (page - 1) * per_page;
-        
-        if(page && per_page) {
-            const result = await db.query(
+        const offset = (page - 1) * per_page
+
+        const result = await db.query(
                 `
-                SELECT 
-                    m.id, 
-                    m.user_id, 
-                    m.display_name, 
-                    m.first_name, 
-                    m.last_name, 
-                    m.phone, 
-                    m.picture_url, 
-                    m.created_at, 
-                    m.note, 
-                    gm.group_name  
-                FROM member AS m 
-                LEFT JOIN group_member AS gm ON m.group_id = gm.id           
-                ORDER BY ${sortKey} ${validSortDirection} 
-                LIMIT $1 OFFSET $2
-                `, [per_page, offset])
+            SELECT 
+                m.id, 
+                m.user_id, 
+                m.display_name, 
+                m.first_name, 
+                m.last_name, 
+                m.phone, 
+                m.picture_url, 
+                m.created_at, 
+                m.note,
+                m.group_id,
+                gm.group_name  
+            FROM member AS m 
+            LEFT JOIN group_member AS gm ON m.group_id = gm.id
+            ORDER BY ${sortKey} ${validSortDirection}
+            LIMIT $1 OFFSET $2
+        `
+           , [per_page, offset] )
+            
+            
+        const countResult = await db.query('SELECT COUNT(*)::int as total FROM member')
 
-            const countResult = await db.query('SELECT COUNT(*)::int as total FROM member')
+        res.json({
+            data: result.rows, 
+            total: countResult.rows[0].total
+        })
+    
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({ message: 'Server error'})
+    }
+}
 
-            return res.json({data: result.rows, total: countResult.rows[0].total})
-        } else {
-            const result = await db.query(
-                    `
-                    SELECT 
-                        m.id, 
-                        m.user_id, 
-                        m.display_name, 
-                        m.first_name, 
-                        m.last_name, 
-                        m.phone, 
-                        m.picture_url, 
-                        m.created_at, 
-                        m.note, 
-                        gm.group_name  
-                    FROM member AS m 
-                    LEFT JOIN group_member AS gm ON m.group_id = gm.id   
-                    WHERE group_id = ${group_id}
-                    ORDER BY ${sortKey} ${validSortDirection}`
+exports.listMemberForMessage = async(req, res) => {
+    try {
+        const {group_id} = req.query;
+        const sortKey = req.query.sortKey || 'id';
+        const sortDirection = req.query.sortDirection || 'DESC'
+        const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC'
+
+        let whereClause = ''
+        let queryParams = []
+
+        if (group_id) {
+            const groupIds = group_id.split(',')
+
+            const hasNoGroup = groupIds.includes('null') || groupIds.includes('no_group')
+            const normalGroupIds = groupIds.filter(
+                id => id !== 'null' && id !== 'no_group'
             )
-            return res.json({data: result.rows})
+
+            const conditions = []
+
+            if (normalGroupIds.length > 0) {
+                conditions.push(`m.group_id = ANY($1)`)
+                queryParams.push(normalGroupIds)
+            }
+
+            if (hasNoGroup) {
+                conditions.push(`m.group_id IS NULL`)
+            }
+
+            if (conditions.length > 0) {
+                whereClause = `WHERE ${conditions.join(' OR ')}`
+            }
         }
+
+
+        const result = await db.query(
+            `
+            SELECT 
+                m.id, 
+                m.user_id, 
+                m.display_name, 
+                m.first_name, 
+                m.last_name, 
+                m.phone, 
+                m.picture_url, 
+                m.created_at, 
+                m.note,
+                m.group_id,
+                gm.group_name  
+            FROM member AS m 
+            LEFT JOIN group_member AS gm ON m.group_id = gm.id
+            ${whereClause}
+            ORDER BY ${sortKey} ${validSortDirection}
+        `
+           , queryParams)
+            
+
+        res.json({ data: result.rows })
     
     } catch (err) {
         console.log(err)
