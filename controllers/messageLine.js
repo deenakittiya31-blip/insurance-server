@@ -3,15 +3,15 @@ const { sendText, sendImage } = require('../services/lineService');
 
 exports.sendMessageLine = async(req, res) => {
     try {
-        const { text, logo_url, members } = req.body
+        const { text, image, members } = req.body
 
         if (!members || !members.length) {
             return res.status(400).json({ message: 'กรุณาเลือกสมาชิกก่อน' });
         }
 
         for(const userId of members){
-            if(logo_url){
-                await sendImage(userId, logo_url)
+            if(image){
+                await sendImage(userId, image)
             }
             if(text){
                 await sendText(userId, text)
