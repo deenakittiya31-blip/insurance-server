@@ -77,6 +77,28 @@ exports.pushWelcomeFlex = async(userId, display_name, picture_url) => {
     )
 }
 
+exports.sendText = async(userId, text) => {
+    try {
+        const res = await axios.post(LINE_PUSH_API, 
+            {
+                to: userId,
+                messages: [
+                    {
+                        type: 'text',
+                        text: text
+                    }
+                ]
+            },
+            { headers: LINE_HEADER }
+        )
+
+        console.log('send image success:', userId)
+        return res
+    } catch (error) {
+        console.error('Line error: ', error.response?.data || error.message)   
+    }
+}
+
 exports.sendImage = async(userId, imageUrl ) => {
     try {
         const res = await axios.post(LINE_PUSH_API, 
