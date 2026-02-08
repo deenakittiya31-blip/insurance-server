@@ -1,4 +1,5 @@
 const db = require('../config/database')
+const { GET_LIST_PREMIUM } = require('../services/premiumQuery')
 
 exports.create = async(req, res) => {
     const client = await db.connect()
@@ -119,7 +120,29 @@ exports.list = async(req, res) => {
     }
 }
 
-exports.is_active = async(req, res) => {
+exports.searchPremium = async(req, res) => {
+    try {
+        const { search } = req.body;
+
+        const result = await db.query(
+            `
+                ${GET_LIST_PREMIUM}  
+                WHERE
+                ipm.premium_id ILIKE $1 OR
+                ipm.premium_name ILIKE $1 OR
+                icp.namecompany ILIKE $1 OR
+                it.nametype ILIKE $1
+                ORDER BY ipm.id DESC`, [`%${search}%`]
+        );
+
+        res.json({data: result.rows})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'Server error'})
+    }
+}
+
+exports.isActivePremium = async(req, res) => {
     try {
             const { is_active } = req.body
             const { id } = req.params
@@ -127,7 +150,7 @@ exports.is_active = async(req, res) => {
             await db.query('UPDATE insurance_premium SET is_active = $1 WHERE id = $2', 
             [is_active, id])
 
-        res.json({msg: 'อัปเดตสถานะสำเร็จ'})  
+        res.json({msg: 'อัปเดตสถานะเบี้ยสำเร็จ'})  
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'})

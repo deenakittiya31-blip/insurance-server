@@ -149,6 +149,50 @@ exports.list = async(req, res) => {
     }
 }
 
+exports.searchPackage = async(req, res) => {
+    try {
+        const { search } = req.body;
+
+        const result = await db.query(
+            `
+            SELECT 
+                ip.id,
+                ip.created_at,
+                ip.package_id,
+                ip.package_name,
+                ic.namecompany,
+                it.nametype,
+                ip.start_date,
+                ip.end_date,
+                ip.repair_type,
+                (
+                  SELECT COUNT(*)::int 
+                  FROM insurance_premium ipm 
+                  WHERE ipm.package_id = ip.id
+                ) as premium_count,
+                ip.is_active
+            FROM insurance_package AS ip
+            JOIN insurance_company AS ic ON ip.insurance_company_id = ic.id
+            JOIN insurance_type AS it ON ip.insurance_type_id = it.id
+            WHERE
+                ip.package_id ILIKE $1 OR
+                ip.package_name ILIKE $1 OR
+                ip.repair_type ILIKE $1 OR
+                ip.promotion ILIKE $1 OR
+                ic.namecompany ILIKE $1 OR
+                it.nametype ILIKE $1
+            ORDER BY created_at DESC
+            `,
+            [`%${search}%`]
+        );
+
+        res.json({data: result.rows})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'Server error'})
+    }
+}
+
 exports.StatusIsActive = async(req, res) => {
     console.log('body', req.body)
     console.log('params', req.params)
