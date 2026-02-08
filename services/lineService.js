@@ -101,6 +101,7 @@ exports.sendText = async(userId, text) => {
 
 exports.sendImage = async(userId, imageUrl ) => {
     try {
+        console.log('send image url:', imageUrl);
         const res = await axios.post(LINE_PUSH_API, 
             {
                 to: userId,
@@ -115,10 +116,13 @@ exports.sendImage = async(userId, imageUrl ) => {
             { headers: LINE_HEADER }
         )
 
-        console.log('send image success:', userId)
         return res
     } catch (error) {
-        console.error('Line error: ', error.response?.data || error.message)   
+        console.error(
+            'Line error:',
+            error.response?.status,
+            error.response?.data
+        );
     }
 }
 

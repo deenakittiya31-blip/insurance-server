@@ -1,4 +1,3 @@
-const db = require('../config/database');
 const { sendText, sendImage } = require('../services/lineService');
 
 exports.sendMessageLine = async(req, res) => {
