@@ -128,12 +128,42 @@ exports.searchPremium = async(req, res) => {
             `
                 ${GET_LIST_PREMIUM}  
                 WHERE
-                ipm.premium_id ILIKE $1 OR
-                ipm.premium_name ILIKE $1 OR
-                icp.namecompany ILIKE $1 OR
-                it.nametype ILIKE $1
-                ORDER BY ipm.id DESC`, [`%${search}%`]
+                    ipm.premium_id ILIKE $1 OR
+                    ipm.premium_name ILIKE $1 OR
+                    icp.namecompany ILIKE $1 OR
+                    it.nametype ILIKE $1
+                GROUP BY 
+                    ipm.id,
+                    ipk.package_name,
+                    ipk.package_id,
+                    icp.namecompany,
+                    it.nametype,
+                    ipk.start_date,
+                    ipk.end_date
+                ORDER BY ipm.id DESC
+            `
+            , [`%${search}%`]
         );
+
+        console.log(
+            `            
+                ${GET_LIST_PREMIUM}  
+                WHERE
+                    ipm.premium_id ILIKE $1 OR
+                    ipm.premium_name ILIKE $1 OR
+                    icp.namecompany ILIKE $1 OR
+                    it.nametype ILIKE $1
+                GROUP BY 
+                    ipm.id,
+                    ipk.package_name,
+                    ipk.package_id,
+                    icp.namecompany,
+                    it.nametype,
+                    ipk.start_date,
+                    ipk.end_date
+                ORDER BY ipm.id DESC
+            `
+        )
 
         res.json({data: result.rows})
     } catch (err) {

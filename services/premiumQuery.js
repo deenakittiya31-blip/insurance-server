@@ -30,12 +30,4 @@ exports.GET_LIST_PREMIUM = `
             LEFT JOIN package_usage_type AS put ON ipk.id = put.package_id
             LEFT JOIN car_usage_type AS cut ON put.car_usage_type_id = cut.id
             LEFT JOIN car_type AS ct ON cut.car_type_id = ct.id
-            GROUP BY 
-                ipm.id,
-                ipk.package_name,
-                ipk.package_id,
-                icp.namecompany,
-                it.nametype,
-                ipk.start_date,
-                ipk.end_date
 `
