@@ -9,13 +9,13 @@ exports.sendMessageLine = async(req, res) => {
         }
 
         for(const userId of members){
-            if(image){
-                await sendImage(userId, image)
-            }
             if(text){
                 await sendText(userId, text)
             }
 
+            if(image){
+                await sendImage(userId, image)
+            }
         }
 
         res.json({msg: 'ส่งข้อความสำเร็จ'})
