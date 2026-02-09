@@ -13,6 +13,22 @@ exports.create = async(req, res) => {
     }
 }
 
+exports.addMembers = async(req, res) => {
+    try {
+        const { tag_id, members } = req.body
+
+        for(const userId of members) {
+            await db.query('INSERT INTO tag_member(tag_id, member_id) VALUES($1, $2)', [tag_id, userId])
+        }
+      
+
+        res.json({ msg: 'เพิ่มเพิ่มสมาชิกเข้าป้ายกำกับสำเร็จ' })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'}) 
+    }
+}
+
 exports.list = async(req, res) => {
     try {
         const page = Number(req.query.page) || 1;
