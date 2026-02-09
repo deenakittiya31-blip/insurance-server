@@ -154,9 +154,28 @@ exports.readMember = async(req, res) => {
 
         const result = await db.query(
             `
-            select first_name, last_name, group_id, gm.group_name,  phone, note
-            from member 
-            left join group_member as gm on member.group_id = gm.id where member.id = $1
+            select 
+                m.first_name, 
+                m.last_name, 
+                m.group_id, 
+                gm.group_name,  
+                m.phone, 
+                m.note,
+                COALESCE(
+                    JSONB_AGG(
+                        DISTINCT JSONB_BUILD_OBJECT(
+                            'tag_member_id', tm.id,
+                            'tag_name', tag.tag_name
+                        )
+                    ) FILTER (WHERE tm.id IS NOT NULL),
+                    '[]'::jsonb
+                ) AS tags
+            from member as m
+            left join group_member as gm on m.group_id = gm.id 
+            left join tag_member as tm on m.user_id = tm.member_id
+            left join tag on tm.tag_id = tag.id
+            where m.id = $1
+            group by m.first_name, m.last_name, m.group_id, gm.group_name,  m.phone, m.note
             `
             , [id])
 

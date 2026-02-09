@@ -18,11 +18,24 @@ exports.addMembers = async(req, res) => {
         const { tag_id, members } = req.body
 
         for(const userId of members) {
-            await db.query('INSERT INTO tag_member(tag_id, member_id) VALUES($1, $2)', [tag_id, userId])
+            await db.query('INSERT INTO tag_member(tag_id, member_id) VALUES($1, $2)', [Number(tag_id), userId])
         }
       
 
         res.json({ msg: 'เพิ่มเพิ่มสมาชิกเข้าป้ายกำกับสำเร็จ' })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'}) 
+    }
+}
+
+exports.removeTagFromMember = async(req, res) => {
+    try {
+        const { id } = req.params
+
+        await db.query('DELETE FROM tag_member WHERE id = $1', [Number(id)])
+      
+        res.json({ msg: 'ลบป้ายกำกับสำเร็จ' })
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
