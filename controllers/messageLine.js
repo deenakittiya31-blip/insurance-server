@@ -1,4 +1,5 @@
 const { sendText, sendImage } = require('../services/lineService');
+const db = require('../config/database');
 
 exports.sendMessageLine = async(req, res) => {
     try {
@@ -8,14 +9,15 @@ exports.sendMessageLine = async(req, res) => {
             return res.status(400).json({ message: 'กรุณาเลือกสมาชิกก่อน' });
         }
 
-        for(const userId of members){
-            if(text){
-                await sendText(userId, text)
-            }
+        const result = await db.query(
+            `SELECT user_id FROM member 
+             WHERE is_active = true AND user_id = ANY($1)`,
+            [members]
+        )
 
-            if(image){
-                await sendImage(userId, image)
-            }
+        for(const { user_id } of result.rows){
+            if (text) await sendText(user_id, text)
+            if (image) await sendImage(user_id, image)           
         }
 
         res.json({msg: 'ส่งข้อความสำเร็จ'})

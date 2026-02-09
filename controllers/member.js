@@ -270,6 +270,20 @@ exports.searchMember = async(req, res) => {
     }
 }
 
+exports.is_active = async(req, res) => {
+    try {
+        const {is_active} = req.body
+        const {id} = req.params
+
+        await db.query('UPDATE member SET is_active = $1 WHERE id = $2', [is_active, id])
+
+        res.json({msg: 'อัปเดตสถานะสมาชิกสำเร็จ'})  
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'})
+    }
+}
+
 async function createPublicCompare(quotationId) {
   try {
     const now = new Date();

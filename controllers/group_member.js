@@ -30,6 +30,17 @@ exports.list = async(req, res) => {
     }
 }
 
+exports.listSelect = async(req, res) => {
+    try {
+        const result = await db.query('select * from group_member where is_active = true order by id desc')
+
+        res.json({data: result.rows})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'Server error'})
+    }
+}
+
 exports.read = async(req, res) => {
     try {  
         const {id} = req.params
@@ -90,5 +101,19 @@ exports.remove = async(req, res) => {
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'Server error'})
+    }
+}
+
+exports.is_active = async(req, res) => {
+    try {
+        const {is_active} = req.body
+        const {id} = req.params
+
+        await db.query('UPDATE group_member SET is_active = $1 WHERE id = $2', [is_active, id])
+
+        res.json({msg: 'อัปเดตกลุ่มสำเร็จ'})  
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'})
     }
 }
