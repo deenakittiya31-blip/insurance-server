@@ -60,7 +60,8 @@ exports.listMember = async(req, res) => {
                 m.created_at, 
                 m.note,
                 m.group_id,
-                gm.group_name  
+                gm.group_name,
+                m.is_active  
             FROM member AS m 
             LEFT JOIN group_member AS gm ON m.group_id = gm.id
             ORDER BY ${sortKey} ${validSortDirection}
