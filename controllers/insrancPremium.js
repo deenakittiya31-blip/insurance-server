@@ -310,8 +310,7 @@ exports.searchPremiumToCompare = async(req, res) => {
         console.log('Query:', query)
         console.log('Values:', values)
 
-        const result = await db.query(query,[values]
-        )
+        const result = await db.query(query, values)
 
         if(result.rows.length === 0){
             return res.status(404).json({message : 'ไม่พบข้อมูลเบี้ย'})
