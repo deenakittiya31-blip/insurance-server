@@ -33,7 +33,7 @@ exports.createCompare = async(req, res) => {
         )
 
         const id = insertResult.rows[0].id
-        const runningNumber = String(id).padStart(3, '0')
+        const runningNumber = String(id).padStart(6, '0')
         const q_id = `Q${yearMonth}${runningNumber}`
 
         //update q_id

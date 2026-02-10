@@ -30,7 +30,7 @@ exports.create = async(req, res) => {
             nextNumber = lastNumber + 1;
         }
 
-        const packageCode = `PK${String(nextNumber).padStart(11, '0')}`;
+        const packageCode = `PK${String(nextNumber).padStart(5, '0')}`;
 
         //insert package
         const columns = [...Object.keys(packageData), 'package_id']
