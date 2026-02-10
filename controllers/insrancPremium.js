@@ -254,11 +254,19 @@ exports.searchPremiumToCompare = async(req, res) => {
     try {
         const { insurance_type_id, car_type_id, car_usage_id } = req.body;
 
-        console.log(insurance_type_id, car_type_id, car_usage_id)
+        // ตรวจสอบว่าเลือกครบหรือไม่เลือกเลย
+        const hasAllFilters = insurance_type_id && car_type_id && car_usage_id
+        const hasNoFilters = !insurance_type_id && !car_type_id && !car_usage_id
 
-        const result = await db.query(
-            `
-            select distinct
+        // ถ้าเลือกไม่ครบทั้ง 3 ให้ return error
+        if (!hasAllFilters && !hasNoFilters) {
+            return res.status(400).json({ 
+                message: 'กรุณาเลือกข้อมูลให้ครบทั้ง 3 รายการ หรือไม่เลือกเลย' 
+            })
+        }
+
+        let query = `
+             select distinct
               ipm.id as index_premium,
               ipm.premium_id,
               icp.id as index_package,
@@ -275,24 +283,38 @@ exports.searchPremiumToCompare = async(req, res) => {
               ipm.premium_discount
             from
               insurance_premium as ipm
-              left join insurance_package as ipk on ipm.package_id = ipk.id
-              left join insurance_company as icp on ipk.insurance_company_id = icp.id
-              left join insurance_type as it on ipk.insurance_type_id = it.id
-              left join package_usage_type as put on ipk.id = put.package_id
-              left join car_usage_type as cut on put.car_usage_type_id = cut.id
-            WHERE 
-              cut.car_usage_id = $1 
-              AND cut.car_type_id = $2 
-              AND ipk.insurance_type_id = $3
-              AND ipk.is_active = true
-            order by ipm.id asc
+              inner join insurance_package as ipk on ipm.package_id = ipk.id
+              inner join insurance_company as icp on ipk.insurance_company_id = icp.id
+              inner join insurance_type as it on ipk.insurance_type_id = it.id
+        `
 
+        let whereClause = 'where ipk.is_active = true'
+        let values = []
+
+        if(hasAllFilters){
+            query += `
+              inner join package_usage_type as put on ipk.id = put.package_id
+              inner join car_usage_type as cut on put.car_usage_type_id = cut.id
             `
-            ,[ car_usage_id, car_type_id, insurance_type_id ]
+
+            values = [car_usage_id, car_type_id, insurance_type_id]
+            whereClause += `
+                and cut.car_usage_id = $1 
+                and cut.car_type_id = $2
+                and ipk.insurance_type_id = $3 
+            `
+        }
+
+        query += `${whereClause} order by ipm.id asc`
+
+        console.log('Query:', query)
+        console.log('Values:', values)
+
+        const result = await db.query(query,[values]
         )
 
-        if(result.rows === 0){
-            return res.status(200).json({message : 'ไม่พบข้อมูลเบี้ย'})
+        if(result.rows.length === 0){
+            return res.status(404).json({message : 'ไม่พบข้อมูลเบี้ย'})
         }
 
         res.json({data : result.rows})
