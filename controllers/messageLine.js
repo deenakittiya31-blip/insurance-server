@@ -29,8 +29,9 @@ exports.sendMessageLine = async(req, res) => {
 
         // ส่งตาม tag
         if (tags.length > 0) {
-            values.push(tags)
-            conditions.push(`tm.tag_id = ANY($${values.length})`)
+            const tagIds = tags.map(tag => parseInt(tag))
+            values.push(tagIds)
+            conditions.push(`tm.tag_id = ANY($${values.length}::integer[])`)
         }
 
         query += ` AND (${conditions.join(' OR ')})`
