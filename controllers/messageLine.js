@@ -14,7 +14,7 @@ exports.sendMessageLine = async(req, res) => {
         let query = `
             SELECT DISTINCT m.user_id
             FROM member m
-            LEFT JOIN tag_member tm ON m.id = tm.member_id
+            LEFT JOIN tag_member tm ON m.user_id = tm.member_id
             WHERE m.is_active = true
         `
 
@@ -24,14 +24,13 @@ exports.sendMessageLine = async(req, res) => {
         // ส่งตาม member ที่เลือก
         if (members.length > 0) {
             values.push(members)
-            conditions.push(`m.user_id = ANY($${values.length}::text[])`)
+            conditions.push(`m.user_id = ANY($${values.length})`)
         }
 
         // ส่งตาม tag
         if (tags.length > 0) {
-            const tagIds = tags.map(tag => parseInt(tag))
-            values.push(tagIds)
-            conditions.push(`tm.tag_id = ANY($${values.length}::integer[])`)
+            values.push(tags)
+            conditions.push(`tm.tag_id = ANY($${values.length})`)
         }
 
         query += ` AND (${conditions.join(' OR ')})`
