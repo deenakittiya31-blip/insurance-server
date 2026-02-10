@@ -33,7 +33,7 @@ exports.createCompare = async(req, res) => {
         )
 
         const id = insertResult.rows[0].id
-        const runningNumber = String(id).padStart(6, '0')
+        const runningNumber = String(id).padStart(3, '0')
         const q_id = `Q${yearMonth}${runningNumber}`
 
         //update q_id
@@ -113,6 +113,7 @@ exports.listCompare = async(req, res) => {
         res.status(500).json({message: 'Server error'})
     }
 }
+
 exports.listPinCompare = async(req, res) => {
     try {
         const page = Number(req.query.page || 1);
@@ -122,7 +123,6 @@ exports.listPinCompare = async(req, res) => {
         const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
         const user_id = req.user.id
 
-console.log(user_id)
         const offset = (page - 1) * per_page;
 
         const result = await db.query(

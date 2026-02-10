@@ -22,7 +22,7 @@ exports.create = async(req, res) => {
             let nextNumber = 1;
             if (result.rows.length) {
                 const lastCode = result.rows[0].premium_id; // PM00000000012
-                const lastNumber = parseInt(lastCode.replace('PM', ''), 10);
+                const lastNumber = parseInt(lastCode.replace('PM', ''), 5);
                 nextNumber = lastNumber + 1;
             }
 
