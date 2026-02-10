@@ -9,6 +9,8 @@ exports.sendMessageLine = async(req, res) => {
             return res.status(400).json({ message: 'กรุณาเลือกสมาชิกหรือแท็กอย่างน้อย 1 รายการ' });
         }
 
+        console.log(tags)
+
         let query = `
             SELECT DISTINCT m.user_id
             FROM member m
