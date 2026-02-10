@@ -24,7 +24,7 @@ exports.sendMessageLine = async(req, res) => {
         // ส่งตาม member ที่เลือก
         if (members.length > 0) {
             values.push(members)
-            conditions.push(`m.user_id = ANY($${values.length})`)
+            conditions.push(`m.user_id = ANY($${values.length}::text[])`)
         }
 
         // ส่งตาม tag
