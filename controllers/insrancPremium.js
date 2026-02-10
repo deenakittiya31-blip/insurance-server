@@ -254,9 +254,11 @@ exports.searchPremiumToCompare = async(req, res) => {
     try {
         const { insurance_type_id, car_type_id, car_usage_id } = req.body;
 
+        console.log(insurance_type_id, car_type_id, car_usage_id)
+
         const result = await db.query(
             `
-            select 
+            select distinct
               ipm.id as index_premium,
               ipm.premium_id,
               icp.id as index_package,
@@ -278,24 +280,11 @@ exports.searchPremiumToCompare = async(req, res) => {
               left join insurance_type as it on ipk.insurance_type_id = it.id
               left join package_usage_type as put on ipk.id = put.package_id
               left join car_usage_type as cut on put.car_usage_type_id = cut.id
-              left join car_type as ct on cut.car_type_id = ct.id
-              left join car_usage as cu on cut.car_usage_id = cu.id
-            WHERE cut.car_usage_id = $1 AND cut.car_type_id = $2 AND ipk.insurance_type_id = $3
-            group by
-              ipm.id,
-              ipm.premium_id,
-              icp.id,
-              icp.logo_url,
-              icp.namecompany,
-              ipk.package_id,
-              ipk.package_name,
-              it.nametype,
-              ipm.repair_fund_max,
-              ipk.medical_expense,
-              ipm.total_premium,
-              ipm.net_income,
-              ipm.selling_price,
-              ipm.premium_discount
+            WHERE 
+              cut.car_usage_id = $1 
+              AND cut.car_type_id = $2 
+              AND ipk.insurance_type_id = $3
+              AND ipk.is_active = true
             order by ipm.id asc
 
             `
