@@ -291,6 +291,10 @@ exports.searchPremiumToCompare = async(req, res) => {
             ,[ car_usage_id, car_type_id, insurance_type_id ]
         )
 
+        if(result.rows === 0){
+            return res.status(200).json({message : 'ไม่พบข้อมูลเบี้ย'})
+        }
+
         res.json({data : result.rows})
     } catch (err) {
         console.log(err)
