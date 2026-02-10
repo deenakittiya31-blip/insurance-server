@@ -145,26 +145,6 @@ exports.searchPremium = async(req, res) => {
             , [`%${search}%`]
         );
 
-        console.log(
-            `            
-                ${GET_LIST_PREMIUM}  
-                WHERE
-                    ipm.premium_id ILIKE $1 OR
-                    ipm.premium_name ILIKE $1 OR
-                    icp.namecompany ILIKE $1 OR
-                    it.nametype ILIKE $1
-                GROUP BY 
-                    ipm.id,
-                    ipk.package_name,
-                    ipk.package_id,
-                    icp.namecompany,
-                    it.nametype,
-                    ipk.start_date,
-                    ipk.end_date
-                ORDER BY ipm.id DESC
-            `
-        )
-
         res.json({data: result.rows})
     } catch (err) {
         console.log(err)
@@ -267,5 +247,64 @@ exports.remove = async(req, res) => {
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
+    }
+}
+
+exports.searchPremiumToCompare = async(req, res) => {
+    try {
+        const { insurance_type_id, car_type_id, car_usage_id } = req.body;
+
+        const result = await db.query(
+            `
+            select 
+              ipm.id as index_premium,
+              ipm.premium_id,
+              icp.id as index_package,
+              icp.logo_url,
+              icp.namecompany,
+              ipk.package_id,
+              ipk.package_name,
+              it.nametype,
+              ipm.repair_fund_max,
+              ipk.medical_expense,
+              ipm.total_premium,
+              ipm.net_income,
+              ipm.selling_price,
+              ipm.premium_discount
+            from
+              insurance_premium as ipm
+              left join insurance_package as ipk on ipm.package_id = ipk.id
+              left join insurance_company as icp on ipk.insurance_company_id = icp.id
+              left join insurance_type as it on ipk.insurance_type_id = it.id
+              left join package_usage_type as put on ipk.id = put.package_id
+              left join car_usage_type as cut on put.car_usage_type_id = cut.id
+              left join car_type as ct on cut.car_type_id = ct.id
+              left join car_usage as cu on cut.car_usage_id = cu.id
+            WHERE cut.car_usage_id = $1 AND cut.car_type_id = $2 AND ipk.insurance_type_id = $3
+            group by
+              ipm.id,
+              ipm.premium_id,
+              icp.id,
+              icp.logo_url,
+              icp.namecompany,
+              ipk.package_id,
+              ipk.package_name,
+              it.nametype,
+              ipm.repair_fund_max,
+              ipk.medical_expense,
+              ipm.total_premium,
+              ipm.net_income,
+              ipm.selling_price,
+              ipm.premium_discount
+            order by ipm.id asc
+
+            `
+            ,[ car_usage_id, car_type_id, insurance_type_id ]
+        )
+
+        res.json({data : result.rows})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'Server error'})
     }
 }
