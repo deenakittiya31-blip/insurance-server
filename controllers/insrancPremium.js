@@ -450,7 +450,7 @@ exports.createPremiumToCompare = async(req, res) => {
                     : null
 
                 await client.query(
-                    `INSERT INTO quotation_field (quotation_id, field_key, field_value) 
+                    `INSERT INTO quotation_field (quotation_id, field_code, field_value) 
                      VALUES ($1, $2, $3)`,
                     [quotation_id, key, fieldValue]
                 )
