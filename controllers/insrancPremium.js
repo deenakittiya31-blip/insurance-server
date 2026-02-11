@@ -416,7 +416,7 @@ exports.createPremiumToCompare = async(req, res) => {
                       ipm.premium_name,
                       ipm.car_lost_fire as car_fire_theft ,
                       ipm.selling_price as premium_total,
-                      ipk.insurance_type,
+                      it.nametype as insurance_type,
                       ipk.repair_type,
                       ipk.package_id,
                       ipk.car_own_damage_deductible,
@@ -430,6 +430,7 @@ exports.createPremiumToCompare = async(req, res) => {
                     from
                       insurance_premium as ipm
                       inner join insurance_package as ipk on ipm.package_id = ipk.id
+                      inner join insurance_type as it on ipk.insurance_type = it.id
                     where
                       ipm.id = $1
                 `
