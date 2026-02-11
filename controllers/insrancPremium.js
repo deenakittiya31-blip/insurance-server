@@ -136,10 +136,10 @@ exports.searchPremium = async(req, res) => {
                     ipm.total_premium  ILIKE $1 OR
                     ipm.net_income  ILIKE $1 OR
                     ipm.selling_price  ILIKE $1 OR
-                    ipk.start_date  ILIKE $1 OR
-                    ipk.end_date  ILIKE $1 OR
+                    TO_CHAR(ipk.start_date, 'DD/MM/YYYY') ILIKE $1 OR
+                    TO_CHAR(ipk.end_date, 'DD/MM/YYYY') ILIKE $1 OR
                     icp.namecompany  ILIKE $1 OR
-                    it.nametype  ILIKE $1 OR
+                    it.nametype  ILIKE $1
                 GROUP BY 
                     ipm.id,
                     ipk.package_name,

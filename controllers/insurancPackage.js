@@ -177,16 +177,16 @@ exports.searchPackage = async(req, res) => {
             WHERE
                 ip.package_id ILIKE $1 OR
                 ip.package_name ILIKE $1 OR
-                ip.start_date ILIKE $1 OR
-                ip.end_date ILIKE $1 OR
-                ip.created_at ILIKE $1 OR
+                TO_CHAR(ip.start_date, 'DD/MM/YYYY') ILIKE $1 OR
+                TO_CHAR(ip.end_date, 'DD/MM/YYYY') ILIKE $1 OR
+                TO_CHAR(ip.created_at, 'DD/MM/YYYY') ILIKE $1 OR
                 ip.repair_type ILIKE $1 OR
                 ip.promotion ILIKE $1 OR
                 ic.namecompany ILIKE $1 OR
                 it.nametype ILIKE $1
             ORDER BY created_at DESC
             `,
-            [`%${search}%`]
+            [`%${search || ''}%`]
         );
 
         res.json({data: result.rows})
