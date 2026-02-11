@@ -4,7 +4,7 @@ const { create, list, remove, update, read, isActivePremium, searchPremium, sear
 const router = express.Router()
 
 router.post('/create-premium', authCheck, roleCheck(['admin', 'staff']), create)
-router.post('/create-premiumtocompar', authCheck, roleCheck(['admin', 'staff']), createPremiumToCompare)
+router.post('/create-premiumtocompare', authCheck, roleCheck(['admin', 'staff']), createPremiumToCompare)
 router.post('/search-premium', authCheck, roleCheck(['admin', 'staff']), searchPremium)
 router.post('/search-premiumtocompare', authCheck, roleCheck(['admin', 'staff']), searchPremiumToCompare)
 router.get('/list-premium/page', list)
