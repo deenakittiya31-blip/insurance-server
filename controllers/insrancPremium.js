@@ -338,6 +338,8 @@ exports.createPremiumToCompare = async(req, res) => {
     const client = await db.connect()
 
     try {
+        await client.query('BEGIN')
+        
         const {
             to_name, 
             details, 

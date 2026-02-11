@@ -443,6 +443,8 @@ exports.copyCompare = async(req, res) => {
     const client = await db.connect()
 
     try {
+        await client.query('BEGIN')
+        
         const {
             to_name, 
             details, 
@@ -535,19 +537,20 @@ exports.copyCompare = async(req, res) => {
                 , [Number(quotationIdOld)])
 
                 //ได้ object มาก่อนหนึ่ง
-            const fieldsData = resultField.rows[0]
+            const fieldsData = resultField.rows
 
             // บันทึกแต่ละ field แยกเป็น row
-            for (const [key, value] of Object.entries(fieldsData)) {
+            for (const row of fieldsData) {
                 // แปลงค่าเป็น string สำหรับบันทึก
-                const fieldValue = value !== null && value !== undefined 
-                    ? String(value) 
+                const fieldCode = row.field_code
+                const fieldValue = row.field_value !== null && row.field_value !== undefined
+                    ? String(row.field_value)
                     : null
 
                 await client.query(
                     `INSERT INTO quotation_field (quotation_id, field_code, field_value) 
                      VALUES ($1, $2, $3)`,
-                    [quotationIdNew, key, fieldValue]
+                    [quotationIdNew, fieldCode, fieldValue]
                 )
             }
         }
