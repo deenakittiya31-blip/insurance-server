@@ -497,7 +497,7 @@ exports.copyCompare = async(req, res) => {
             [qIdNew, compareId ]
         )
 
-        const quotationResult = await client.query(`select * from quotation where compare_id =$1`, qIdOld)
+        const quotationResult = await client.query(`select * from quotation where compare_id =$1`, [qIdOld])
 
         const quotationData = quotationResult.rows
 
