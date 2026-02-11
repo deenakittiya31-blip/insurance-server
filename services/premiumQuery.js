@@ -31,4 +31,5 @@ exports.GET_LIST_PREMIUM = `
             LEFT JOIN package_usage_type AS put ON ipk.id = put.package_id
             LEFT JOIN car_usage_type AS cut ON put.car_usage_type_id = cut.id
             LEFT JOIN car_type AS ct ON cut.car_type_id = ct.id
+            LEFT JOIN car_usage as cu on cut.car_usage_id = cu.id
 `

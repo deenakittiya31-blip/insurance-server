@@ -139,6 +139,8 @@ exports.searchPremium = async(req, res) => {
                     TO_CHAR(ipk.start_date, 'DD/MM/YYYY') ILIKE $1 OR
                     TO_CHAR(ipk.end_date, 'DD/MM/YYYY') ILIKE $1 OR
                     icp.namecompany  ILIKE $1 OR
+                    COALESCE(ct.code, '') ILIKE $1 OR
+                    COALESCE(ct.type, '') ILIKE $1 OR
                     it.nametype  ILIKE $1
                 GROUP BY 
                     ipm.id,
