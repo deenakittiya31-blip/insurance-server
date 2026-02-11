@@ -163,14 +163,14 @@ async function drawTableContent(doc, insurances) {
                 
                 let value = '-';
 
-                // กรณีมี customFormat (สำหรับ premium_id/package_id)
                 if (row.customFormat) {
+                    // กรณีมี customFormat (สำหรับ premium_id/package_id)
                     value = row.customFormat(ins);
                 }
-                //กรณีเป็นแถวผลรวม
                 else if (row.sumKeys) {
+                    //กรณีเป็นแถวผลรวม
                     const total = getTotalPremiumWithCompulsory(ins)
-                     value = row.format ? formatNumber(total) : total;
+                    value = row.format ? formatNumber(total) : total;
                 }
                 else if (row.field) {
                     //กรณี field ปกติ

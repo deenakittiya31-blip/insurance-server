@@ -44,8 +44,11 @@ function drawTableCanvas(ctx, insurances) {
                 
                 let value = '-';
 
+                if(row.customFormat) {
+                    value = row.customFormat(ins);
+                }
                 //กรณีเป็นแถวผลรวม
-                if (row.sumKeys) {
+                else if (row.sumKeys) {
                     const total = getTotalPremiumWithCompulsory(ins)
                      value = row.format ? formatNumber(total) : total;
                 }
