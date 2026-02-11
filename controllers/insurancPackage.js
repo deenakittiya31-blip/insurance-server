@@ -133,8 +133,8 @@ exports.list = async(req, res) => {
                 ) as premium_count,
                 ip.is_active
             FROM insurance_package AS ip
-            JOIN insurance_company AS ic ON ip.insurance_company_id = ic.id
-            JOIN insurance_type AS it ON ip.insurance_type_id = it.id
+            JOIN insurance_company AS ic ON ip.insurance_company = ic.id
+            JOIN insurance_type AS it ON ip.insurance_type = it.id
             ORDER BY ${sortKey} ${validSortDirection} 
             LIMIT $1 OFFSET $2
             `
@@ -194,13 +194,9 @@ exports.searchPackage = async(req, res) => {
 }
 
 exports.StatusIsActive = async(req, res) => {
-    console.log('body', req.body)
-    console.log('params', req.params)
     try {
             const { is_active } = req.body
             const { id } = req.params
-
-            console.log('is_active:', is_active, 'type:', typeof is_active) 
 
             await db.query('UPDATE insurance_package SET is_active = $1 WHERE id = $2', 
             [is_active, id])
@@ -238,22 +234,22 @@ exports.read = async(req, res) => {
             SELECT 
                 ip.id,
                 ip.package_name,
-                ip.insurance_company_id,
+                ip.insurance_company,
                 ic.namecompany,
-                ip.insurance_type_id,
+                ip.insurance_type,
                 it.nametype,
                 ip.repair_type,
                 ip.engine_size,
                 ip.promotion,
-                ip.tp_person,
-                ip.tp_person_accident,
-                ip.tp_property,
+                ip.thirdparty_injury_death_per_person,
+                ip.thirdparty_injury_death_per_accident,
+                ip.thirdparty_property,
                 ip.flood_cover,
-                ip.damage_deductible,
-                ip.personal_accident,
-                ip.medical_expense,
-                ip.bail_bond,
-                ip.seat_count,
+                ip.car_own_damage_deductible,
+                ip.additional_personal_permanent_driver_cover,
+                ip.additional_medical_expense_cover,
+                ip.additional_bail_bond,
+                ip.additional_personal_permanent_driver_number,
                 ip.is_active,
                 ip.created_at,
                 (
@@ -313,8 +309,8 @@ exports.read = async(req, res) => {
                     '[]'::jsonb
                 ) AS compusory_id
             FROM insurance_package AS ip
-            LEFT JOIN insurance_company AS ic ON ip.insurance_company_id = ic.id
-            LEFT JOIN insurance_type AS it ON ip.insurance_type_id = it.id
+            LEFT JOIN insurance_company AS ic ON ip.insurance_company = ic.id
+            LEFT JOIN insurance_type AS it ON ip.insurance_type = it.id
 
             LEFT JOIN package_car_brand AS pcb ON ip.id = pcb.package_id
             LEFT JOIN car_brand AS cb ON pcb.car_brand_id = cb.id
@@ -336,21 +332,21 @@ exports.read = async(req, res) => {
             GROUP BY 
                 ip.id,
                 ip.package_name,
-                ip.insurance_company_id,
+                ip.insurance_company,
                 ic.namecompany,
-                ip.insurance_type_id,
+                ip.insurance_type,
                 it.nametype,
                 ip.repair_type,
                 ip.promotion,
-                ip.tp_person,
-                ip.tp_person_accident,
-                ip.tp_property,
+                ip.thirdparty_injury_death_per_person,
+                ip.thirdparty_injury_death_per_accident,
+                ip.thirdparty_property,
                 ip.flood_cover,
-                ip.damage_deductible,
-                ip.personal_accident,
-                ip.medical_expense,
-                ip.bail_bond,
-                ip.seat_count,
+                ip.car_own_damage_deductible,
+                ip.additional_personal_permanent_driver_cover,
+                ip.additional_medical_expense_cover,
+                ip.additional_bail_bond,
+                ip.additional_personal_permanent_driver_number,
                 ip.is_active,
                 ip.created_at
             `
@@ -388,8 +384,8 @@ exports.readEdit = async(req, res) => {
                 COALESCE(ARRAY_AGG(DISTINCT put.car_usage_type_id) FILTER (WHERE put.car_usage_type_id IS NOT NULL), '{}') AS car_usage_type_id,
                 COALESCE(ARRAY_AGG(DISTINCT pcs.compulsory_id) FILTER (WHERE pcs.compulsory_id IS NOT NULL), '{}') AS compulsory_id
             FROM insurance_package AS ip
-            LEFT JOIN insurance_company AS ic ON ip.insurance_company_id = ic.id
-            LEFT JOIN insurance_type AS it ON ip.insurance_type_id = it.id
+            LEFT JOIN insurance_company AS ic ON ip.insurance_company = ic.id
+            LEFT JOIN insurance_type AS it ON ip.insurance_type = it.id
 
             LEFT JOIN package_car_brand AS pcb ON ip.id = pcb.package_id
             LEFT JOIN car_brand AS cb ON pcb.car_brand_id = cb.id
