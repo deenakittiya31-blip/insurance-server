@@ -554,7 +554,7 @@ exports.copyCompare = async(req, res) => {
 
         await client.query('COMMIT')
 
-        res.json({msg: 'คัดลอกใบเสนอราคาสำเร็จ'})
+        res.json({msg: 'คัดลอกใบเสนอราคาสำเร็จ', qIdNew: qIdNew})
     } catch (err) {
         await client.query('ROLLBACK')
         console.error('Error creating quotation:', err)
