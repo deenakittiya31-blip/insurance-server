@@ -439,3 +439,131 @@ exports.searchCompare = async(req, res) => {
     }
 }
 
+exports.copyCompare = async(req, res) => {
+    const client = await db.connect()
+
+    try {
+        const {
+            to_name, 
+            details, 
+            car_brand_id, 
+            car_model_id, 
+            car_year_id, 
+            car_usage_id, 
+            offer_id, 
+            sub_car_model, 
+            import_by, 
+            qIdOld
+        } = req.body
+
+        // Validation
+        if (!qIdOld) {
+            return res.status(400).json({ message: 'กรุณาส่งข้อมูลให้ครบ' })
+        }
+
+        //1. สร้างใบเสอนราคาที่ quotation compare
+        const now = new Date()
+        const year = now.getFullYear()
+        const month = String(now.getMonth() + 1).padStart(2, '0')
+        const yearMonth = `${year}${month}`
+
+       //2. insert พร้อมข้อมูลรถ และเอา id ออกมา
+        const insertResult = await client.query(
+            `INSERT INTO quotation_compare(
+                to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer_id, sub_car_model, import_by
+            ) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+            RETURNING id`,
+            [
+                to_name || null,
+                details || null,
+                car_brand_id ? Number(car_brand_id) : null,
+                car_model_id ? Number(car_model_id) : null,
+                car_year_id ? Number(car_year_id) : null,
+                car_usage_id ? Number(car_usage_id) : null,
+                Number(offer_id),
+                sub_car_model || null,
+                import_by
+            ]
+        )
+
+        const compareId  = insertResult.rows[0].id
+        const runningNumber = String(compareId ).padStart(6, '0')
+        const qIdNew = `Q${yearMonth}${runningNumber}`
+
+        //3. update q_id
+        await client.query(
+            `UPDATE quotation_compare SET q_id = $1 WHERE id = $2`,
+            [qIdNew, compareId ]
+        )
+
+        const quotationResult = await client.query(`select * from quotation where compare_id =$1`, qIdOld)
+
+        const quotationData = quotationResult.rows
+
+        //4. ลูปสร้าง quotation กับ quotaion field
+        for(let i = 0; i < quotationData.length; i++) {
+
+            //ได้ข้อมูลเป็น object quotation ของตำแหน่งรอบที่วน 
+            const q = quotationData[i]
+            const { id, company_id } = q
+            const quotationIdOld = id
+
+            // สร้าง document_id
+            const document_id = `${qIdNew}-${String(i + 1)}`
+
+            // สร้าง quotation
+            const quotationInsert = await client.query('INSERT INTO quotation(company_id, compare_id, doc_id) VALUES ($1, $2, $3) RETURNING id',
+                [ Number(company_id), qIdNew, document_id ]
+            )
+
+            const quotationIdNew = quotationInsert.rows[0].id
+
+            //ดึงข้อมูลที่ใช้ในการบันทึกลง quotaion field
+            const resultField = await client.query(
+                `
+                select
+                  field_code,
+                  field_value
+                from
+                  quotation_field
+                where
+                  quotation_id = $1
+                order by
+                  id asc
+                `
+                , [Number(quotationIdOld)])
+
+                //ได้ object มาก่อนหนึ่ง
+            const fieldsData = resultField.rows[0]
+
+            // บันทึกแต่ละ field แยกเป็น row
+            for (const [key, value] of Object.entries(fieldsData)) {
+                // แปลงค่าเป็น string สำหรับบันทึก
+                const fieldValue = value !== null && value !== undefined 
+                    ? String(value) 
+                    : null
+
+                await client.query(
+                    `INSERT INTO quotation_field (quotation_id, field_code, field_value) 
+                     VALUES ($1, $2, $3)`,
+                    [quotationIdNew, key, fieldValue]
+                )
+            }
+        }
+
+        await client.query('COMMIT')
+
+        res.json({msg: 'คัดลอกใบเสนอราคาสำเร็จ'})
+    } catch (err) {
+        await client.query('ROLLBACK')
+        console.error('Error creating quotation:', err)
+        res.status(500).json({ 
+            message: 'เกิดข้อผิดพลาดในการคัดลอกใบเสนอราคา',
+            error: err.message 
+        })
+    } finally {
+        client.release()
+    }
+}
+
