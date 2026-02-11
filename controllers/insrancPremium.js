@@ -270,6 +270,7 @@ exports.searchPremiumToCompare = async(req, res) => {
               ipm.id as index_premium,
               ipm.premium_id,
               icp.id as index_package,
+              icp.id as index_company,
               icp.logo_url,
               icp.namecompany,
               ipk.package_id,
@@ -323,11 +324,150 @@ exports.searchPremiumToCompare = async(req, res) => {
     }
 }
 
-exports.CreatePremiumToCompare = async(req, res) => {
+exports.createPremiumToCompare = async(req, res) => {
+    const client = await db.connect()
+
     try {
-        const {to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer_id, sub_car_model} = req.body
+        const {
+            to_name, 
+            details, 
+            car_brand_id, 
+            car_model_id, 
+            car_year_id, 
+            car_usage_id, 
+            offer_id, 
+            sub_car_model, 
+            import_by, 
+            premiums
+        } = req.body
+
+        // Validation
+        if (!premiums || premiums.length < 3) {
+            return res.status(400).json({ message: 'กรุณาเลือกแพ็กเกจให้ครบ 3 รายการ' })
+        }
+
+        if (premiums.length > 3) {
+            return res.status(400).json({ message: 'เลือกได้สูงสุด 3 รายการเท่านั้น' })
+        }
+
+        //1. สร้างใบเสอนราคาที่ quotation compare
+        const now = new Date()
+        const year = now.getFullYear()
+        const month = String(now.getMonth() + 1).padStart(2, '0')
+        const yearMonth = `${year}${month}`
+
+       //2. insert พร้อมข้อมูลรถ และเอา id ออกมา
+        const insertResult = await client.query(
+            `INSERT INTO quotation_compare(
+                to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer_id, sub_car_model, import_by
+            ) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+            RETURNING id`,
+            [
+                to_name || null,
+                details || null,
+                car_brand_id ? Number(car_brand_id) : null,
+                car_model_id ? Number(car_model_id) : null,
+                car_year_id ? Number(car_year_id) : null,
+                car_usage_id ? Number(car_usage_id) : null,
+                Number(offer_id),
+                sub_car_model || null,
+                import_by
+            ]
+        )
+
+        const compareId  = insertResult.rows[0].id
+        const runningNumber = String(compareId ).padStart(6, '0')
+        const q_id = `Q${yearMonth}${runningNumber}`
+
+        //3. update q_id
+        await client.query(
+            `UPDATE quotation_compare SET q_id = $1 WHERE id = $2`,
+            [q_id, compareId ]
+        )
+
+        //4. ลูปสร้าง quotation กับ quotaion field
+        for(let i = 0; i < premiums.length; i++) {
+
+            //ได้ข้อมูลเป็น object premium ของตำแหน่งรอบที่วน 
+            const p = premiums[i]
+            const { index_company, index_package, index_premium } = p
+
+            // Validate index values
+            if (!index_company || !index_premium) {
+                throw new Error(`ข้อมูล premium ที่ ${i + 1} ไม่ครบถ้วน`)
+            }
+
+            // สร้าง document_id
+            const document_id = `${q_id}-${String(i + 1)}`
+
+            // สร้าง quotation
+            const quotationResult = await client.query('INSERT INTO quotation(company_id, compare_id, doc_id) VALUES ($1, $2, $3) RETURNING id',
+                [ Number(index_company), q_id, document_id ]
+            )
+
+            const quotation_id = quotationResult.rows[0].id
+
+            //ดึงข้อมูลที่ใช้ในการบันทึกลง quotaion field
+            const resultPremium = await client.query(
+                `
+                    select
+                      ipm.premium_id,
+                      ipm.premium_name,
+                      ipm.car_lost_fire as car_fire_theft ,
+                      ipm.selling_price as premium_total,
+                      ipk.insurance_type,
+                      ipk.repair_type,
+                      ipk.package_id,
+                      ipk.car_own_damage_deductible,
+                      ipk.thirdparty_injury_death_per_person,
+                      ipk.thirdparty_injury_death_per_accident,
+                      ipk.thirdparty_property,
+                      ipk.additional_personal_permanent_driver_cover,
+                      ipk.additional_medical_expense_cover,
+                      ipk.additional_bail_bond,
+                      ipk.additional_personal_permanent_driver_number
+                    from
+                      insurance_premium as ipm
+                      inner join insurance_package as ipk on ipm.package_id = ipk.id
+                    where
+                      ipm.id = $1
+                `
+                , [Number(index_premium)])
+
+            if (resultPremium.rows.length === 0) {
+                throw new Error(`ไม่พบข้อมูล premium id: ${index_premium}`)
+            }
+
+                //ได้ object มาก่อนหนึ่ง
+            const premiumData = resultPremium.rows[0]
+
+            // บันทึกแต่ละ field แยกเป็น row
+            for (const [key, value] of Object.entries(premiumData)) {
+                // แปลงค่าเป็น string สำหรับบันทึก
+                const fieldValue = value !== null && value !== undefined 
+                    ? String(value) 
+                    : null
+
+                await client.query(
+                    `INSERT INTO quotation_field (quotation_id, field_key, field_value) 
+                     VALUES ($1, $2, $3)`,
+                    [quotation_id, key, fieldValue]
+                )
+            }
+        }
+
+        await client.query('COMMIT')
+
+        res.json({msg: 'สร้างใบเสนอราคาจากแพ็กเกจสำเร็จ'})
     } catch (err) {
-        console.log(err)
-        res.status(500).json({message: 'Server error'})
+        await client.query('ROLLBACK')
+        console.error('Error creating quotation:', err)
+        res.status(500).json({ 
+            message: 'เกิดข้อผิดพลาดในการสร้างใบเสนอราคา',
+            error: err.message 
+        })
+    } finally {
+        client.release()
     }
 }

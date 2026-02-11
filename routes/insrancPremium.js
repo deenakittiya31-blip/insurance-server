@@ -1,9 +1,10 @@
 const express = require('express')
 const { authCheck, roleCheck } = require('../middleware/authCheck')
-const { create, list, remove, update, read, isActivePremium, searchPremium, searchPremiumToCompare } = require('../controllers/insrancPremium')
+const { create, list, remove, update, read, isActivePremium, searchPremium, searchPremiumToCompare, createPremiumToCompare } = require('../controllers/insrancPremium')
 const router = express.Router()
 
 router.post('/create-premium', authCheck, roleCheck(['admin', 'staff']), create)
+router.post('/create-premiumtocompar', authCheck, roleCheck(['admin', 'staff']), createPremiumToCompare)
 router.post('/search-premium', authCheck, roleCheck(['admin', 'staff']), searchPremium)
 router.post('/search-premiumtocompare', authCheck, roleCheck(['admin', 'staff']), searchPremiumToCompare)
 router.get('/list-premium/page', list)

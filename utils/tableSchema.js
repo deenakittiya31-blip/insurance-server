@@ -5,8 +5,19 @@ module.exports = [
                 { label: 'บริษัทประกันภัย', key: 'insurance_company', field: 'company_name' },
                 { label: 'ประเภทประกันภัย', key: 'insurance_type' },
                 { label: 'ประเภทซ่อม', key: 'repair_type' },
-                { label: 'ชื่อเบี้ยประกันภัย', key: 'premium_code' },
-                { label: 'รหัสเบี้ยประกัน', key: 'quotation_number' },
+                { label: 'ชื่อเบี้ยประกันภัย', key: 'premium_name' },
+                { 
+                label: 'รหัสเบี้ยประกัน', 
+                key: 'premium_id',
+                customFormat: (ins) => {
+                    const premiumId = ins.fields.premium_id;
+                    const packageId = ins.fields.package_id;
+        
+                    if (!premiumId && !packageId) return '-';
+        
+                    return `${premiumId || '-'}/${packageId || '-'}`;
+                    }
+                },
             ]
         },
         {

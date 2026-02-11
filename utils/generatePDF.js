@@ -163,6 +163,11 @@ async function drawTableContent(doc, insurances) {
                 
                 let value = '-';
 
+                // กรณีมี customFormat (สำหรับ premium_id/package_id)
+                if (row.customFormat) {
+                    value = row.customFormat(ins);
+                }
+
                 //กรณีเป็นแถวผลรวม
                 if (row.sumKeys) {
                     const total = getTotalPremiumWithCompulsory(ins)
