@@ -83,8 +83,8 @@ exports.list = async(req, res) => {
                 ) AS type
             FROM insurance_premium AS ipm
             LEFT JOIN insurance_package AS ipk ON ipm.package_id = ipk.id 
-            LEFT JOIN insurance_company AS icp ON ipk.insurance_company_id = icp.id 
-            LEFT JOIN insurance_type AS it ON ipk.insurance_type_id = it.id 
+            LEFT JOIN insurance_company AS icp ON ipk.insurance_company = icp.id 
+            LEFT JOIN insurance_type AS it ON ipk.insurance_type = it.id 
 
             LEFT JOIN package_usage_type AS put ON ipk.id = put.package_id
             LEFT JOIN car_usage_type AS cut ON put.car_usage_type_id = cut.id
@@ -276,7 +276,7 @@ exports.searchPremiumToCompare = async(req, res) => {
               ipk.package_name,
               it.nametype,
               ipm.repair_fund_max,
-              ipk.medical_expense,
+              ipk.additional_medical_expense_cover,
               ipm.total_premium,
               ipm.net_income,
               ipm.selling_price,
@@ -284,8 +284,8 @@ exports.searchPremiumToCompare = async(req, res) => {
             from
               insurance_premium as ipm
               inner join insurance_package as ipk on ipm.package_id = ipk.id
-              inner join insurance_company as icp on ipk.insurance_company_id = icp.id
-              inner join insurance_type as it on ipk.insurance_type_id = it.id
+              inner join insurance_company as icp on ipk.insurance_company = icp.id
+              inner join insurance_type as it on ipk.insurance_type = it.id
         `
 
         let whereClause = 'where ipk.is_active = true'
@@ -301,7 +301,7 @@ exports.searchPremiumToCompare = async(req, res) => {
             whereClause += `
                 and cut.car_usage_id = $1 
                 and cut.car_type_id = $2
-                and ipk.insurance_type_id = $3 
+                and ipk.insurance_type = $3 
             `
         }
 
@@ -317,6 +317,15 @@ exports.searchPremiumToCompare = async(req, res) => {
         }
 
         res.json({data : result.rows})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'Server error'})
+    }
+}
+
+exports.CreatePremiumToCompare = async(req, res) => {
+    try {
+        const {to_name, details, car_brand_id, car_model_id, car_year_id, car_usage_id, offer_id, sub_car_model} = req.body
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'Server error'})

@@ -24,8 +24,8 @@ exports.GET_LIST_PREMIUM = `
                 ) AS type
             FROM insurance_premium AS ipm
             LEFT JOIN insurance_package AS ipk ON ipm.package_id = ipk.id 
-            LEFT JOIN insurance_company AS icp ON ipk.insurance_company_id = icp.id 
-            LEFT JOIN insurance_type AS it ON ipk.insurance_type_id = it.id 
+            LEFT JOIN insurance_company AS icp ON ipk.insurance_company = icp.id 
+            LEFT JOIN insurance_type AS it ON ipk.insurance_type = it.id 
 
             LEFT JOIN package_usage_type AS put ON ipk.id = put.package_id
             LEFT JOIN car_usage_type AS cut ON put.car_usage_type_id = cut.id
