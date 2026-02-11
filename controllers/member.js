@@ -90,8 +90,14 @@ exports.listMemberForMessage = async(req, res) => {
         const sortDirection = req.query.sortDirection || 'DESC'
         const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC'
 
+           // Pagination parameters
+        const page = parseInt(req.query.page) || 1
+        const limit = parseInt(req.query.limit) || 10
+        const offset = (page - 1) * limit
+
         let whereClause = ''
         let queryParams = []
+        let paramIndex = 1
 
         if (group_id) {
             const groupIds = group_id.split(',')
@@ -104,8 +110,9 @@ exports.listMemberForMessage = async(req, res) => {
             const conditions = []
 
             if (normalGroupIds.length > 0) {
-                conditions.push(`m.group_id = ANY($1)`)
+                conditions.push(`m.group_id = ANY($${paramIndex})`)
                 queryParams.push(normalGroupIds)
+                paramIndex++
             }
 
             if (hasNoGroup) {
@@ -117,6 +124,18 @@ exports.listMemberForMessage = async(req, res) => {
             }
         }
 
+        // นับจำนวนทั้งหมด
+        const countResult = await db.query(
+            `
+            SELECT COUNT(*) as total
+            FROM member AS m 
+            ${whereClause}
+            `,
+            queryParams
+        )
+
+        const totalItems = parseInt(countResult.rows[0].total)
+        const totalPages = Math.ceil(totalItems / limit)
 
         const result = await db.query(
             `
@@ -136,11 +155,22 @@ exports.listMemberForMessage = async(req, res) => {
             LEFT JOIN group_member AS gm ON m.group_id = gm.id
             ${whereClause}
             ORDER BY ${sortKey} ${validSortDirection}
+            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
         `
-           , queryParams)
+           , [...queryParams, limit, offset])
             
 
-        res.json({ data: result.rows })
+       res.json({ 
+            data: result.rows,
+            pagination: {
+                page,
+                limit,
+                totalItems,
+                totalPages,
+                hasNextPage: page < totalPages,
+                hasPrevPage: page > 1
+            }
+        })
     
     } catch (err) {
         console.log(err)
