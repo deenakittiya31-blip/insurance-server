@@ -172,11 +172,14 @@ exports.searchPackage = async(req, res) => {
                 ) as premium_count,
                 ip.is_active
             FROM insurance_package AS ip
-            JOIN insurance_company AS ic ON ip.insurance_company_id = ic.id
-            JOIN insurance_type AS it ON ip.insurance_type_id = it.id
+            JOIN insurance_company AS ic ON ip.insurance_company = ic.id
+            JOIN insurance_type AS it ON ip.insurance_type = it.id
             WHERE
                 ip.package_id ILIKE $1 OR
                 ip.package_name ILIKE $1 OR
+                ip.start_date ILIKE $1 OR
+                ip.end_date ILIKE $1 OR
+                ip.created_at ILIKE $1 OR
                 ip.repair_type ILIKE $1 OR
                 ip.promotion ILIKE $1 OR
                 ic.namecompany ILIKE $1 OR

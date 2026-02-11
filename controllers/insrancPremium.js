@@ -128,10 +128,18 @@ exports.searchPremium = async(req, res) => {
             `
                 ${GET_LIST_PREMIUM}  
                 WHERE
-                    ipm.premium_id ILIKE $1 OR
-                    ipm.premium_name ILIKE $1 OR
-                    icp.namecompany ILIKE $1 OR
-                    it.nametype ILIKE $1
+                    ipk.package_id  ILIKE $1 OR
+                    ipm.premium_id  ILIKE $1 OR
+                    ipm.premium_name  ILIKE $1 OR
+                    ipm.repair_fund_int  ILIKE $1 OR
+                    ipm.repair_fund_max  ILIKE $1 OR
+                    ipm.total_premium  ILIKE $1 OR
+                    ipm.net_income  ILIKE $1 OR
+                    ipm.selling_price  ILIKE $1 OR
+                    ipk.start_date  ILIKE $1 OR
+                    ipk.end_date  ILIKE $1 OR
+                    icp.namecompany  ILIKE $1 OR
+                    it.nametype  ILIKE $1 OR
                 GROUP BY 
                     ipm.id,
                     ipk.package_name,

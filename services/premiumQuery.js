@@ -3,6 +3,7 @@ exports.GET_LIST_PREMIUM = `
                 ipm.id,
                 ipk.package_name,
                 ipk.package_id,
+                ipm.premium_id,
                 ipm.premium_name,
                 ipm.repair_fund_int,
                 ipm.repair_fund_max,
