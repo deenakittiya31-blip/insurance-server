@@ -167,19 +167,17 @@ async function drawTableContent(doc, insurances) {
                 if (row.customFormat) {
                     value = row.customFormat(ins);
                 }
-
                 //กรณีเป็นแถวผลรวม
-                if (row.sumKeys) {
+                else if (row.sumKeys) {
                     const total = getTotalPremiumWithCompulsory(ins)
                      value = row.format ? formatNumber(total) : total;
                 }
-                //กรณี field ปกติ
                 else if (row.field) {
+                    //กรณี field ปกติ
                     value = ins[row.field] || '-';
                 }
-                //กรณี key ปกติ
                 else if (row.key) {
-                    // value = ins.fields[row.key] || '-';
+                    //กรณี key ปกติ
                     const rawValue = ins.fields[row.key];
                     value = row.format ? formatNumber(rawValue) : (rawValue || '-');
                 }
