@@ -131,11 +131,11 @@ exports.searchPremium = async(req, res) => {
                     ipk.package_id  ILIKE $1 OR
                     ipm.premium_id  ILIKE $1 OR
                     ipm.premium_name  ILIKE $1 OR
-                    ipm.repair_fund_int  ILIKE $1 OR
-                    ipm.repair_fund_max  ILIKE $1 OR
-                    ipm.total_premium  ILIKE $1 OR
-                    ipm.net_income  ILIKE $1 OR
-                    ipm.selling_price  ILIKE $1 OR
+                    ipm.repair_fund_int::text ILIKE $1 OR
+                    ipm.repair_fund_max::text ILIKE $1 OR
+                    ipm.total_premium::text ILIKE $1 OR
+                    ipm.net_income::text ILIKE $1 OR
+                    ipm.selling_price::text ILIKE $1 OR
                     TO_CHAR(ipk.start_date, 'DD/MM/YYYY') ILIKE $1 OR
                     TO_CHAR(ipk.end_date, 'DD/MM/YYYY') ILIKE $1 OR
                     icp.namecompany  ILIKE $1 OR
