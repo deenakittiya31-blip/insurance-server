@@ -287,7 +287,7 @@ exports.comparePDF = async(req, res) => {
         const grouped = groupQuotationData(quotationResult.rows);
         const carData = carResult.rows[0];
 
-        console.log(grouped)
+        console.log(JSON.stringify(grouped.insurances[0].fields, null, 2));
        
            //สร้าง PDF
         await generatePDF(res, carData, grouped.insurances, id);
