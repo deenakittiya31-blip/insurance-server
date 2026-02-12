@@ -54,7 +54,7 @@ exports.sendMessageLine = async(req, res) => {
         const result = await db.query(query, values)
 
         const historyQuery = `
-            INSERT INTO history_send_quotation 
+            INSERT INTO promotion_send_history 
             (sent_by, sent_to, message, image_url, group_id, tag_id) 
             VALUES ($1, $2, $3, $4, $5, $6)
         `
