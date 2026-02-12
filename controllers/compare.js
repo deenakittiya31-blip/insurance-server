@@ -94,7 +94,7 @@ exports.listCompare = async(req, res) => {
             LEFT JOIN car_model AS cm ON qc.car_model_id = cm.id 
             LEFT JOIN car_usage AS cu ON qc.car_usage_id = cu.id 
             LEFT JOIN car_year AS cy ON qc.car_year_id = cy.id 
-            LEFT JOIN history_send_quotation AS hq ON qc.q_id = hq.compare_id
+            LEFT JOIN quotation_send_history AS hq ON qc.q_id = hq.compare_id
             LEFT JOIN member AS m ON hq.member_id = m.user_id
             LEFT JOIN pin_quotation AS pq ON qc.id = pq.compare_id
             WHERE qc.offer_id = $1
@@ -145,7 +145,8 @@ exports.listPinCompare = async(req, res) => {
                     JSON_BUILD_OBJECT(
                         'picture_url', m.picture_url,
                         'display_name', m.display_name,
-                        'sent_at', hq.created_at
+                        'sent_at', hq.created_at,
+                        'compare_no', hq.public_compare_no
                     )
                   ) FILTER (WHERE m.user_id IS NOT NULL),
                  '[]'
@@ -156,7 +157,7 @@ exports.listPinCompare = async(req, res) => {
             LEFT JOIN car_model AS cm ON qc.car_model_id = cm.id 
             LEFT JOIN car_usage AS cu ON qc.car_usage_id = cu.id 
             LEFT JOIN car_year AS cy ON qc.car_year_id = cy.id 
-            LEFT JOIN history_send_quotation AS hq ON qc.q_id = hq.compare_id
+            LEFT JOIN quotation_send_history AS hq ON qc.q_id = hq.compare_id
             LEFT JOIN member AS m ON hq.member_id = m.user_id
             WHERE qc.offer_id = $1
             GROUP BY pq.id, qc.id, qc.q_id, qc.created_at, qc.to_name, qc.details, 
