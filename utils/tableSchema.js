@@ -12,8 +12,9 @@ module.exports = [
                 customFormat: (ins) => {
                     const premiumId = ins.fields.premium_id;
                     const packageId = ins.fields.package_id;
+                    const quotationId = ins.fields.quotation_number;
         
-                    if (!premiumId && !packageId) return '-';
+                    if (!premiumId && !packageId) return quotationId;
         
                     return `${premiumId || '-'}/${packageId || '-'}`;
                     }
