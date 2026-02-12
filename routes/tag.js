@@ -5,7 +5,7 @@ const router = express.Router()
 
 router.post('/create-tag', authCheck, roleCheck(['admin', 'staff']), create)
 router.post('/add-membertotag', authCheck, roleCheck(['admin', 'staff']), addMembers)
-router.get('/list-tag/page', authCheck, roleCheck(['admin', 'staff']), list)
+router.get('/list-tag', authCheck, roleCheck(['admin', 'staff']), list)
 router.get('/list-tag-select', authCheck, roleCheck(['admin', 'staff']), listSelect)
 router.put('/update-tag/:id', authCheck, roleCheck(['admin']), update)
 router.put('/status-tag/:id', authCheck, roleCheck(['admin']), is_active)

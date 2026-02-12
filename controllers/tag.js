@@ -44,19 +44,68 @@ exports.removeTagFromMember = async(req, res) => {
 
 exports.list = async(req, res) => {
     try {
-        const page = Number(req.query.page) || 1;
-        const per_page = Number(req.query.per_page) || 5;
-        const sortKey = req.query.sortKey || 'id';
-        const sortDirection = req.query.sortDirection || 'DESC';
+        const {
+            page = 1,
+            limit = 10,
+            sortKey = 'id',
+            sortDirection = 'DESC',
+            search
+        } = req.query;
+
+        const allowedSortKeys = [
+            'id',
+            'tag_name',
+        ]
+
+        const pageNum = parseInt(page, 10)
+        const limitNum = parseInt(limit, 10)
+        const offset = (pageNum - 1) * limitNum
         const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        const finalSortKey = allowedSortKeys.includes(sortKey)
+            ? sortKey
+            : 'id'
 
-        const offset = (page - 1) * per_page;
+        let conditions = [];
+        let values = [];
+        let paramIndex = 1;
 
-        const result = await db.query(`SELECT id, tag_name, is_active FROM tag ORDER BY ${sortKey} ${validSortDirection} LIMIT $1 OFFSET $2`, [per_page, offset])
+        if (search) {
+            conditions.push(`tag_name ILIKE $${paramIndex}`);
+            values.push(`%${search}%`);
+            paramIndex++;
+        }
 
-        const countResult = await db.query('SELECT COUNT(*)::int as total FROM tag')
+        const whereClause =
+            conditions.length > 0
+                ? `WHERE ${conditions.join(' AND ')}`
+                : '';
 
-        res.json({ data: result.rows, total: countResult.rows[0].total })
+        const countResult = await db.query(`SELECT COUNT(*)::int as total FROM tag WHERE ${whereClause}`, values)
+
+        const totalItems = countResult.rows[0].total
+        const totalPages = Math.ceil(totalItems / limitNum)
+
+        const result = await db.query(
+            `
+            SELECT id, tag_name, is_active 
+            FROM tag
+            ${whereClause} 
+            ORDER BY ${finalSortKey} ${validSortDirection} 
+            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+            `, 
+            [...values, limit, offset])
+
+        res.json({
+             data: result.rows, 
+             pagination: {
+                page: pageNum,
+                limit: limitNum,
+                totalItems,
+                totalPages,
+                hasNextPage: pageNum < totalPages,
+                hasPrevPage: pageNum > 1
+            }
+            })
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 

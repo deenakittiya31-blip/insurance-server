@@ -114,7 +114,7 @@ exports.listMember = async(req, res) => {
         )
 
         const totalItems = parseInt(countResult.rows[0].total)
-        const totalPages = Math.ceil(totalItems / limit)
+        const totalPages = Math.ceil(totalItems / limitNum)
         
         const result = await db.query(
             `
@@ -151,109 +151,14 @@ exports.listMember = async(req, res) => {
                 limit: limitNum,
                 totalItems,
                 totalPages,
-                hasNextPage: page < totalPages,
-                hasPrevPage: page > 1
+                hasNextPage: pageNum < totalPages,
+                hasPrevPage: pageNum > 1
             }
         });
 
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'Server error'})
-    }
-}
-
-exports.listMemberForMessage = async(req, res) => {
-    try {
-        const {group_id} = req.query;
-        const sortKey = req.query.sortKey || 'id';
-        const sortDirection = req.query.sortDirection || 'DESC'
-        const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC'
-
-           // Pagination parameters
-        const page = parseInt(req.query.page) || 1
-        const limit = parseInt(req.query.limit) || 10
-        const offset = (page - 1) * limit
-
-        let whereClause = ''
-        let queryParams = []
-        let paramIndex = 1
-
-        if (group_id) {
-            const groupIds = group_id.split(',')
-
-            const hasNoGroup = groupIds.includes('null') || groupIds.includes('no_group')
-            const normalGroupIds = groupIds.filter(
-                id => id !== 'null' && id !== 'no_group'
-            )
-
-            const conditions = []
-
-            if (normalGroupIds.length > 0) {
-                conditions.push(`m.group_id = ANY($${paramIndex})`)
-                queryParams.push(normalGroupIds)
-                paramIndex++
-            }
-
-            if (hasNoGroup) {
-                conditions.push(`m.group_id IS NULL`)
-            }
-
-            if (conditions.length > 0) {
-                whereClause = `WHERE ${conditions.join(' OR ')}`
-            }
-        }
-
-        // นับจำนวนทั้งหมด
-        const countResult = await db.query(
-            `
-            SELECT COUNT(*) as total
-            FROM member AS m 
-            ${whereClause}
-            `,
-            queryParams
-        )
-
-        const totalItems = parseInt(countResult.rows[0].total)
-        const totalPages = Math.ceil(totalItems / limit)
-
-        const result = await db.query(
-            `
-            SELECT 
-                m.id, 
-                m.user_id, 
-                m.display_name, 
-                m.first_name, 
-                m.last_name, 
-                m.phone, 
-                m.picture_url, 
-                m.created_at, 
-                m.note,
-                m.group_id,
-                gm.group_name  
-            FROM member AS m 
-            LEFT JOIN group_member AS gm ON m.group_id = gm.id
-            ${whereClause}
-            ORDER BY ${sortKey} ${validSortDirection}
-            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
-        `
-           , [...queryParams, limit, offset])
-            
-
-       res.json({ 
-            data: result.rows,
-            pagination: {
-                page,
-                limit,
-                totalItems,
-                totalPages,
-                hasNextPage: page < totalPages,
-                hasPrevPage: page > 1
-            }
-        })
-    
-    } catch (err) {
-        console.log(err)
-        res.status(500).json({ message: 'Server error'})
     }
 }
 
@@ -357,43 +262,6 @@ exports.sendDocumentToMember = async(req, res) => {
         }
 
         res.json({msg: 'ส่งใบเสนอราคาเรียบร้อย'})
-    } catch (err) {
-        console.log(err)
-        res.status(500).json({message: 'Server error'})
-    }
-}
-
-exports.searchMember = async(req, res) => {
-    try {
-        const { search } = req.body;
-
-        const result = await db.query(
-            `
-            SELECT 
-                m.id,
-                m.user_id,
-                m.display_name,
-                m.first_name,
-                m.last_name,
-                m.phone,
-                m.picture_url,
-                m.created_at,
-                m.group_id,
-                gm.group_name
-            FROM member AS m
-            LEFT JOIN group_member AS gm ON m.group_id = gm.id
-            WHERE
-                m.display_name ILIKE $1 OR
-                m.first_name ILIKE $1 OR
-                m.last_name ILIKE $1 OR
-                gm.group_name ILIKE $1 OR
-                m.phone ILIKE $1
-            ORDER BY created_at DESC
-            `,
-            [`%${search}%`]
-        );
-
-        res.json({data: result.rows})
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'Server error'})
