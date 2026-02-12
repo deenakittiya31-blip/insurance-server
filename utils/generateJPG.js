@@ -102,7 +102,7 @@ function drawFooter(ctx, carData) {
     );
 
     ctx.fillText(
-        `วันที่ออกเอกสาร : ${new Date(carData.created_at_th).toLocaleString('th-TH')}`,
+        `วันที่ออกเอกสาร : ${new Date().toLocaleString('th-TH')}`,
         120,
         3110
     );
