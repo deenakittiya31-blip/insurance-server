@@ -265,8 +265,10 @@ exports.searchPremiumToCompare = async(req, res) => {
         const { insurance_type_id, car_type_id, car_usage_id, repair_type } = req.body;
 
         // ตรวจสอบว่าเลือกครบหรือไม่เลือกเลย
-        const hasAllFilters = insurance_type_id && car_type_id && car_usage_id && repair_type
+        const hasAllFilters = insurance_type_id && car_type_id && car_usage_id
         const hasNoFilters = !insurance_type_id && !car_type_id && !car_usage_id
+
+        console.log(repair_type)
 
         // ถ้าเลือกไม่ครบทั้ง 3 ให้ return error
         if (!hasAllFilters && !hasNoFilters) {

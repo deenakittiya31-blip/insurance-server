@@ -1,5 +1,5 @@
 const express = require('express');
-const { registerMember, listMember , sendDocumentToMember, searchMember, readMember, updateMember, removeMember, listMemberForMessage, is_active } = require('../controllers/member');
+const { registerMember , sendDocumentToMember, searchMember, readMember, updateMember, removeMember, listMemberForMessage, is_active, listMember } = require('../controllers/member');
 const { authCheck, roleCheck } = require('../middleware/authCheck');
 const router = express.Router();
 

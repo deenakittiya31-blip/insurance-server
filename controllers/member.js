@@ -39,16 +39,52 @@ exports.registerMember = async(req, res) => {
 
 exports.listMember = async(req, res) => {
     try {
-        const page = Number(req.query.page);
-        const per_page = Number(req.query.per_page);
-        const sortKey = req.query.sortKey || 'id';
-        const sortDirection = req.query.sortDirection || 'DESC';
+        const {
+            page = 1,
+            limit = 10,
+            sortKey = 'id',
+            sortDirection = 'DESC',
+            search,
+            group_id
+        } = req.query;
+
         const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        const offset = (page - 1) * limit;
 
-        const offset = (page - 1) * per_page
+        let conditions = [];
+        let values = [];
+        let paramIndex = 1;
 
+        //Search
+        if (search) {
+            conditions.push(`
+                (
+                    m.display_name ILIKE $${paramIndex}
+                    OR m.first_name ILIKE $${paramIndex}
+                    OR m.last_name ILIKE $${paramIndex}
+                    OR m.phone ILIKE $${paramIndex}
+                    OR gm.group_name ILIKE $${paramIndex}
+                )
+            `);
+            values.push(`%${search}%`);
+            paramIndex++;
+        }
+
+        console.log(group_id)
+        //Group filter
+        if (group_id) {
+            conditions.push(`m.group_id = ANY($${paramIndex}::int[])`);
+            values.push(group_id.split(',').map(Number));
+            paramIndex++;
+        }
+
+        const whereClause =
+            conditions.length > 0
+                ? `WHERE ${conditions.join(' AND ')}`
+                : '';
+        
         const result = await db.query(
-                `
+            `
             SELECT 
                 m.id, 
                 m.user_id, 
@@ -61,27 +97,75 @@ exports.listMember = async(req, res) => {
                 m.note,
                 m.group_id,
                 gm.group_name,
-                m.is_active  
-            FROM member AS m 
-            LEFT JOIN group_member AS gm ON m.group_id = gm.id
+                m.is_active,
+                COUNT(*) OVER() AS total
+            FROM member m
+            LEFT JOIN group_member gm ON m.group_id = gm.id
+            ${whereClause}
             ORDER BY ${sortKey} ${validSortDirection}
-            LIMIT $1 OFFSET $2
-        `
-           , [per_page, offset] )
-            
-            
-        const countResult = await db.query('SELECT COUNT(*)::int as total FROM member')
+            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+            `,
+            [...values, limit, offset]
+        );
+
+        const total = result.rows.length > 0 ? result.rows[0].total : 0;
 
         res.json({
-            data: result.rows, 
-            total: countResult.rows[0].total
-        })
-    
+            data: result.rows,
+            total
+        });
+
     } catch (err) {
         console.log(err)
-        res.status(500).json({ message: 'Server error'})
+        res.status(500).json({message: 'Server error'})
     }
 }
+
+// exports.listMember = async(req, res) => {
+//     try {
+//         const page = Number(req.query.page);
+//         const per_page = Number(req.query.per_page);
+//         const sortKey = req.query.sortKey || 'id';
+//         const sortDirection = req.query.sortDirection || 'DESC';
+//         const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+//         const offset = (page - 1) * per_page
+
+//         const result = await db.query(
+//                 `
+//             SELECT 
+//                 m.id, 
+//                 m.user_id, 
+//                 m.display_name, 
+//                 m.first_name, 
+//                 m.last_name, 
+//                 m.phone, 
+//                 m.picture_url, 
+//                 m.created_at, 
+//                 m.note,
+//                 m.group_id,
+//                 gm.group_name,
+//                 m.is_active  
+//             FROM member AS m 
+//             LEFT JOIN group_member AS gm ON m.group_id = gm.id
+//             ORDER BY ${sortKey} ${validSortDirection}
+//             LIMIT $1 OFFSET $2
+//         `
+//            , [per_page, offset] )
+            
+            
+//         const countResult = await db.query('SELECT COUNT(*)::int as total FROM member')
+
+//         res.json({
+//             data: result.rows, 
+//             total: countResult.rows[0].total
+//         })
+    
+//     } catch (err) {
+//         console.log(err)
+//         res.status(500).json({ message: 'Server error'})
+//     }
+// }
 
 exports.listMemberForMessage = async(req, res) => {
     try {
