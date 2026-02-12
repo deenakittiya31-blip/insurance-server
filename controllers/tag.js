@@ -80,7 +80,7 @@ exports.list = async(req, res) => {
                 ? `WHERE ${conditions.join(' AND ')}`
                 : '';
 
-        const countResult = await db.query(`SELECT COUNT(*)::int as total FROM tag WHERE ${whereClause}`, values)
+        const countResult = await db.query(`SELECT COUNT(*)::int as total FROM tag ${whereClause}`, values)
 
         const totalItems = countResult.rows[0].total
         const totalPages = Math.ceil(totalItems / limitNum)
@@ -93,7 +93,7 @@ exports.list = async(req, res) => {
             ORDER BY ${finalSortKey} ${validSortDirection} 
             LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
             `, 
-            [...values, limit, offset])
+            [...values, limitNum, offset])
 
         res.json({
              data: result.rows, 

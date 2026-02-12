@@ -141,7 +141,7 @@ exports.listMember = async(req, res) => {
             ORDER BY ${finalSortKey} ${validSortDirection}
             LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
             `,
-            [...values, limit, offset]
+            [...values, limitNum, offset]
         );
 
         res.json({
