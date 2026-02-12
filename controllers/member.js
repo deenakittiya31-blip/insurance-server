@@ -48,8 +48,25 @@ exports.listMember = async(req, res) => {
             group_id
         } = req.query;
 
+        const allowedSortKeys = [
+            'id',
+            'display_name',
+            'first_name',
+            'last_name',
+            'phone',
+            'created_at',
+            'group_name',
+            'is_active'
+        ]
+
+
+        const pageNum = parseInt(page, 10)
+        const limitNum = parseInt(limit, 10)
+        const offset = (pageNum - 1) * limitNum
         const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
-        const offset = (page - 1) * limit;
+        const finalSortKey = allowedSortKeys.includes(sortKey)
+    ? sortKey
+    : 'id'
 
         let conditions = [];
         let values = [];
@@ -83,6 +100,22 @@ exports.listMember = async(req, res) => {
             conditions.length > 0
                 ? `WHERE ${conditions.join(' AND ')}`
                 : '';
+
+        // นับจำนวนทั้งหมด
+        const countResult = await db.query(
+            `
+            SELECT COUNT(DISTINCT m.id) as total
+            FROM member m
+            LEFT JOIN group_member gm ON m.group_id = gm.id
+            LEFT JOIN tag_member tm ON tm.member_id = m.id
+            LEFT JOIN tag t ON t.id = tm.tag_id
+            ${whereClause}
+            `,
+            values
+        )
+
+        const totalItems = parseInt(countResult.rows[0].total)
+        const totalPages = Math.ceil(totalItems / limit)
         
         const result = await db.query(
             `
@@ -99,25 +132,29 @@ exports.listMember = async(req, res) => {
                 m.group_id,
                 gm.group_name,
                 COALESCE(ARRAY_AGG(DISTINCT t.tag_name) FILTER (WHERE tm.tag_id IS NOT NULL), '{}') AS tags,
-                m.is_active,
-                COUNT(*) OVER() AS total
+                m.is_active
             FROM member m
             LEFT JOIN group_member gm ON m.group_id = gm.id
             LEFT JOIN tag_member tm ON tm.member_id = m.id
             LEFT JOIN tag t ON t.id = tm.tag_id
             ${whereClause}
             GROUP BY m.id, gm.group_name
-            ORDER BY ${sortKey} ${validSortDirection}
+            ORDER BY ${finalSortKey} ${validSortDirection}
             LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
             `,
             [...values, limit, offset]
         );
 
-        const total = result.rows.length > 0 ? result.rows[0].total : 0;
-
         res.json({
             data: result.rows,
-            total
+            pagination: {
+                page: pageNum,
+                limit: limitNum,
+                totalItems,
+                totalPages,
+                hasNextPage: page < totalPages,
+                hasPrevPage: page > 1
+            }
         });
 
     } catch (err) {
