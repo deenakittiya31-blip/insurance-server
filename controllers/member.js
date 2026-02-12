@@ -256,6 +256,7 @@ exports.removeMember = async(req, res) => {
 exports.sendDocumentToMember = async(req, res) => {
     try {
         const { members, q_id } = req.body;
+        const sender_id = req.user.id
 
         if (!Array.isArray(members)) {
             return res.status(400).json({ message: 'member ต้องเป็น array' })
@@ -273,7 +274,7 @@ exports.sendDocumentToMember = async(req, res) => {
         for(const userId of members) {           
             await sendImage(userId, imgUrl)     
 
-            await db.query(`insert into history_send_quotation (compare_id, member_id, public_compare_no) values ($1, $2, $3)`, [q_id, userId, publicCompare])
+            await db.query(`insert into quotation_send_history (compare_id, member_id, public_compare_no, sender_id, image_url) values ($1, $2, $3, $4, $5)`, [q_id, userId, publicCompare, sender_id, imgUrl])
         }
 
         res.json({msg: 'ส่งใบเสนอราคาเรียบร้อย'})
