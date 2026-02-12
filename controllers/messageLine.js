@@ -17,7 +17,7 @@ exports.sendMessageLine = async(req, res) => {
                 m.user_id,
                 m.group_id,
                 COALESCE(
-                    ARRAY_AGG(DISTINCT tm.tag_id) FILTER (WHERE tm.tag_id = ANY($1)), 
+                    ARRAY_AGG(DISTINCT tm.tag_id) FILTER (WHERE tm.tag_id = ANY($1::int[])),
                     ARRAY[]::integer[]
                 ) as matched_tags
             FROM member m
@@ -30,16 +30,17 @@ exports.sendMessageLine = async(req, res) => {
         const conditions = []
         const values = []
 
+        values.push(tags.length > 0 ? tags : [])
+
         // ส่งตาม member ที่เลือก
         if (members.length > 0) {
             values.push(members)
-            conditions.push(`m.user_id = ANY($${values.length})`)
+            conditions.push(`m.user_id = ANY($${values.length}::text[])`)
         }
 
         // ส่งตาม tag
         if (tags.length > 0) {
-            values.push(tags)
-            conditions.push(`tm.tag_id = ANY($${values.length})`)
+             conditions.push(`tm.tag_id = ANY($1::int[])`)
         }
 
         if (conditions.length > 0) {
