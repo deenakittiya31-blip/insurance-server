@@ -244,7 +244,9 @@ function drawFooter(doc, carData, insurances) {
        .fillColor('#333333')
        .fontSize(8)
        .text(
-        `วันที่ออกเอกสาร : ${new Date().toLocaleString('th-TH')}`,
+        `วันที่ออกเอกสาร : ${new Date().toLocaleString('th-TH', {
+            timeZone: 'Asia/Bangkok'
+        })}`,
         50,
         745
     );
