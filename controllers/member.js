@@ -59,7 +59,6 @@ exports.listMember = async(req, res) => {
             'is_active'
         ]
 
-
         const pageNum = parseInt(page, 10)
         const limitNum = parseInt(limit, 10)
         const offset = (pageNum - 1) * limitNum
@@ -107,7 +106,7 @@ exports.listMember = async(req, res) => {
             SELECT COUNT(DISTINCT m.id) as total
             FROM member m
             LEFT JOIN group_member gm ON m.group_id = gm.id
-            LEFT JOIN tag_member tm ON tm.member_id = m.id
+            LEFT JOIN tag_member tm ON tm.member_id = m.user_id
             LEFT JOIN tag t ON t.id = tm.tag_id
             ${whereClause}
             `,
@@ -135,7 +134,7 @@ exports.listMember = async(req, res) => {
                 m.is_active
             FROM member m
             LEFT JOIN group_member gm ON m.group_id = gm.id
-            LEFT JOIN tag_member tm ON tm.member_id = m.id
+            LEFT JOIN tag_member tm ON tm.member_id = m.user_id
             LEFT JOIN tag t ON t.id = tm.tag_id
             ${whereClause}
             GROUP BY m.id, gm.group_name
