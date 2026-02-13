@@ -23,19 +23,17 @@ exports.list = async(req, res) => {
             search
         } = req.query;
 
-          const allowedSortKeys = [
-            'id',
-            'brand_id',
-            'name',
-        ]
+        const sortColumnMap = {
+            id: 'cm.id',
+            brand: 'cb.name',
+            name: 'cm.name'
+        };
 
         const pageNum = parseInt(page, 10)
         const limitNum = parseInt(limit, 10)
         const offset = (pageNum - 1) * limitNum
         const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
-        const finalSortKey = allowedSortKeys.includes(sortKey)
-            ? sortKey
-            : 'id'
+        const finalSortKey = sortColumnMap[sortKey] || 'cm.id';
 
         let conditions = [];
         let values = [];
