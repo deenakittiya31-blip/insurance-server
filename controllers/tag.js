@@ -174,3 +174,63 @@ exports.remove = async(req, res) => {
         res.status(500).json({message: 'server errer'}) 
     }
 }
+
+exports.listMemberByTag = async(req, res) => {
+    try {
+        const { search } = req.query
+        const { id } = req.params
+
+        let conditions = [];
+        let values = [id];
+        let paramIndex = 2;
+
+        if (search) {
+            conditions.push(`
+                (
+                    m.display_name ILIKE $${paramIndex}
+                    OR m.first_name ILIKE $${paramIndex}
+                    OR m.last_name ILIKE $${paramIndex}
+                    OR m.phone ILIKE $${paramIndex}
+                    OR gm.group_name ILIKE $${paramIndex}
+                )
+            `);
+            values.push(`%${search}%`);
+            paramIndex++;
+        }
+
+        const whereClause = `
+            WHERE tm.tag_id = $1
+            ${conditions.length > 0 ? `AND ${conditions.join(' AND ')}` : ''}
+        `;
+
+
+        const result = await db.query(
+            `
+            select
+                m.id,
+                m.user_id,
+                m.display_name,
+                m.first_name,
+                m.last_name,
+                m.phone,
+                m.picture_url,
+                gm.group_name
+            from
+                tag_member tm
+                join member m on tm.member_id = m.user_id
+                left join group_member gm on m.group_id = gm.id
+            ${whereClause}
+            order by m.id DESC
+            `,
+            values
+        )
+
+        const countResult = await db.query(`SELECT COUNT(*)::int as total FROM tag_member WHERE tag_id = $1`, [id])
+
+        res.json({data: result.rows, total: countResult.rows[0].total})
+        
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'Server error'})
+    }
+}
