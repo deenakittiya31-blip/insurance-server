@@ -53,25 +53,99 @@ exports.create = async(req, res) => {
 }
 
 exports.list = async(req, res) => {
-    const page = Number(req.query.page) || 1;
-    const per_page = Number(req.query.per_page) || 5;
-    const sortKey = req.query.sortKey || 'id';
-    const sortDirection = req.query.sortDirection || 'DESC';
-    const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
-
-    const offset = (page - 1) * per_page
-
     try {
+        const {
+            page = 1,
+            limit = 10,
+            sortKey = 'id',
+            sortDirection = 'DESC',
+            search
+        } = req.query;
+
+        const sortColumnMap = {
+
+            premium_id: 'ipm.premium_id',
+            premium_name: 'ipm.premium_name',
+            nametype: 'it.nametype',
+            namecompany: 'icp.namecompany',
+            code_type: 'ct.code',
+            start_date: 'ip.start_date',
+            total_premium: 'ipm.total_premium',
+            net_income: 'ipm.net_income',
+            selling_price: 'ipm.selling_price',
+        };
+
+        const pageNum = parseInt(page, 10)
+        const limitNum = parseInt(limit, 10)
+        const offset = (pageNum - 1) * limitNum
+        const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        const finalSortKey = sortColumnMap[sortKey] || 'ipm.premium_id';
+
+        let conditions = [];
+        let values = [];
+        let paramIndex = 1;
+
+        if (search) {
+            conditions.push(`
+                (
+                ipk.package_id ILIKE $${paramIndex}
+                OR ipk.package_name ILIKE $${paramIndex}
+                OR TO_CHAR(ipk.start_date, 'DD/MM/YYYY') ILIKE $${paramIndex} 
+                OR TO_CHAR(ipk.end_date, 'DD/MM/YYYY') ILIKE $${paramIndex} 
+                OR ipk.repair_type ILIKE $${paramIndex} 
+                OR icp.namecompany ILIKE $${paramIndex} 
+                OR ipm.premium_name ILIKE $${paramIndex}
+                OR ipm.premium_discount::text ILIKE $${paramIndex}
+                OR ipm.repair_fund_int::text ILIKE $${paramIndex}
+                OR ipm.repair_fund_max::text ILIKE $${paramIndex}
+                OR ipm.start_year ILIKE $${paramIndex}
+                OR ipm.max_year ILIKE $${paramIndex}
+                OR ipm.car_lost_fire::text ILIKE $${paramIndex}
+                OR ipm.net_income::text ILIKE $${paramIndex}
+                OR ipm.total_premium::text ILIKE $${paramIndex}
+                OR ipm.premium_id ILIKE $${paramIndex}
+                OR ipm.selling_price::text ILIKE $${paramIndex}
+                )
+            `);
+            values.push(`%${search}%`);
+            paramIndex++;
+        }
+
+        const whereClause =
+            conditions.length > 0
+                ? `WHERE ${conditions.join(' AND ')}`
+                : '';
+
+        const countResult = await db.query(
+            `
+            SELECT COUNT(DISTINCT ipm.id)::int as total
+            FROM insurance_premium AS ipm
+            LEFT JOIN insurance_package AS ipk ON ipm.package_id = ipk.id 
+            LEFT JOIN insurance_company AS icp ON ipk.insurance_company = icp.id 
+            LEFT JOIN insurance_type AS it ON ipk.insurance_type = it.id 
+            LEFT JOIN package_usage_type AS put ON ipk.id = put.package_id
+            LEFT JOIN car_usage_type AS cut ON put.car_usage_type_id = cut.id
+            LEFT JOIN car_type AS ct ON cut.car_type_id = ct.id
+            ${whereClause}
+            `, values)
+
+        const totalItems = countResult.rows[0].total
+        const totalPages = Math.ceil(totalItems / limitNum)
+
         const result = await db.query(
             `
            SELECT 
-                ipm.*, 
-                ipk.package_name,
+                ipm.id,
+                ipm.premium_id,
                 ipk.package_id,
-                ipk.start_date,
-                ipk.end_date,
+                ipm.premium_name,
                 icp.namecompany,
                 it.nametype,
+                ipm.total_premium,
+                ipm.net_income,
+                ipm.selling_price,
+                ipk.start_date,
+                ipk.end_date,
                 COALESCE(
                     JSONB_AGG(
                         DISTINCT JSONB_BUILD_OBJECT(
@@ -91,29 +165,33 @@ exports.list = async(req, res) => {
             LEFT JOIN car_type AS ct ON cut.car_type_id = ct.id
             GROUP BY 
                 ipm.id,
+                ipm.premium_id,
+                ipk.package_id,
                 ipm.premium_name,
-                ipm.repair_fund_int,
-                ipm.repair_fund_max,
-                ipm.start_year,
-                ipm.max_year,
-                ipm.car_lost_fire,
+                icp.namecompany,
+                it.nametype,
                 ipm.total_premium,
                 ipm.net_income,
                 ipm.selling_price,
-                ipk.package_name,
-                ipk.package_id,
-                icp.namecompany,
-                it.nametype,
                 ipk.start_date,
                 ipk.end_date
-            ORDER BY ${sortKey} ${validSortDirection} 
-            LIMIT $1 OFFSET $2
+            ${whereClause} 
+            ORDER BY ${finalSortKey} ${validSortDirection} 
+            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
             `
-            , [per_page, offset])
+            , [...values, limitNum, offset])
 
-        const countResult = await db.query('SELECT COUNT(*)::int as total FROM insurance_premium')
-
-        res.json({ data: result.rows, total: countResult.rows[0].total })
+        res.json({
+            data: result.rows,
+            pagination: {
+                page: pageNum,
+                limit: limitNum,
+                totalItems,
+                totalPages,
+                hasNextPage: pageNum < totalPages,
+                hasPrevPage: pageNum > 1
+            }
+        });
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 

@@ -105,15 +105,79 @@ exports.create = async(req, res) => {
 }
 
 exports.list = async(req, res) => {
-    const page = Number(req.query.page) || 1;
-    const per_page = Number(req.query.per_page) || 5;
-    const sortKey = req.query.sortKey || 'id';
-    const sortDirection = req.query.sortDirection || 'DESC';
-    const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
-
-    const offset = (page - 1) * per_page
-
     try {
+        const {
+            page = 1,
+            limit = 10,
+            sortKey = 'id',
+            sortDirection = 'DESC',
+            search
+        } = req.query;
+
+        const sortColumnMap = {
+            package_id: 'ip.package_id',
+            package_name: 'ip.package_name',
+            namecompany: 'ic.namecompany',
+            nametype: 'it.nametype',
+            start_date: 'ip.start_date',
+            repair_type: 'repair_type'
+        };
+
+        const pageNum = parseInt(page, 10)
+        const limitNum = parseInt(limit, 10)
+        const offset = (pageNum - 1) * limitNum
+        const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        const finalSortKey = sortColumnMap[sortKey] || 'ip.package_id';
+
+        let conditions = [];
+        let values = [];
+        let paramIndex = 1;
+
+        if (search) {
+            conditions.push(`
+                (
+                ip.package_id ILIKE $${paramIndex}
+                OR ip.package_name ILIKE $${paramIndex}
+                TO_CHAR(ip.start_date, 'DD/MM/YYYY') ILIKE $${paramIndex} 
+                OR TO_CHAR(ip.end_date, 'DD/MM/YYYY') ILIKE $${paramIndex} 
+                OR TO_CHAR(ip.created_at, 'DD/MM/YYYY') ILIKE $${paramIndex} 
+                OR ip.repair_type ILIKE $${paramIndex} 
+                OR ip.promotion ILIKE $${paramIndex} 
+                OR ic.namecompany ILIKE $${paramIndex} 
+                OR it.nametype ILIKE $${paramIndex}
+                OR ip.engine_size ILIKE $${paramIndex}
+                OR ip.thirdparty_injury_death_per_person::text ILIKE $${paramIndex}
+                OR ip.thirdparty_injury_death_per_accident::text ILIKE $${paramIndex}
+                OR ip.thirdparty_property::text ILIKE $${paramIndex}
+                OR ip.flood_cover::text ILIKE $${paramIndex}
+                OR ip.car_own_damage_deductible::text ILIKE $${paramIndex}
+                OR ip.additional_personal_permanent_driver_cover::text ILIKE $${paramIndex}
+                OR ip.additional_medical_expense_cover::text ILIKE $${paramIndex}
+                OR ip.additional_personal_permanent_driver_number::text ILIKE $${paramIndex}
+                OR ip.additional_bail_bond::text ILIKE $${paramIndex}
+                )
+            `);
+            values.push(`%${search}%`);
+            paramIndex++;
+        }
+
+        const whereClause =
+            conditions.length > 0
+                ? `WHERE ${conditions.join(' AND ')}`
+                : '';
+
+        const countResult = await db.query(
+            `
+            SELECT COUNT(*)::int as total 
+            FROM insurance_package AS ip 
+            JOIN insurance_company AS ic ON ip.insurance_company = ic.id
+            JOIN insurance_type AS it ON ip.insurance_type = it.id
+            ${whereClause}`, values)
+
+        const totalItems = countResult.rows[0].total
+        const totalPages = Math.ceil(totalItems / limitNum)
+
+
         const result = await db.query(
             `
             SELECT 
@@ -135,14 +199,23 @@ exports.list = async(req, res) => {
             FROM insurance_package AS ip
             JOIN insurance_company AS ic ON ip.insurance_company = ic.id
             JOIN insurance_type AS it ON ip.insurance_type = it.id
-            ORDER BY ${sortKey} ${validSortDirection} 
-            LIMIT $1 OFFSET $2
+            ${whereClause} 
+            ORDER BY ${finalSortKey} ${validSortDirection} 
+            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
             `
-            , [per_page, offset])
+            , [...values, limitNum, offset])
 
-        const countResult = await db.query('SELECT COUNT(*)::int as total FROM insurance_package')
-
-        res.json({ data: result.rows, total: countResult.rows[0].total })
+        res.json({
+            data: result.rows,
+            pagination: {
+                page: pageNum,
+                limit: limitNum,
+                totalItems,
+                totalPages,
+                hasNextPage: pageNum < totalPages,
+                hasPrevPage: pageNum > 1
+            }
+        });
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 

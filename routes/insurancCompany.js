@@ -4,7 +4,7 @@ const { create, list, update, remove, read, listSelect, listCompanyTheme, is_act
 const router = express.Router()
 
 router.post('/create-company', authCheck, roleCheck(['admin']), create)
-router.get('/list-company/page', list)
+router.get('/list-company', list)
 router.get('/list-company-select', listSelect)
 router.get('/list-company-theme', listCompanyTheme)
 router.get('/read-company/:id', authCheck, roleCheck(['admin']), read)

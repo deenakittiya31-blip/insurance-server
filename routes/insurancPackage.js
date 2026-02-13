@@ -5,7 +5,7 @@ const router = express.Router()
 
 router.post('/create-package', authCheck, roleCheck(['admin', 'staff']), create)
 router.post('/search-package', authCheck, roleCheck(['admin', 'staff']), searchPackage)
-router.get('/list-package/page', authCheck, roleCheck(['admin', 'staff']), list)
+router.get('/list-package', authCheck, roleCheck(['admin', 'staff']), list)
 router.get('/list-package-select', authCheck, roleCheck(['admin', 'staff']), listSelect)
 router.get('/read-package/:id', authCheck, roleCheck(['admin', 'staff']), read)
 router.get('/readedit-package/:id', authCheck, roleCheck(['admin', 'staff']), readEdit)
