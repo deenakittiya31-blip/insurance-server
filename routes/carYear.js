@@ -4,7 +4,7 @@ const { create, list, update, remove, read, listSelect, is_active } = require('.
 const router = express.Router()
 
 router.post('/create-year', authCheck, roleCheck(['admin']), create)
-router.get('/list-year/page', list)
+router.get('/list-year', list)
 router.get('/list-year-select', listSelect)
 router.get('/read-year/:id', authCheck, roleCheck(['admin']), read)
 router.put('/update-year/:id', authCheck, roleCheck(['admin']), update)

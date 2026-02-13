@@ -15,16 +15,87 @@ exports.create = async(req, res) => {
 
 exports.list = async(req, res) => {
     try {
-        const page = Number(req.query.page) || 1;
-        const per_page = Number(req.query.per_page) || 5;
+        const {
+            page = 1,
+            limit = 10,
+            sortKey = 'id',
+            sortDirection = 'DESC',
+            search
+        } = req.query;
 
-        const offset = (page - 1) * per_page
+          const allowedSortKeys = [
+            'id',
+            'brand_id',
+            'name',
+        ]
 
-        const result  = await db.query('select cm.id, cb.id as brand_id, cb.name as brand, cm.name, cm.is_active from car_model as cm inner join car_brand as cb on cm.brand_id = cb.id ORDER BY cm.id ASC LIMIT $1 OFFSET $2', [per_page, offset])
+        const pageNum = parseInt(page, 10)
+        const limitNum = parseInt(limit, 10)
+        const offset = (pageNum - 1) * limitNum
+        const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        const finalSortKey = allowedSortKeys.includes(sortKey)
+            ? sortKey
+            : 'id'
 
-        const countResult = await db.query('SELECT COUNT(*)::int as total FROM car_model')
+        let conditions = [];
+        let values = [];
+        let paramIndex = 1;
 
-        res.json({ data: result.rows, total: countResult.rows[0].total })
+        //Search
+        if (search) {
+            conditions.push(`
+                (
+                    cb.name ILIKE $${paramIndex}
+                    OR cm.name ILIKE $${paramIndex}
+                )
+            `);
+            values.push(`%${search}%`);
+            paramIndex++;
+        }
+
+        const whereClause =
+            conditions.length > 0
+                ? `WHERE ${conditions.join(' AND ')}`
+                : '';
+
+                       // นับจำนวนทั้งหมด
+        const countResult = await db.query(
+            `
+            SELECT COUNT(*)::int as total 
+            FROM car_model AS cm
+            JOIN car_brand AS cb ON cm.brand_id = cb.id
+            ${whereClause}
+            `, values)
+
+        const totalItems = parseInt(countResult.rows[0].total)
+        const totalPages = Math.ceil(totalItems / limitNum)
+
+        const result  = await db.query(
+            `
+            SELECT
+                cm.id,
+                cb.name AS brand,
+                cm.name,
+                cm.is_active
+            FROM
+                car_model AS cm
+            JOIN car_brand AS cb ON cm.brand_id = cb.id 
+            ${whereClause} 
+            ORDER BY ${finalSortKey} ${validSortDirection} 
+            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+            `, [...values, limitNum, offset])
+
+        res.json({
+            data: result.rows,
+            pagination: {
+                page: pageNum,
+                limit: limitNum,
+                totalItems,
+                totalPages,
+                hasNextPage: pageNum < totalPages,
+                hasPrevPage: pageNum > 1
+            }
+        });
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 

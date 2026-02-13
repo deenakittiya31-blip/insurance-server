@@ -30,10 +30,73 @@ exports.is_active = async(req, res) => {
 
 exports.list = async(req, res) => {
     try {
-        const result = await db.query(
-            'SELECT * FROM car_type ORDER BY id ASC')
+        const {
+            page = 1,
+            limit = 10,
+            sortKey = 'id',
+            sortDirection = 'DESC',
+            search
+        } = req.query;
 
-        res.json({ data: result.rows })
+        const allowedSortKeys = [
+            'id',
+            'type',
+            'code',
+        ]
+
+        const pageNum = parseInt(page, 10)
+        const limitNum = parseInt(limit, 10)
+        const offset = (pageNum - 1) * limitNum
+        const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        const finalSortKey = allowedSortKeys.includes(sortKey)
+            ? sortKey
+            : 'id'
+
+        let conditions = [];
+        let values = [];
+        let paramIndex = 1;
+
+        if (search) {
+            conditions.push(`
+                (
+                type ILIKE $${paramIndex}
+                OR code ILIKE $${paramIndex}
+                )
+            `);
+            values.push(`%${search}%`);
+            paramIndex++;
+        }
+
+        const whereClause =
+            conditions.length > 0
+                ? `WHERE ${conditions.join(' AND ')}`
+                : '';
+
+        const countResult = await db.query(`SELECT COUNT(*)::int as total FROM car_type ${whereClause}`, values)
+
+        const totalItems = countResult.rows[0].total
+        const totalPages = Math.ceil(totalItems / limitNum)
+
+        const result = await db.query(
+            `
+            SELECT * FROM car_type 
+            ${whereClause} 
+            ORDER BY ${finalSortKey} ${validSortDirection} 
+            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+            `
+           ,  [...values, limitNum, offset])
+
+        res.json({
+            data: result.rows,
+            pagination: {
+                page: pageNum,
+                limit: limitNum,
+                totalItems,
+                totalPages,
+                hasNextPage: pageNum < totalPages,
+                hasPrevPage: pageNum > 1
+            }
+        });
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
