@@ -31,7 +31,7 @@ exports.is_active = async(req, res) => {
 exports.list = async(req, res) => {
     try {
         const result = await db.query(
-            'SELECT * FROM car_type WHERE is_active = true ORDER BY id ASC')
+            'SELECT * FROM car_type ORDER BY id ASC')
 
         res.json({ data: result.rows })
     } catch (err) {

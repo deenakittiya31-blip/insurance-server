@@ -282,11 +282,11 @@ exports.statusUsageType = async(req, res) => {
 
 exports.statusUsageTypeIsSee = async(req, res) => {
     try {
-            const { is_active } = req.body
+            const { is_see } = req.body
             const { id } = req.params
 
             await db.query('UPDATE car_usage_type SET is_see = $1 WHERE id = $2', 
-            [is_active, id])
+            [is_see, id])
 
         res.json({msg: 'อัปเดตสถานะสำเร็จ'})  
     } catch (err) {
