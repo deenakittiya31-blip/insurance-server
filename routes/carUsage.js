@@ -12,7 +12,7 @@ router.delete('/delete-carusage/:id', authCheck, roleCheck(['admin']), remove)
 
 //car usage type
 router.post('/create-carusagetype', authCheck, roleCheck(['admin']), createUsageType)
-router.get('/list-carusagetype/page', authCheck, roleCheck(['admin']),listUsageType)
+router.get('/list-carusagetype', authCheck, roleCheck(['admin']),listUsageType)
 router.get('/select-carusagetype', authCheck, roleCheck(['admin']),listUsageTypeSelect)
 router.get('/read-carusagetype/:id', authCheck, roleCheck(['admin']), readUsageType)
 router.patch('/update-carusagetype/:id', authCheck, roleCheck(['admin']), updateUsageType)
