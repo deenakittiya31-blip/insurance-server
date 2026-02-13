@@ -101,24 +101,101 @@ exports.createUsageType = async(req, res) => {
 }
 
 exports.listUsageType = async(req, res) => {
-    const page = Number(req.query.page) || 1;
-    const per_page = Number(req.query.per_page) || 5;
-
-    const offset = (page - 1) * per_page
-
     try {
-        const result = await db.query(
+        const {
+            page = 1,
+            limit = 10,
+            sortKey = 'id',
+            sortDirection = 'DESC',
+            search
+        } = req.query;
+
+          const allowedSortKeys = [
+            'id',
+            'code',
+            'code_usage',
+            'visibility_no',
+            'car_type_id',
+            'car_usage_id'
+        ]
+
+        const pageNum = parseInt(page, 10)
+        const limitNum = parseInt(limit, 10)
+        const offset = (pageNum - 1) * limitNum
+        const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        const finalSortKey = allowedSortKeys.includes(sortKey)
+            ? sortKey
+            : 'id'
+
+        let conditions = [];
+        let values = [];
+        let paramIndex = 1;
+
+        //Search
+        if (search) {
+            conditions.push(`
+                (
+                    cut.code ILIKE $${paramIndex}
+                    OR ct.type ILIKE $${paramIndex}
+                    OR cu.usage_name ILIKE $${paramIndex}
+                    OR cut.code_usage ILIKE $${paramIndex}
+                    OR cut.visibility_no::text ILIKE $${paramIndex}
+                )
+            `);
+            values.push(`%${search}%`);
+            paramIndex++;
+        }
+
+        const whereClause =
+            conditions.length > 0
+                ? `WHERE ${conditions.join(' AND ')}`
+                : '';
+
+                       // นับจำนวนทั้งหมด
+        const countResult = await db.query(
             `
-            SELECT cut.id, cut.code, ct.type AS car_type, cu.usage_name, cut.code_usage, cut.is_active, cut.is_see, cut.visibility_no 
-            FROM car_usage_type AS cut
+            SELECT COUNT(*)::int as total 
+            FROM car_usage_type 
             JOIN car_type AS ct ON cut.car_type_id = ct.id
             JOIN car_usage AS cu ON cut.car_usage_id = cu.id
-            ORDER BY cut.id ASC LIMIT $1 OFFSET $2`, 
-            [per_page, offset])
+            ${whereClause}
+            `, values)
 
-        const countResult = await db.query('SELECT COUNT(*)::int as total FROM car_usage_type')
+        const totalItems = parseInt(countResult.rows[0].total)
+        const totalPages = Math.ceil(totalItems / limitNum)
 
-        res.json({data: result.rows, total: countResult.rows[0].total})
+        const result = await db.query(
+            `
+            SELECT
+                cut.id,
+                cut.code,
+                ct.type AS car_type,
+                cu.usage_name,
+                cut.code_usage,
+                cut.is_active,
+                cut.is_see,
+                cut.visibility_no
+            FROM
+                car_usage_type AS cut
+                join car_type AS ct on cut.car_type_id = ct.id
+                join car_usage AS cu on cut.car_usage_id = cu.id
+            ${whereClause} 
+            ORDER BY ${finalSortKey} ${validSortDirection} 
+            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+            `, 
+            [...values, limitNum, offset])
+
+        res.json({
+            data: result.rows,
+            pagination: {
+                page: pageNum,
+                limit: limitNum,
+                totalItems,
+                totalPages,
+                hasNextPage: pageNum < totalPages,
+                hasPrevPage: pageNum > 1
+            }
+        });
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
@@ -169,7 +246,7 @@ exports.updateUsageType = async(req, res) => {
                     code = coalesce ($1, code),
                     car_type_id = coalesce ($2, car_type_id),
                     car_usage_id = coalesce ($3, car_usage_id),
-                    code_usage = coalesce ($4, code_usage)
+                    code_usage = coalesce ($4, code_usage),
                     visibility_no = coalesce ($5, visibility_no)
                 WHERE id = $6`
                 , [
