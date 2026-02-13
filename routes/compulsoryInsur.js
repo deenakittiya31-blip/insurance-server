@@ -4,7 +4,7 @@ const { create, list, update, remove, read, listOption, statusCompulsory, listOp
 const router = express.Router()
 
 router.post('/create-compulsory', authCheck, roleCheck(['admin']), create)
-router.get('/list-compulsory/page', list)
+router.get('/list-compulsory', list)
 router.get('/option-compulsory/:id', listOption)
 router.get('/option-compulsory-package', listOptionPackage)
 router.get('/read-compulsory/:id', authCheck, roleCheck(['admin']), read)

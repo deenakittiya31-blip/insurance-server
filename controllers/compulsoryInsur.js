@@ -25,15 +25,78 @@ exports.create = async(req, res) => {
 }
 
 exports.list = async(req, res) => {
-    const page = Number(req.query.page) || 1;
-    const per_page = Number(req.query.per_page) || 5;
-
-    const offset = (page - 1) * per_page
-
     try {
+        const {
+            page = 1,
+            limit = 10,
+            sortKey = 'id',
+            sortDirection = 'DESC',
+            search
+        } = req.query;
+
+        const allowedSortKeys = [
+            'id',
+            'car_type',
+            'car_usage_type_id',
+            'code_sub',
+            'detail',
+            'net_price',
+            'vat',
+            'stamp',
+            'total'
+        ]
+
+        const pageNum = parseInt(page, 10)
+        const limitNum = parseInt(limit, 10)
+        const offset = (pageNum - 1) * limitNum
+        const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        const finalSortKey = allowedSortKeys.includes(sortKey)
+    ? sortKey
+    : 'id'
+
+        let conditions = [];
+        let values = [];
+        let paramIndex = 1;
+
+        //Search
+        if (search) {
+            conditions.push(`
+                (
+                    ci.car_type ILIKE $${paramIndex}
+                    OR ci.code_sub ILIKE $${paramIndex}
+                    OR ci.detail ILIKE $${paramIndex}
+                    OR ci.net_price ILIKE $${paramIndex}
+                    OR ci.vat ILIKE $${paramIndex}
+                    OR ci.stamp ILIKE $${paramIndex}
+                    OR ci.total ILIKE $${paramIndex}
+                    OR cut.code_usage ILIKE $${paramIndex}
+                )
+            `);
+            values.push(`%${search}%`);
+            paramIndex++;
+        }
+
+        const whereClause =
+            conditions.length > 0
+                ? `WHERE ${conditions.join(' AND ')}`
+                : '';
+
+        // นับจำนวนทั้งหมด
+        const countResult = await db.query(
+            `
+            SELECT COUNT(*) as total
+            FROM compulsory_insurance as ci
+            LEFT JOIN car_usage_type AS cut ON ci.car_usage_type_id = cut.id 
+            ${whereClause}
+            `,
+            values
+        )
+
+        const totalItems = parseInt(countResult.rows[0].total)
+        const totalPages = Math.ceil(totalItems / limitNum)
         const result = await db.query(
             `
-            select 
+            SELECT 
               ci.id, 
               ci.car_type, 
               cut.code_usage,
@@ -44,15 +107,24 @@ exports.list = async(req, res) => {
               ci.stamp, 
               ci.total,
               ci.is_active 
-            from compulsory_insurance as ci 
-            left join car_usage_type as cut on ci.car_usage_type_id = cut.id 
-            order by ci.id asc
-            limit $1 offset $2
-            `, [per_page, offset])
+            FROM compulsory_insurance AS ci 
+            LEFT JOIN car_usage_type AS cut ON ci.car_usage_type_id = cut.id 
+            ${whereClause}
+            ORDER BY ${finalSortKey} ${validSortDirection}
+            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+            `, [...values, limitNum, offset])
 
-        const countResult = await db.query('SELECT COUNT(*)::int as total FROM compulsory_insurance')
-
-        res.json({ data: result.rows, total: countResult.rows[0].total })
+        res.json({
+            data: result.rows,
+            pagination: {
+                page: pageNum,
+                limit: limitNum,
+                totalItems,
+                totalPages,
+                hasNextPage: pageNum < totalPages,
+                hasPrevPage: pageNum > 1
+            }
+        });
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 

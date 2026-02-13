@@ -55,8 +55,7 @@ exports.listMember = async(req, res) => {
             'last_name',
             'phone',
             'created_at',
-            'group_name',
-            'is_active'
+            'group_name'
         ]
 
         const pageNum = parseInt(page, 10)

@@ -45,7 +45,7 @@ exports.list = async(req, res) => {
         let paramIndex = 1;
 
          if (search) {
-            conditions.push(`name ILIKE ${paramIndex}`);
+            conditions.push(`name ILIKE $${paramIndex}`);
             values.push(`%${search}%`);
             paramIndex++;
         }
