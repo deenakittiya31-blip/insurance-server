@@ -82,14 +82,15 @@ exports.remove = async(req, res) => {
 //car usage type
 exports.createUsageType = async(req, res) => {
     try {
-        const { code, car_type_id, car_usage_id, code_usage } = req.body
+        const { code, car_type_id, car_usage_id, code_usage, visibility_no } = req.body
 
-        await db.query('INSERT INTO car_usage_type (code, car_type_id, car_usage_id, code_usage, is_active) VALUES ($1, $2, $3, $4, true)'
+        await db.query('INSERT INTO car_usage_type (code, car_type_id, car_usage_id, code_usage, is_active, is_see, visibility_no) VALUES ($1, $2, $3, $4, true, true, $5)'
                         , [
                             code, 
                             Number(car_type_id), 
                             Number(car_usage_id), 
-                            code_usage
+                            code_usage,
+                            Number(visibility_no)
                         ]);
 
         res.json({ msg: 'เพิ่มประเภทการใช้งานรถสำเร็จ' })
@@ -108,7 +109,7 @@ exports.listUsageType = async(req, res) => {
     try {
         const result = await db.query(
             `
-            SELECT cut.id, cut.code, ct.type AS car_type, cu.usage_name, cut.code_usage, cut.is_active
+            SELECT cut.id, cut.code, ct.type AS car_type, cu.usage_name, cut.code_usage, cut.is_active, cut.is_see, cut.visibility_no 
             FROM car_usage_type AS cut
             JOIN car_type AS ct ON cut.car_type_id = ct.id
             JOIN car_usage AS cu ON cut.car_usage_id = cu.id
@@ -159,7 +160,7 @@ exports.readUsageType = async(req, res) => {
 exports.updateUsageType = async(req, res) => {
     try {
         const { id } = req.params;
-         const { code, car_type_id, car_usage_id, code_usage } = req.body;
+         const { code, car_type_id, car_usage_id, code_usage, visibility_no } = req.body;
 
         await db.query(
                 `
@@ -169,12 +170,14 @@ exports.updateUsageType = async(req, res) => {
                     car_type_id = coalesce ($2, car_type_id),
                     car_usage_id = coalesce ($3, car_usage_id),
                     code_usage = coalesce ($4, code_usage)
-                WHERE id = $5`
+                    visibility_no = coalesce ($5, visibility_no)
+                WHERE id = $6`
                 , [
                     code, 
                     Number(car_type_id), 
                     Number(car_usage_id), 
                     code_usage,
+                    Number(visibility_no),
                     id
                   ])
 
@@ -191,6 +194,21 @@ exports.statusUsageType = async(req, res) => {
             const { id } = req.params
 
             await db.query('UPDATE car_usage_type SET is_active = $1 WHERE id = $2', 
+            [is_active, id])
+
+        res.json({msg: 'อัปเดตสถานะสำเร็จ'})  
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'})
+    }
+}
+
+exports.statusUsageTypeIsSee = async(req, res) => {
+    try {
+            const { is_active } = req.body
+            const { id } = req.params
+
+            await db.query('UPDATE car_usage_type SET is_see = $1 WHERE id = $2', 
             [is_active, id])
 
         res.json({msg: 'อัปเดตสถานะสำเร็จ'})  
