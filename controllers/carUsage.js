@@ -155,7 +155,7 @@ exports.listUsageType = async(req, res) => {
         const countResult = await db.query(
             `
             SELECT COUNT(*)::int as total 
-            FROM car_usage_type 
+            FROM car_usage_type AS cut
             JOIN car_type AS ct ON cut.car_type_id = ct.id
             JOIN car_usage AS cu ON cut.car_usage_id = cu.id
             ${whereClause}
