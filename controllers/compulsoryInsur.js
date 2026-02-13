@@ -34,25 +34,21 @@ exports.list = async(req, res) => {
             search
         } = req.query;
 
-        const allowedSortKeys = [
-            'id',
-            'car_type',
-            'car_usage_type_id',
-            'code_sub',
-            'detail',
-            'net_price',
-            'vat',
-            'stamp',
-            'total'
-        ]
+        const sortColumnMap = {
+            id: 'ci.id',
+            car_type: 'ci.car_type',
+            code_usage: 'cut.code_usage',
+            code_sub: 'ci.code_sub',
+            detail: 'ci.detail',
+            net_price: 'ci.net_price',
+            total: 'ci.total'
+        }
 
         const pageNum = parseInt(page, 10)
         const limitNum = parseInt(limit, 10)
         const offset = (pageNum - 1) * limitNum
         const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
-        const finalSortKey = allowedSortKeys.includes(sortKey)
-    ? sortKey
-    : 'id'
+        const finalSortKey = sortColumnMap[sortKey] || 'ci.id';
 
         let conditions = [];
         let values = [];
