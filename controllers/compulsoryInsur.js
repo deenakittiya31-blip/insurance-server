@@ -61,10 +61,10 @@ exports.list = async(req, res) => {
                     ci.car_type ILIKE $${paramIndex}
                     OR ci.code_sub ILIKE $${paramIndex}
                     OR ci.detail ILIKE $${paramIndex}
-                    OR ci.net_price ILIKE $${paramIndex}
-                    OR ci.vat ILIKE $${paramIndex}
-                    OR ci.stamp ILIKE $${paramIndex}
-                    OR ci.total ILIKE $${paramIndex}
+                    OR ci.net_price::text ILIKE $${paramIndex}
+                    OR ci.vat::text ILIKE $${paramIndex}
+                    OR ci.stamp::text ILIKE $${paramIndex}
+                    OR ci.total::text ILIKE $${paramIndex}
                     OR cut.code_usage ILIKE $${paramIndex}
                 )
             `);
