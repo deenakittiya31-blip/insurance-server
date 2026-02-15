@@ -163,6 +163,7 @@ exports.list = async(req, res) => {
             LEFT JOIN package_usage_type AS put ON ipk.id = put.package_id
             LEFT JOIN car_usage_type AS cut ON put.car_usage_type_id = cut.id
             LEFT JOIN car_type AS ct ON cut.car_type_id = ct.id
+            ${whereClause} 
             GROUP BY 
                 ipm.id,
                 ipm.premium_id,
@@ -175,7 +176,6 @@ exports.list = async(req, res) => {
                 ipm.selling_price,
                 ipk.start_date,
                 ipk.end_date
-            ${whereClause} 
             ORDER BY ${finalSortKey} ${validSortDirection} 
             LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
             `
