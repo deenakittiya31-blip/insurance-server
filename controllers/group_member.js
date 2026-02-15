@@ -69,7 +69,7 @@ exports.list = async(req, res) => {
 
         const result = await db.query(`select * from group_member ${whereClause} 
             ORDER BY ${finalSortKey} ${validSortDirection} 
-            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`)
+            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`, [...values, limitNum, offset])
 
         res.json({
             data: result.rows,
