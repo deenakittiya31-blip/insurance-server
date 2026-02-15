@@ -138,7 +138,7 @@ exports.list = async(req, res) => {
                 (
                 ip.package_id ILIKE $${paramIndex}
                 OR ip.package_name ILIKE $${paramIndex}
-                TO_CHAR(ip.start_date, 'DD/MM/YYYY') ILIKE $${paramIndex} 
+                OR TO_CHAR(ip.start_date, 'DD/MM/YYYY') ILIKE $${paramIndex} 
                 OR TO_CHAR(ip.end_date, 'DD/MM/YYYY') ILIKE $${paramIndex} 
                 OR TO_CHAR(ip.created_at, 'DD/MM/YYYY') ILIKE $${paramIndex} 
                 OR ip.repair_type ILIKE $${paramIndex} 
