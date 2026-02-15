@@ -21,9 +21,67 @@ exports.create = async(req, res) => {
 
 exports.list = async(req, res) => {
     try {
-        const result = await db.query('select * from group_member order by id desc')
+        const {
+            page = 1,
+            limit = 10,
+            sortKey = 'id',
+            sortDirection = 'DESC',
+            search
+        } = req.query;
 
-        res.json({data: result.rows})
+        const allowedSortKeys = [
+            'id',
+            'group_name',
+        ]
+
+        const pageNum = parseInt(page, 10)
+        const limitNum = parseInt(limit, 10)
+        const offset = (pageNum - 1) * limitNum
+        const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        const finalSortKey = allowedSortKeys.includes(sortKey)
+            ? sortKey
+            : 'id'
+
+        let conditions = [];
+        let values = [];
+        let paramIndex = 1;
+
+         if (search) {
+            conditions.push(`group_name ILIKE $${paramIndex}`);
+            values.push(`%${search}%`);
+            paramIndex++;
+        }
+
+        const whereClause =
+            conditions.length > 0
+                ? `WHERE ${conditions.join(' AND ')}`
+                : '';
+
+        const countResult = await db.query(
+            `
+            SELECT COUNT(*)::int as total 
+            FROM group_member
+            ${whereClause}
+            `, values)
+
+        const totalItems = parseInt(countResult.rows[0].total)
+        const totalPages = Math.ceil(totalItems / limitNum)
+
+        const result = await db.query(`select * from group_member ${whereClause} 
+            ORDER BY ${finalSortKey} ${validSortDirection} 
+            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`)
+
+        res.json({
+            data: result.rows,
+            pagination: {
+                page: pageNum,
+                limit: limitNum,
+                totalItems,
+                totalPages,
+                hasNextPage: pageNum < totalPages,
+                hasPrevPage: pageNum > 1
+            }
+        });
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'Server error'})

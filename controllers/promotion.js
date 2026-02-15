@@ -3,21 +3,16 @@ const cloudinary = require('../config/cloudinary')
 
 exports.create = async(req, res) => {
     try {
-        const { name, logo_url, logo_public_id } = req.body
+        const { promotion_name, logo_public_id, logo_url } = req.body
 
-      await db.query(
-      `INSERT INTO car_brand (name, logo_url, logo_public_id, is_active)
-       VALUES ($1, $2, $3, true)`,
-      [name, logo_url, logo_public_id]
-    )
+        await db.query('insert into promotion(promotion_name, logo_public_id, logo_url) values($1, $2, $3)', [promotion_name, logo_public_id, logo_url])
 
-    res.json({ msg: 'เพิ่มยี่ห้อรถสำเร็จ' })
+        res.json({ msg: 'เพิ่มข้อมูลโปรโมชั่นสำเร็จ' })
     } catch (err) {
         console.log(err)
-        res.status(500).json({message: 'server errer'}) 
+        res.status(500).json({message: 'Server error'})
     }
 }
-
 exports.list = async(req, res) => {
     try {
         const {
@@ -26,11 +21,12 @@ exports.list = async(req, res) => {
             sortKey = 'id',
             sortDirection = 'DESC',
             search
-        } = req.query;
+        } = req.query
 
-          const allowedSortKeys = [
+        const allowedSortKeys = [
             'id',
-            'name',
+            'promotion_name',
+            'created_at'
         ]
 
         const pageNum = parseInt(page, 10)
@@ -45,8 +41,8 @@ exports.list = async(req, res) => {
         let values = [];
         let paramIndex = 1;
 
-         if (search) {
-            conditions.push(`name ILIKE $${paramIndex}`);
+        if (search) {
+            conditions.push(`(promotion_name ILIKE $${paramIndex})`);
             values.push(`%${search}%`);
             paramIndex++;
         }
@@ -56,23 +52,20 @@ exports.list = async(req, res) => {
                 ? `WHERE ${conditions.join(' AND ')}`
                 : '';
 
-        const countResult = await db.query(
-            `
-            SELECT COUNT(*)::int as total 
-            FROM car_brand
-            ${whereClause}
-            `, values)
+        const countResult = await db.query(`SELECT COUNT(*)::int as total FROM promotion ${whereClause}`, values)
 
-        const totalItems = parseInt(countResult.rows[0].total)
+        const totalItems = countResult.rows[0].total
         const totalPages = Math.ceil(totalItems / limitNum)
 
-        const result = await db.query(`
-            SELECT id, name, logo_url, logo_public_id, is_active 
-            FROM car_brand 
+        const result = await db.query(
+            `
+            SELECT id, promotion_name, logo_url, logo_public_id, is_active 
+            FROM promotion 
             ${whereClause} 
             ORDER BY ${finalSortKey} ${validSortDirection} 
             LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
             `, [...values, limitNum, offset])
+
 
         res.json({
             data: result.rows,
@@ -87,13 +80,13 @@ exports.list = async(req, res) => {
         });
     } catch (err) {
         console.log(err)
-        res.status(500).json({message: 'server errer'}) 
+        res.status(500).json({message: 'Server error'})
     }
 }
 
 exports.listSelect = async(req, res) => {
     try {
-        const result = await db.query('SELECT id, name FROM car_brand WHERE is_active = true ORDER BY id DESC')
+        const result = await db.query('SELECT id, promotion_name FROM promotion WHERE is_active = true ORDER BY id DESC')
 
         res.json({ data: result.rows })
     } catch (err) {
@@ -103,53 +96,51 @@ exports.listSelect = async(req, res) => {
 }
 
 exports.read = async(req, res) => {
-    try {  
+    try {
         const {id} = req.params
         
-        const query = 'SELECT id, name, logo_url, logo_public_id FROM car_brand WHERE id = $1'
+        const query = 'SELECT id, promotion_name, logo_url, logo_public_id FROM promotion WHERE id = $1'
         const result = await db.query(query, [Number(id)])
 
          res.json({ data: result.rows[0] })
     } catch (err) {
         console.log(err)
-        res.status(500).json({message: 'server errer'}) 
+        res.status(500).json({message: 'Server error'})
     }
 }
-
 exports.update = async(req, res) => {
-    const { name, logo_url, logo_public_id } = req.body;
-    const { id } = req.params;
-
     try {
-        const existing = await db.query('SELECT * FROM  car_brand WHERE id = $1',[id])
+        const { promotion_name, logo_url, logo_public_id } = req.body
+        const { id } = req.params
+
+        const existing = await db.query('SELECT * FROM  promotion WHERE id = $1',[id])
 
         const brand = existing.rows[0]
 
-        await db.query('UPDATE car_brand SET name = $1, logo_url = $2, logo_public_id = $3  WHERE id = $4', 
+        await db.query('UPDATE promotion SET promotion_name = $1, logo_url = $2, logo_public_id = $3  WHERE id = $4', 
           [
-            name            ?? brand.name,           
+            promotion_name            ?? brand.promotion_name,           
             logo_url        ?? brand.logo_url, 
             logo_public_id  ?? brand.logo_public_id, 
             id
 
           ])
 
-        res.json({msg: 'แก้ไขยี่ห้อรถสำเร็จ'})  
+        res.json({msg: 'แก้ไขโปรโมชั่นสำเร็จ'})  
     } catch (err) {
         console.log(err)
-        res.status(500).json({message: 'server errer'}) 
+        res.status(500).json({message: 'Server error'})
     }
 }
 
 exports.is_active = async(req, res) => {
     try {
-            const {is_active} = req.body
-            const {id} = req.params
+        const { is_active } = req.body
+        const { id } = req.params
 
-            await db.query('UPDATE car_brand SET is_active = $1 WHERE id = $2', 
-            [is_active, id])
+        await db.query('UPDATE promotion SET is_active = $1 WHERE id = $2', [is_active, id])
 
-        res.json({msg: 'อัปเดตสถานะสำเร็จ'})  
+        res.json({msg: 'อัปเดตสถานะโปรโมชั่นสำเร็จ'})  
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'})
@@ -158,25 +149,21 @@ exports.is_active = async(req, res) => {
 
 exports.remove = async(req, res) => {
     try {
-        const {id} = req.params
+        const { id } = req.params
 
-        const result = await db.query('SELECT * FROM car_brand WHERE id = $1', [id])
+        const result = await db.query('select logo_public_id from promotion where id = $1', [id])
 
-        if(result.rows.length === 0){
-            return res.status(404).json({msg: 'ไม่เจอยี่ห้อรถยนต์'})
-        }
-
-        const {logo_public_id} = result.rows[0]
-
-        if(logo_public_id){
+        const { logo_public_id } = result.rows[0]
+        
+        if(logo_public_id) {
             await cloudinary.uploader.destroy(logo_public_id)
         }
-        
-        await db.query('DELETE FROM car_brand WHERE id = $1', [id])
 
-        res.json({msg: 'ลบยี่ห้อรถสำเร็จ'})
+        await db.query('delete from promotion where id = $1', [id])
+
+        res.json({msg: 'ลบข้อมูลโปรโมชั่นสำเร็จ'})
     } catch (err) {
         console.log(err)
-        res.status(500).json({message: 'server errer'}) 
+        res.status(500).json({message: 'Server error'})
     }
 }
