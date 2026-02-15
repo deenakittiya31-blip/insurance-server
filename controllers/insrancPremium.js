@@ -93,7 +93,9 @@ exports.list = async(req, res) => {
                 OR TO_CHAR(ipk.start_date, 'DD/MM/YYYY') ILIKE $${paramIndex} 
                 OR TO_CHAR(ipk.end_date, 'DD/MM/YYYY') ILIKE $${paramIndex} 
                 OR ipk.repair_type ILIKE $${paramIndex} 
-                OR icp.namecompany ILIKE $${paramIndex} 
+                OR icp.namecompany ILIKE $${paramIndex}
+                OR it.nametype ILIKE $${paramIndex} 
+                OR ct.code ILIKE $${paramIndex} 
                 OR ipm.premium_name ILIKE $${paramIndex}
                 OR ipm.premium_discount::text ILIKE $${paramIndex}
                 OR ipm.repair_fund_int::text ILIKE $${paramIndex}
