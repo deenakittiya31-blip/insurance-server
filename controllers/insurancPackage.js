@@ -144,6 +144,7 @@ exports.list = async(req, res) => {
                 OR ip.repair_type ILIKE $${paramIndex} 
                 OR ip.promotion ILIKE $${paramIndex} 
                 OR ic.namecompany ILIKE $${paramIndex} 
+                OR pt.promotion_name ILIKE $${paramIndex} 
                 OR it.nametype ILIKE $${paramIndex}
                 OR ip.engine_size ILIKE $${paramIndex}
                 OR ip.thirdparty_injury_death_per_person::text ILIKE $${paramIndex}
@@ -199,6 +200,7 @@ exports.list = async(req, res) => {
             FROM insurance_package AS ip
             JOIN insurance_company AS ic ON ip.insurance_company = ic.id
             JOIN insurance_type AS it ON ip.insurance_type = it.id
+            LEFT JOIN promotion AS pt ON ip.promotion_id = pt.id
             ${whereClause} 
             ORDER BY ${finalSortKey} ${validSortDirection} 
             LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
@@ -219,53 +221,6 @@ exports.list = async(req, res) => {
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
-    }
-}
-
-exports.searchPackage = async(req, res) => {
-    try {
-        const { search } = req.body;
-
-        const result = await db.query(
-            `
-            SELECT 
-                ip.id,
-                ip.created_at,
-                ip.package_id,
-                ip.package_name,
-                ic.namecompany,
-                it.nametype,
-                ip.start_date,
-                ip.end_date,
-                ip.repair_type,
-                (
-                  SELECT COUNT(*)::int 
-                  FROM insurance_premium ipm 
-                  WHERE ipm.package_id = ip.id
-                ) as premium_count,
-                ip.is_active
-            FROM insurance_package AS ip
-            JOIN insurance_company AS ic ON ip.insurance_company = ic.id
-            JOIN insurance_type AS it ON ip.insurance_type = it.id
-            WHERE
-                ip.package_id ILIKE $1 OR
-                ip.package_name ILIKE $1 OR
-                TO_CHAR(ip.start_date, 'DD/MM/YYYY') ILIKE $1 OR
-                TO_CHAR(ip.end_date, 'DD/MM/YYYY') ILIKE $1 OR
-                TO_CHAR(ip.created_at, 'DD/MM/YYYY') ILIKE $1 OR
-                ip.repair_type ILIKE $1 OR
-                ip.promotion ILIKE $1 OR
-                ic.namecompany ILIKE $1 OR
-                it.nametype ILIKE $1
-            ORDER BY created_at DESC
-            `,
-            [`%${search || ''}%`]
-        );
-
-        res.json({data: result.rows})
-    } catch (err) {
-        console.log(err)
-        res.status(500).json({message: 'Server error'})
     }
 }
 
@@ -316,7 +271,8 @@ exports.read = async(req, res) => {
                 it.nametype,
                 ip.repair_type,
                 ip.engine_size,
-                ip.promotion,
+                ip.promotion_id,
+                pt.promotion_name
                 ip.thirdparty_injury_death_per_person,
                 ip.thirdparty_injury_death_per_accident,
                 ip.thirdparty_property,
@@ -404,6 +360,8 @@ exports.read = async(req, res) => {
 
             LEFT JOIN package_payment AS pp ON ip.id = pp.package_id
             LEFT JOIN payment_methods AS pm ON pp.payment_method_id = pm.id
+
+            LEFT JOIN promotion AS pt ON ip.promotion_id = pt.id
             WHERE ip.id = $1
             GROUP BY 
                 ip.id,
@@ -413,7 +371,7 @@ exports.read = async(req, res) => {
                 ip.insurance_type,
                 it.nametype,
                 ip.repair_type,
-                ip.promotion,
+                ip.promotion_id,
                 ip.thirdparty_injury_death_per_person,
                 ip.thirdparty_injury_death_per_accident,
                 ip.thirdparty_property,
