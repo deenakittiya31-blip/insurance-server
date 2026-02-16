@@ -117,7 +117,20 @@ exports.update = async(req, res) => {
 
         const userOld = existing.rows[0]
 
-        await db.query('UPDATE users SET name = $1, email = $2, phone = $3, role = $4 logo_url = $5, logo_public_id = $6, first_name = $7, last_name = $8  WHERE user_id = $9', 
+        await db.query(
+            `
+            UPDATE users 
+            SET 
+              name = $1, 
+              email = $2, 
+              phone = $3, 
+              role = $4, 
+              logo_url = $5, 
+              logo_public_id = $6, 
+              first_name = $7, 
+              last_name = $8  
+            WHERE user_id = $9`
+            , 
           [
             name            ?? userOld.name, 
             email           ?? userOld.email, 
