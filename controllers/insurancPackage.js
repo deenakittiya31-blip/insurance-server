@@ -272,7 +272,7 @@ exports.read = async(req, res) => {
                 ip.repair_type,
                 ip.engine_size,
                 ip.promotion_id,
-                pt.promotion_name
+                pt.promotion_name,
                 ip.thirdparty_injury_death_per_person,
                 ip.thirdparty_injury_death_per_accident,
                 ip.thirdparty_property,
@@ -372,6 +372,7 @@ exports.read = async(req, res) => {
                 it.nametype,
                 ip.repair_type,
                 ip.promotion_id,
+                pt.promotion_name,
                 ip.thirdparty_injury_death_per_person,
                 ip.thirdparty_injury_death_per_accident,
                 ip.thirdparty_property,

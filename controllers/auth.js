@@ -169,7 +169,7 @@ exports.loginLine = async(req, res) => {
 
         if (result.rows.length === 0) {
             const insertResult = await db.query(
-        `INSERT INTO users (name, email, image, role)
+        `INSERT INTO users (name, email, logo_url, role)
          VALUES ($1, $2, $3, $4)
          RETURNING *`,
         [
