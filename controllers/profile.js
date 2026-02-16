@@ -94,7 +94,7 @@ exports.updateProfileUser = async(req, res) => {
         UPDATE users
         SET ${fields.join(', ')}
         WHERE user_id = $${index}
-        RETURNING name, email, phone, role, logo_url, logo_public_id
+        RETURNING name, email, phone, role, logo_url, logo_public_id, first_name, last_name
       `;
 
       const result = await client.query(query, values);

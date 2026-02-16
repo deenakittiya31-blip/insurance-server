@@ -1,15 +1,12 @@
 const express = require('express')
-const { register, login, loginLine, loginGoogle, currentUser, statusLoginWith, getStatusLoginWith, getLoginWithSetting } = require('../controllers/auth')
+const { register, login, currentUser, statusLoginWith, getLoginWithSetting } = require('../controllers/auth')
 const { authCheck, roleCheck } = require('../middleware/authCheck')
 const router = express.Router()
 
 router.post('/login', login)
 router.put('/status-loginwith/:id', authCheck, roleCheck(['admin', 'staff']), statusLoginWith)
 router.put('/setting-loginwith', authCheck, roleCheck(['admin', 'staff']), getLoginWithSetting)
-router.get('/get-loginwith', getStatusLoginWith)
 router.post('/current-user', authCheck, currentUser)
-router.post('/login-line', loginLine)
-router.post('/login-google', loginGoogle)
 router.post('/register', register)
 
 module.exports = router

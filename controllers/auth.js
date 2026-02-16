@@ -21,17 +21,6 @@ exports.statusLoginWith = async(req, res) => {
     }
 }
 
-exports.getStatusLoginWith = async(req, res) => {
-    try {
-        const result = await db.query('select id, login_with, status from login order by id asc limit 2') 
-        
-        res.json({data: result.rows}) 
-    } catch (err) {
-        console.log(err)
-        res.status(500).json({ msg: 'Server error'})
-    }
-}
-
 exports.getLoginWithSetting = async(req, res) => {
     try {
         const result = await db.query('select id, login_with, status from login order by id asc') 
@@ -45,9 +34,9 @@ exports.getLoginWithSetting = async(req, res) => {
 
 exports.register = async(req, res)=>{
     try {
-        const {name, email, phone, password} = req.body
+        const {name, email, first_name, last_name,  phone, password} = req.body
 
-        if(!name || !email || !phone || !password){
+        if(!name || !email || !phone || !password || !first_name || !last_name){
             return res.status(400).json({msg: 'กรุณากรอกข้อมูลให้ครบ'})
         }
 
@@ -59,7 +48,7 @@ exports.register = async(req, res)=>{
 
         const hashPassword = await bcrypt.hash(password, 10)
 
-        await db.query('INSERT INTO users(name, email, phone, password) VALUES($1, $2, $3, $4)', [name, email, phone, hashPassword])
+        await db.query('INSERT INTO users(name, email, phone, password, first_name, last_name) VALUES($1, $2, $3, $4, $5, $6)', [name, email, phone, hashPassword, first_name, last_name])
         res.json({ msg: 'ลงทะเบียนสำเร็จ' })
     } catch (err) {
         console.log(err)
@@ -150,116 +139,4 @@ exports.login = async(req, res) => {
         console.log(err.message)
         res.status(500).json({ msg: 'server error'})
     }
-}
-
-exports.loginLine = async(req, res) => {
-    try {
-        const { displayName, email, pictureUrl } = req.body
-
-        let result
-
-        if(email){
-            result = await db.query('SELECT * FROM users WHERE email = $1', [email])
-        }else {
-            result = await db.query('SELECT * FROM users WHERE name = $1', [displayName])
-        }
-        
-
-        let user
-
-        if (result.rows.length === 0) {
-            const insertResult = await db.query(
-        `INSERT INTO users (name, email, logo_url, role)
-         VALUES ($1, $2, $3, $4)
-         RETURNING *`,
-        [
-          displayName,
-          email || null,
-          pictureUrl || null,
-          'user'
-        ]
-      )
-
-            user = insertResult.rows[0]
-        } else {
-             user = result.rows[0]
-        }
-
-        const payload ={
-            id: user.user_id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-        }
-
-        jwt.sign(payload, process.env.SECRET, {expiresIn: '1d'}, (err, token) => {
-            if(err){
-                return res.status(500).json({message: 'server errer jwt'})
-            }
-            res.json({token})
-        })
-
-
-    } catch (err) {
-        console.log(err.message)
-        res.status(500).json({message: 'server error'})
-    }
-}
-
-exports.loginGoogle = async (req, res) => {
-  try {
-    const { credential } = req.body
-
-    if (!credential) {
-      return res.status(400).json({ message: 'Missing credential' })
-    }
-
-    const ticket = await client.verifyIdToken({
-      idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    })
-
-    const payloadGoogle = ticket.getPayload()
-
-    const { email, name, picture} = payloadGoogle
-
-    const result = await db.query(
-      'SELECT * FROM users WHERE email = $1',
-      [email]
-    )
-
-    let user
-
-    if (result.rows.length === 0) {
-      // 3. ถ้าไม่มี → สร้าง user ใหม่
-      const insertResult = await db.query(
-        `INSERT INTO users (name, email, image, role)
-         VALUES ($1, $2, $3, $4)
-         RETURNING *`,
-        [name, email, picture, 'user']
-      )
-
-      user = insertResult.rows[0]
-    } else {
-      user = result.rows[0]
-    }
-
-    const payload = {
-            id: user.user_id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-    }
-
-    jwt.sign(payload, process.env.SECRET, {expiresIn: '1d'}, (err, token) => {
-            if(err){
-                return res.status(500).json({message: 'server errer jwt'})
-            }
-            return res.status(200).json({token})
-        })
-
-  } catch (err) {
-    console.error(err)
-    res.status(401).json({ message: 'Google token ไม่ถูกต้อง' })
-  }
 }
