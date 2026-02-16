@@ -53,7 +53,9 @@ exports.updateProfileUser = async(req, res) => {
         'email',
         'phone',
         'logo_url',
-        'logo_public_id'
+        'logo_public_id',
+        'first_name',
+        'last_name'
       ];
 
       const fields = [];
@@ -144,7 +146,7 @@ exports.updateProfileUser = async(req, res) => {
       await client.query('COMMIT');
 
       return res.json({
-        message: 'Profile updated successfully',
+        message: 'อัปเดตโปรไฟล์สำเร็จ',
         data: result.rows[0]
       });
     }
