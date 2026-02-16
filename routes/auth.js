@@ -7,6 +7,6 @@ router.post('/login', login)
 router.put('/status-loginwith/:id', authCheck, roleCheck(['admin', 'staff']), statusLoginWith)
 router.put('/setting-loginwith', authCheck, roleCheck(['admin', 'staff']), getLoginWithSetting)
 router.post('/current-user', authCheck, currentUser)
-router.post('/register', register)
+router.post('/register', authCheck, roleCheck(['admin']), register)
 
 module.exports = router

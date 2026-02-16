@@ -34,10 +34,10 @@ exports.getLoginWithSetting = async(req, res) => {
 
 exports.register = async(req, res)=>{
     try {
-        const {name, email, first_name, last_name,  phone, password} = req.body
+        const {name, email, first_name, last_name,  phone, password, role} = req.body
 
-        if(!name || !email || !phone || !password || !first_name || !last_name){
-            return res.status(400).json({msg: 'กรุณากรอกข้อมูลให้ครบ'})
+        if(!name || !email || !phone || !password || !first_name || !last_name || !role){
+            return res.status(400).json({message: 'กรุณากรอกข้อมูลให้ครบ'})
         }
 
         const emailCheck = await db.query('SELECT email FROM users WHERE email = $1', [email])
@@ -48,7 +48,7 @@ exports.register = async(req, res)=>{
 
         const hashPassword = await bcrypt.hash(password, 10)
 
-        await db.query('INSERT INTO users(name, email, phone, password, first_name, last_name) VALUES($1, $2, $3, $4, $5, $6)', [name, email, phone, hashPassword, first_name, last_name])
+        await db.query('INSERT INTO users(name, email, phone, password, first_name, last_name, role) VALUES($1, $2, $3, $4, $5, $6, $7)', [name, email, phone, hashPassword, first_name, last_name, role])
         res.json({ msg: 'ลงทะเบียนสำเร็จ' })
     } catch (err) {
         console.log(err)

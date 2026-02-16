@@ -61,7 +61,15 @@ exports.list = async(req, res) => {
 
         const result = await db.query(
             `
-            SELECT * 
+            SELECT 
+              user_id,
+              name, 
+              email,
+              first_name,
+              last_name,
+              phone,
+              role,
+              created_at
             FROM users 
             ${whereClause} 
             ORDER BY ${finalSortKey} ${validSortDirection} 
