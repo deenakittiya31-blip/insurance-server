@@ -137,7 +137,7 @@ exports.updateProfileUser = async(req, res) => {
       const query = `
         UPDATE member
         SET ${fields.join(', ')}
-        WHERE user_id = $${index}
+        WHERE id = $${index}
         RETURNING display_name, first_name, last_name, phone, picture_url
       `;
 

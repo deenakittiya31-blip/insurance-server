@@ -69,7 +69,8 @@ exports.list = async(req, res) => {
               last_name,
               phone,
               role,
-              created_at
+              created_at,
+              is_active
             FROM users 
             ${whereClause} 
             ORDER BY ${finalSortKey} ${validSortDirection} 
@@ -98,7 +99,7 @@ exports.read = async(req, res) => {
     try {
         const {id} = req.params
         
-        const query = 'SELECT user_id, name, email, phone, role, logo_url, logo_public_id, first_name, last_name FROM users WHERE id = $1'
+        const query = 'SELECT user_id, name, email, phone, role, logo_url, logo_public_id, first_name, last_name FROM users WHERE user_id = $1'
         const result = await db.query(query, [Number(id)])
 
          res.json({ data: result.rows[0] })
@@ -112,11 +113,11 @@ exports.update = async(req, res) => {
         const { name, email, phone, role, logo_url, logo_public_id, first_name, last_name } = req.body
         const { id } = req.params
 
-        const existing = await db.query('SELECT * FROM  users WHERE id = $1',[id])
+        const existing = await db.query('SELECT * FROM  users WHERE user_id = $1',[id])
 
         const userOld = existing.rows[0]
 
-        await db.query('UPDATE users SET name = $1, email = $2, phone = $3, logo_url = $4, logo_public_id = $5, first_name = $6, last_name = $7  WHERE id = $8', 
+        await db.query('UPDATE users SET name = $1, email = $2, phone = $3, logo_url = $4, logo_public_id = $5, first_name = $6, last_name = $7  WHERE user_id = $8', 
           [
             name            ?? userOld.name, 
             email           ?? userOld.email, 
@@ -142,7 +143,7 @@ exports.is_active = async(req, res) => {
         const { is_active } = req.body
         const { id } = req.params
 
-        await db.query('UPDATE users SET is_active = $1 WHERE id = $2', [is_active, id])
+        await db.query('UPDATE users SET is_active = $1 WHERE user_id = $2', [is_active, id])
 
         res.json({msg: 'อัปเดตสถานะผู้ใช้สำเร็จ'})  
     } catch (err) {
@@ -155,7 +156,7 @@ exports.remove = async(req, res) => {
     try {
         const { id } = req.params
 
-        const result = await db.query('select logo_public_id from users where id = $1', [id])
+        const result = await db.query('select logo_public_id from users where user_id = $1', [id])
 
         const { logo_public_id } = result.rows[0]
         
@@ -163,7 +164,7 @@ exports.remove = async(req, res) => {
             await cloudinary.uploader.destroy(logo_public_id)
         }
 
-        await db.query('delete from users where id = $1', [id])
+        await db.query('delete from users where user_id = $1', [id])
 
         res.json({msg: 'ลบข้อมูลผู้ใช้สำเร็จ'})
     } catch (err) {
