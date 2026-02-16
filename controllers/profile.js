@@ -7,7 +7,7 @@ exports.readProfileUser = async(req, res) => {
         const role = req.user.role
 
         if(role === 'admin' || role === 'staff'){
-            const profileResult = await db.query(`select name, email, phone, role, logo_url, logo_public_id from users where user_id = $1`, [user_id])
+            const profileResult = await db.query(`select name, email, phone, role, logo_url, logo_public_id, first_name, last_name from users where user_id = $1`, [user_id])
 
             return res.json({data: profileResult.rows[0]})
         } else {
