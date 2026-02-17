@@ -93,12 +93,17 @@ exports.lineLogin = async (req, res) => {
   const { idToken } = req.body;
 
   try {
-    const response = await axios.post(
+   const response = await axios.post(
       "https://api.line.me/oauth2/v2.1/verify",
       new URLSearchParams({
         id_token: idToken,
         client_id: process.env.LINE_CHANNEL_ID
-      })
+      }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        }
+      }
     );
 
     const lineUserId = response.data.sub;
@@ -115,13 +120,13 @@ exports.lineLogin = async (req, res) => {
 
     // สร้าง jwt ของระบบคุณเอง
     const token = jwt.sign(
-      { id: member.rows[0].user_id },
+      { id: member.rows[0].id },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
     console.log(token)
-    // res.cookie("token", token, { httpOnly: true });
+
 
     res.json({ message: "login success" });
 
