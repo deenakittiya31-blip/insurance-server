@@ -4,9 +4,12 @@ exports.create = async(req, res) => {
     try {
         const { tag_name } = req.body
 
-        await db.query('INSERT INTO tag(tag_name) VALUES($1)', [tag_name])
+        const result = await db.query('INSERT INTO tag(tag_name) VALUES($1) RETURNING *', [tag_name])
 
-        res.json({ msg: 'เพิ่มป้ายกำกับสำเร็จ' })
+        res.json({ 
+            msg: 'เพิ่มป้ายกำกับสำเร็จ',
+            data: result.rows[0] 
+        })
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
@@ -44,6 +47,8 @@ exports.removeTagFromMember = async(req, res) => {
 
 exports.list = async(req, res) => {
     try {
+        res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300')
+        
         const {
             page = 1,
             limit = 10,
@@ -114,6 +119,8 @@ exports.list = async(req, res) => {
 
 exports.listSelect = async(req, res) => {
     try {
+        res.setHeader('Cache-Control', 's-maxage=1800, stale-while-revalidate=3600')
+
         const result = await db.query('SELECT id, tag_name FROM tag WHERE is_active = true ORDER BY id DESC')
          if (result.rows.length === 0) {
             return res.json({ data: [] })
@@ -134,13 +141,16 @@ exports.update = async(req, res) => {
 
         const old = result.rows[0]
 
-        await db.query('UPDATE tag SET tag_name = $1 WHERE id = $2', 
+        const resultUpdate = await db.query('UPDATE tag SET tag_name = $1 WHERE id = $2 RETURNING *', 
             [
                 tag_name     ?? old.tag_name, 
                 id
             ])
 
-        res.json({msg: 'แก้ไขป้ายกำกับสำเร็จ'})  
+        res.json({
+            msg: 'แก้ไขป้ายกำกับสำเร็จ',
+            data: resultUpdate.rows[0] 
+        })  
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
@@ -152,10 +162,13 @@ exports.is_active = async(req, res) => {
         const {is_active} = req.body
         const {id} = req.params
 
-        await db.query('UPDATE tag SET is_active = $1 WHERE id = $2', 
+        const result = await db.query('UPDATE tag SET is_active = $1 WHERE id = $2 RETURNING *', 
         [is_active, id])
 
-        res.json({msg: 'อัปเดตป้ายกำกับสำเร็จ'})  
+        res.json({
+            msg: 'อัปเดตป้ายกำกับสำเร็จ',
+            data: result.rows[0] 
+        })  
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'})
@@ -166,9 +179,12 @@ exports.remove = async(req, res) => {
     try {
         const {id} = req.params
 
-        await db.query('DELETE FROM tag WHERE id = $1', [id])
+        const result = await db.query('DELETE FROM tag WHERE id = $1 RETURNING *', [id])
 
-        res.json({msg: 'ลบป้ายกำกับสำเร็จ'})
+        res.json({
+            msg: 'ลบป้ายกำกับสำเร็จ',
+            data: result.rows[0] 
+        })
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 

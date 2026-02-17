@@ -7,12 +7,15 @@ exports.create = async(req, res) => {
 
         console.log('CREATE GROUP CALLED')
 
-        await db.query(
+        const result = await db.query(
             `
-            insert into group_member (group_name, logo_url, logo_public_id) values ($1, $2, $3)
+            insert into group_member (group_name, logo_url, logo_public_id) values ($1, $2, $3) RETURNING *
             `, [group_name, logo_url, logo_public_id])
 
-        res.json({msg: 'สร้างกลุ่มลูกค้าสำเร็จ'})
+        res.json({
+            msg: 'สร้างกลุ่มลูกค้าสำเร็จ',
+            data: result.rows[0] 
+        })
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'Server error'})
@@ -21,6 +24,8 @@ exports.create = async(req, res) => {
 
 exports.list = async(req, res) => {
     try {
+        res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300')
+        
         const {
             page = 1,
             limit = 10,
