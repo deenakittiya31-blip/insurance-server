@@ -92,17 +92,16 @@ exports.currentMember = async (req, res) => {
 exports.lineLogin = async (req, res) => {
   const { idToken } = req.body;
 
+  console.log(idToken)
   try {
    const response = await axios.post(
       "https://api.line.me/oauth2/v2.1/verify",
       new URLSearchParams({
         id_token: idToken,
-        client_id: process.env.LINE_CHANNEL_ID
+        client_id: process.env.LINE_CHANNEL_ID, // Channel ID จาก LINE Developers
       }),
       {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
-        }
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
       }
     );
 
@@ -110,7 +109,7 @@ exports.lineLogin = async (req, res) => {
 
     // ตรวจใน database
     const member = await db.query(
-      "SELECT * FROM member WHERE user_id = $1",
+      "SELECT id FROM member WHERE user_id = $1",
       [lineUserId]
     );
 
@@ -128,7 +127,7 @@ exports.lineLogin = async (req, res) => {
     console.log(token)
 
 
-    res.json({ message: "login success" });
+    res.status(200).json({ message: "login success", token });
 
   } catch (err) {
     console.log(err.response?.data);
