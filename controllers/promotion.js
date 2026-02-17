@@ -86,7 +86,7 @@ exports.list = async(req, res) => {
 
 exports.listSelect = async(req, res) => {
     try {
-        const result = await db.query('SELECT id, promotion_name FROM promotion WHERE is_active = true ORDER BY id DESC')
+        const result = await db.query('SELECT id, promotion_name, logo_url FROM promotion WHERE is_active = true ORDER BY id DESC')
 
         res.json({ data: result.rows })
     } catch (err) {
