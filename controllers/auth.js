@@ -78,7 +78,7 @@ exports.currentMember = async (req, res) => {
           gm.group_name
        FROM member m
        JOIN group_member gm ON m.group_id = gm.id
-       WHERE id = $1`,
+       WHERE m.id = $1`,
       [req.user.id]
     )
 
