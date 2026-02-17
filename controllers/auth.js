@@ -60,8 +60,6 @@ exports.currentUser = async(req, res) => {
     try {
         const result = await db.query('SELECT user_id, name, email, logo_url, role FROM users WHERE user_id = $1', [req.user.id])
 
-        console.log('REQ.USER:', req.user)
-
         res.json({ user: result.rows[0]})
     } catch (err) {
         console.log(err)
@@ -92,10 +90,6 @@ exports.login = async(req, res) => {
         if (!verifyRes.data.success) {
             return res.status(400).json({ message: 'Captcha verification failed' })
         }
-
-        console.log('CAPTCHA TOKEN:', captcha)
-
-        console.log('VERIFY RESULT:', verifyRes.data)
 
         if(email.trim() == '' || password.trim() == ''){
             return res.status(400).json({msg: 'อีเมลล์หรือรหัสผ่านไม่ถูกต้อง'})

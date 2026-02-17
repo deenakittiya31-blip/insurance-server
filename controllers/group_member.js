@@ -90,6 +90,9 @@ exports.list = async(req, res) => {
 
 exports.listSelect = async(req, res) => {
     try {
+        //ตั้ง Cache-Control Header
+        res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400')
+
         const result = await db.query('select * from group_member where is_active = true order by id desc')
 
         res.json({data: result.rows})
