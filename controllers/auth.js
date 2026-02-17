@@ -67,6 +67,70 @@ exports.currentUser = async(req, res) => {
     }
 }
 
+exports.currentMember = async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT 
+          m.id,
+          m.user_id,
+          m.first_name,
+          m.picture_url,
+          m.group_name
+       FROM member m
+       JOIN group_member gm ON m.group_id = gm.id
+       WHERE id = $1`,
+      [req.user.id]
+    )
+
+    res.json({ member: result.rows[0] })
+  } catch (err) {
+    console.log(err)
+    res.status(500).json({ message: 'server error' })
+  }
+}
+
+exports.lineLogin = async (req, res) => {
+  const { idToken } = req.body;
+
+  try {
+    const response = await axios.post(
+      "https://api.line.me/oauth2/v2.1/verify",
+      new URLSearchParams({
+        id_token: idToken,
+        client_id: process.env.LINE_CHANNEL_ID
+      })
+    );
+
+    const lineUserId = response.data.sub;
+
+    // ตรวจใน database
+    const member = await db.query(
+      "SELECT * FROM member WHERE user_id = $1",
+      [lineUserId]
+    );
+
+    if (!member.rows[0]) {
+      return res.status(401).json({ message: "not registered" });
+    }
+
+    // สร้าง jwt ของระบบคุณเอง
+    const token = jwt.sign(
+      { id: member.rows[0].user_id },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    console.log(token)
+    // res.cookie("token", token, { httpOnly: true });
+
+    res.json({ message: "login success" });
+
+  } catch (err) {
+    console.log(err.response?.data);
+    res.status(400).json({ message: "invalid line token" });
+  }
+};
+
 exports.login = async(req, res) => {
     try {
         const { email, password, captcha } = req.body;
