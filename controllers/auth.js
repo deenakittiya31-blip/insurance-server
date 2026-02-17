@@ -101,6 +101,7 @@ exports.lineLogin = async (req, res) => {
     });
 
     console.log("Sending to LINE:", params.toString()); 
+
    const response = await axios.post(
       "https://api.line.me/oauth2/v2.1/verify",
       params,
@@ -115,7 +116,7 @@ exports.lineLogin = async (req, res) => {
     // ตรวจใน database
     const member = await db.query(
       `
-        select * from where user_id = $1
+        select * from member where user_id = $1
       `,
       [lineUserId]
     );
