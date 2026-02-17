@@ -109,30 +109,30 @@ exports.lineLogin = async (req, res) => {
       }
     );
 
-      console.log("LINE response:", response.data); // ✅ ดู response
+    console.log("LINE response:", response.data); // ✅ ดู response
     const lineUserId = response.data.sub;
 
     // ตรวจใน database
     const member = await db.query(
-      "SELECT id FROM member WHERE user_id = $1",
+      `
+        select * from where user_id = $1
+      `,
       [lineUserId]
     );
+
+    console.log("member rows:", member.rows);
 
     if (!member.rows[0]) {
       return res.status(401).json({ message: "not registered" });
     }
 
     // สร้าง jwt ของระบบคุณเอง
-    const token = jwt.sign(
-      { id: member.rows[0].id },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    console.log(token)
-
-
-    res.status(200).json({ message: "login success", token });
+    jwt.sign({ id: member.rows[0].id }, process.env.SECRET, {expiresIn: '7d'}, (err, token) => {
+            if(err){
+                return res.status(500).json({message: 'server errer jwt'})
+            }
+            res.json({token})
+        })
 
   } catch (err) {
     console.log("LINE error status:", err.response?.status);
