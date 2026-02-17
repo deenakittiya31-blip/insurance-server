@@ -94,17 +94,22 @@ exports.lineLogin = async (req, res) => {
 
   console.log(idToken)
   try {
+
+      const params = new URLSearchParams({
+      id_token: idToken,
+      client_id: process.env.LINE_CHANNEL_ID,
+    });
+
+    console.log("Sending to LINE:", params.toString()); 
    const response = await axios.post(
       "https://api.line.me/oauth2/v2.1/verify",
-      new URLSearchParams({
-        id_token: idToken,
-        client_id: process.env.LINE_CHANNEL_ID, // Channel ID จาก LINE Developers
-      }),
+      params,
       {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
       }
     );
 
+      console.log("LINE response:", response.data); // ✅ ดู response
     const lineUserId = response.data.sub;
 
     // ตรวจใน database
@@ -130,7 +135,8 @@ exports.lineLogin = async (req, res) => {
     res.status(200).json({ message: "login success", token });
 
   } catch (err) {
-    console.log(err.response?.data);
+    console.log("LINE error status:", err.response?.status);
+    console.log("LINE error data:", err.response?.data); // ✅ ดู error จาก LINE
     res.status(400).json({ message: "invalid line token" });
   }
 };
