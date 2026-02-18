@@ -221,6 +221,7 @@ exports.searchPremiumMember = async(req, res) => {
                 ipm.selling_price,
                 ipm.premium_discount,
                 ipk.car_own_damage_deductible,
+                ipk.additional_personal_permanent_driver_number,
                 
                 COALESCE(pp.payments, '{}') AS payments,
 
