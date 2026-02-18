@@ -302,7 +302,11 @@ exports.searchPremiumMember = async(req, res) => {
         const result = await db.query(query, values);
 
         if(result.rows.length === 0){
-            return res.status(404).json({message : 'ไม่พบข้อมูลเบี้ย'})
+            return res.status(200).json({
+                data: [],
+                total: 0,
+                message: 'ไม่พบข้อมูลเบี้ย'
+            })
         }
 
         res.json({ 
