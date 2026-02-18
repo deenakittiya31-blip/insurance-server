@@ -215,6 +215,7 @@ exports.searchPremiumMember = async(req, res) => {
                 icp.logo_url,
                 icp.namecompany,
                 it.nametype,
+                ipk.repair_type,
                 ipm.total_premium,
                 ipm.net_income,
                 ipm.selling_price,
