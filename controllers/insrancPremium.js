@@ -209,8 +209,8 @@ exports.searchPremiumMember = async(req, res) => {
         let index = 1;
 
         let query = `
-            select distinct
-                ipm.id as index_premium,
+            select
+                ipm.id AS index_premium,
                 ipm.premium_name,
                 icp.logo_url,
                 icp.namecompany,
@@ -220,18 +220,44 @@ exports.searchPremiumMember = async(req, res) => {
                 ipm.selling_price,
                 ipm.premium_discount,
                 ipk.car_own_damage_deductible,
-                COALESCE(
-                    ARRAY_AGG(distinct pm.id) filter (
-                        where pm.id is not null
-                    ),
-                    '{}'
-                ) as payments
-            from insurance_premium as ipm
-            inner join insurance_package as ipk on ipm.package_id = ipk.id
-            inner join insurance_company as icp on ipk.insurance_company = icp.id
-            inner join insurance_type as it on ipk.insurance_type = it.id
-            left join package_payment as ipp on ipk.id = ipp.package_id
-            left join payment_methods as pm on ipp.payment_method_id = pm.id
+                
+                COALESCE(pp.payments, '{}') AS payments,
+
+                JSONB_BUILD_OBJECT(
+                    'car_own_damage_deductible', ipk.car_own_damage_deductible,
+                    'car_own_damage', ipk.car_own_damage,
+                    'car_lost_fire', ipm.car_lost_fire
+                ) AS car_protect,
+
+                JSONB_BUILD_OBJECT(
+                    'thirdparty_injury_death_per_person', ipk.thirdparty_injury_death_per_person,
+                    'thirdparty_injury_death_per_accident', ipk.thirdparty_injury_death_per_accident,
+                    'thirdparty_property', ipk.thirdparty_property
+                ) AS third_protect,
+
+                JSONB_BUILD_OBJECT(
+                    'additional_personal_permanent_driver_cover', ipk.additional_personal_permanent_driver_cover,
+                    'additional_medical_expense_cover', ipk.additional_medical_expense_cover,
+                    'additional_bail_bond', ipk.additional_bail_bond
+                ) AS additional_protect
+
+            FROM insurance_premium ipm
+            JOIN insurance_package ipk 
+              ON ipm.package_id = ipk.id
+            JOIN insurance_company icp 
+              ON ipk.insurance_company = icp.id
+            JOIN insurance_type it 
+              ON ipk.insurance_type = it.id
+
+            LEFT JOIN (
+                SELECT
+                ipp.package_id,
+                ARRAY_AGG(DISTINCT pm.id) AS payments
+                FROM package_payment ipp
+                JOIN payment_methods pm 
+                ON ipp.payment_method_id = pm.id
+                GROUP BY ipp.package_id
+            ) pp ON ipk.id = pp.package_id
         `;
 
         //เงื่อนไขพื้นฐาน (ต้องมีเสมอ)
@@ -267,16 +293,6 @@ exports.searchPremiumMember = async(req, res) => {
         if (conditions.length > 0) {
             query += ` WHERE ` + conditions.join(' AND ');
         }
-
-        query += `
-            group by
-                ipm.id,
-                icp.logo_url,
-                icp.namecompany,
-                it.nametype,
-                ipk.car_own_damage_deductible
-            order by ipm.id asc
-        `;
 
         console.log("Query:", query);
         console.log("Values:", values);
