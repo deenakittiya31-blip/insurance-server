@@ -200,42 +200,97 @@ exports.list = async(req, res) => {
     }
 }
 
-exports.searchPremium = async(req, res) => {
+exports.searchPremiumMember = async(req, res) => {
     try {
-        const { search } = req.body;
+        const { insurance_type_id, insurance_company, repair_type } = req.body;
 
-        const result = await db.query(
-            `
-                ${GET_LIST_PREMIUM}  
-                WHERE
-                    ipk.package_id  ILIKE $1 OR
-                    ipm.premium_id  ILIKE $1 OR
-                    ipm.premium_name  ILIKE $1 OR
-                    ipm.repair_fund_int::text ILIKE $1 OR
-                    ipm.repair_fund_max::text ILIKE $1 OR
-                    ipm.total_premium::text ILIKE $1 OR
-                    ipm.net_income::text ILIKE $1 OR
-                    ipm.selling_price::text ILIKE $1 OR
-                    TO_CHAR(ipk.start_date, 'DD/MM/YYYY') ILIKE $1 OR
-                    TO_CHAR(ipk.end_date, 'DD/MM/YYYY') ILIKE $1 OR
-                    icp.namecompany  ILIKE $1 OR
-                    COALESCE(ct.code, '') ILIKE $1 OR
-                    COALESCE(ct.type, '') ILIKE $1 OR
-                    it.nametype  ILIKE $1
-                GROUP BY 
-                    ipm.id,
-                    ipk.package_name,
-                    ipk.package_id,
-                    icp.namecompany,
-                    it.nametype,
-                    ipk.start_date,
-                    ipk.end_date
-                ORDER BY ipm.id DESC
-            `
-            , [`%${search}%`]
-        );
+        let values = [];
+        let conditions = [];
+        let index = 1;
 
-        res.json({data: result.rows})
+        let query = `
+            select distinct
+                ipm.id as index_premium,
+                ipm.premium_name,
+                icp.logo_url,
+                icp.namecompany,
+                it.nametype,
+                ipm.total_premium,
+                ipm.net_income,
+                ipm.selling_price,
+                ipm.premium_discount,
+                ipk.car_own_damage_deductible,
+                COALESCE(
+                    ARRAY_AGG(distinct pm.id) filter (
+                        where pm.id is not null
+                    ),
+                    '{}'
+                ) as payments
+            from insurance_premium as ipm
+            inner join insurance_package as ipk on ipm.package_id = ipk.id
+            inner join insurance_company as icp on ipk.insurance_company = icp.id
+            inner join insurance_type as it on ipk.insurance_type = it.id
+            left join package_payment as ipp on ipk.id = ipp.package_id
+            left join payment_methods as pm on ipp.payment_method_id = pm.id
+        `;
+
+        //เงื่อนไขพื้นฐาน (ต้องมีเสมอ)
+        conditions.push(`ipk.is_active = true`);
+        conditions.push(`ipm.is_active = true`);
+
+        // ---------------------------
+        //filter insurance_type_id
+        if (insurance_type_id) {
+            conditions.push(`ipk.insurance_type = $${index}`);
+            values.push(insurance_type_id);
+            index++;
+        }
+
+        // ---------------------------
+        //filter insurance_company (array)
+        if (insurance_company && insurance_company.length > 0) {
+            conditions.push(`ipk.insurance_company = ANY($${index})`);
+            values.push(insurance_company);
+            index++;
+        }
+
+        // ---------------------------
+        //filter repair_type
+        if (repair_type) {
+            conditions.push(`ipk.repair_type ILIKE $${index}`);
+            values.push(`%${repair_type}%`);
+            index++;
+        }
+
+        // ---------------------------
+        // รวม where clause
+        if (conditions.length > 0) {
+            query += ` WHERE ` + conditions.join(' AND ');
+        }
+
+        query += `
+            group by
+                ipm.id,
+                icp.logo_url,
+                icp.namecompany,
+                it.nametype,
+                ipk.car_own_damage_deductible
+            order by ipm.id asc
+        `;
+
+        console.log("Query:", query);
+        console.log("Values:", values);
+
+        const result = await db.query(query, values);
+
+        if(result.rows.length === 0){
+            return res.status(404).json({message : 'ไม่พบข้อมูลเบี้ย'})
+        }
+
+        res.json({ 
+            data: result.rows,
+            total: result.rows.length
+         });
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'Server error'})
