@@ -38,7 +38,7 @@ exports.processPremiums = async(client, premiums, q_id, options = {}) => {
         if(saveToCart) {
             await client.query(
                 `
-                INSERT INTO premium_on_cart (q_id, package_id, premium_id) 
+                INSERT INTO premium_on_cart (compare_id, package_id, premium_id) 
                 VALUES ($1, $2, $3)
                 `,
                 [q_id, index_package, index_premium]
