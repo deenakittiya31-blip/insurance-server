@@ -92,17 +92,16 @@ exports.currentMember = async (req, res) => {
 exports.lineLogin = async (req, res) => {
   const { idToken } = req.body;
 
-  console.log(idToken)
   try {
 
-      const params = new URLSearchParams({
+    const params = new URLSearchParams({
       id_token: idToken,
       client_id: process.env.LINE_CHANNEL_ID,
     });
 
     console.log("Sending to LINE:", params.toString()); 
 
-   const response = await axios.post(
+    const response = await axios.post(
       "https://api.line.me/oauth2/v2.1/verify",
       params,
       {
@@ -110,7 +109,7 @@ exports.lineLogin = async (req, res) => {
       }
     );
 
-    console.log("LINE response:", response.data); // ✅ ดู response
+    console.log("LINE response:", response.data); 
     const lineUserId = response.data.sub;
 
     // ตรวจใน database

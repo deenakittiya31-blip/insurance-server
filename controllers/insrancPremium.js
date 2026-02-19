@@ -1,5 +1,7 @@
 const db = require('../config/database')
 const { GET_LIST_PREMIUM } = require('../services/premiumQuery')
+const { processPremiums } = require('../services/processPremiums')
+const { validatePremiums } = require('../services/validatePremiums')
 
 exports.create = async(req, res) => {
     const client = await db.connect()
@@ -200,6 +202,7 @@ exports.list = async(req, res) => {
     }
 }
 
+//ฟังก์ชันดึงข้อมูลเบี้ยประกันของลูกค้า
 exports.searchPremiumMember = async(req, res) => {
     try {
         const { insurance_type_id, insurance_company, repair_type } = req.body;
@@ -211,6 +214,8 @@ exports.searchPremiumMember = async(req, res) => {
         let query = `
             select
                 ipm.id AS index_premium,
+                icp.id AS index_company,
+                ipk.id AS index_package,
                 ipm.premium_name,
                 icp.logo_url,
                 icp.namecompany,
@@ -316,6 +321,32 @@ exports.searchPremiumMember = async(req, res) => {
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'Server error'})
+    }
+}
+
+//ฟังก์ชันสร้างใบเสนอราคาของลูกค้า
+exports.createPremiumToCompareMember = async(req, res) => {
+    const client = await db.connect()
+    try {
+        await client.query('BEGIN')
+
+        const { premiums, ...compareData } = req.body
+
+        validatePremiums(premiums)
+
+        const q_id = await createQuotationCompare(client, compareData)
+
+        await processPremiums(client, premiums, q_id, {saveToCart: true})
+
+        await client.query('COMMIT')
+
+        res.json({ compare_id: q_id })
+    } catch (err) {
+        await client.query('ROLLBACK')
+        //เพราะ validatePremiums ใช้ throw แล้ว
+        res.status(err.statusCode || 500).json({ message: err.message })
+    } finally {
+        client.release()
     }
 }
 
