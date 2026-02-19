@@ -13,7 +13,7 @@ exports.createQuotationCompare = async(client, data) => {
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
             RETURNING id`,
             [
-                data.to_name || null,
+                data.to_name,
                 data.details || null,
                 data.car_brand_id ? Number(data.car_brand_id) : null,
                 data.car_model_id ? Number(data.car_model_id) : null,
