@@ -255,6 +255,8 @@ exports.searchPremiumMember = async(req, res) => {
               ON ipk.insurance_company = icp.id
             JOIN insurance_type it 
               ON ipk.insurance_type = it.id
+            JOIN package_usage_type pcut 
+              ON ipk.id = pcut.package_id
 
             LEFT JOIN (
                 SELECT
@@ -279,9 +281,9 @@ exports.searchPremiumMember = async(req, res) => {
         }
 
         //filter car_usage_id
-        if (car_usage_id) {
-            conditions.push(`ipk.insurance_type = $${index}`);
-            values.push(car_usage_id);
+        if (car_usage_type_id) {
+            conditions.push(`pcut.car_usage_type_id = $${index}`);
+            values.push(car_usage_type_id);
             index++;
         }
 
