@@ -205,7 +205,7 @@ exports.list = async(req, res) => {
 //ฟังก์ชันดึงข้อมูลเบี้ยประกันของลูกค้า
 exports.searchPremiumMember = async(req, res) => {
     try {
-        const { insurance_type_id, insurance_company, repair_type } = req.body;
+        const { insurance_type_id, insurance_company,  car_usage_type_id, repair_type } = req.body;
 
         let values = [];
         let conditions = [];
@@ -271,7 +271,6 @@ exports.searchPremiumMember = async(req, res) => {
         conditions.push(`ipk.is_active = true`);
         conditions.push(`ipm.is_active = true`);
 
-        // ---------------------------
         //filter insurance_type_id
         if (insurance_type_id) {
             conditions.push(`ipk.insurance_type = $${index}`);
@@ -279,7 +278,13 @@ exports.searchPremiumMember = async(req, res) => {
             index++;
         }
 
-        // ---------------------------
+        //filter car_usage_id
+        if (car_usage_id) {
+            conditions.push(`ipk.insurance_type = $${index}`);
+            values.push(car_usage_id);
+            index++;
+        }
+
         //filter insurance_company (array)
         if (insurance_company && insurance_company.length > 0) {
             conditions.push(`ipk.insurance_company = ANY($${index})`);
@@ -287,7 +292,6 @@ exports.searchPremiumMember = async(req, res) => {
             index++;
         }
 
-        // ---------------------------
         //filter repair_type
         if (repair_type) {
             conditions.push(`ipk.repair_type ILIKE $${index}`);
