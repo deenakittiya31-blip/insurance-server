@@ -336,15 +336,11 @@ exports.createPremiumToCompareMember = async(req, res) => {
     const client = await db.connect()
     try {
         await client.query('BEGIN')
-
-        console.log('type:', typeof req.body.premiums)
-        console.log('isArray:', Array.isArray(req.body.premiums))
-        console.log('length:', req.body.premiums?.length)
-        console.log(req.body.premiums)
-
         const { premiums, ...compareData } = req.body
         const member_id = req.user.id
+        
         console.log(member_id)
+        console.log(compareData)
 
         validatePremiums(premiums)
 
@@ -361,6 +357,95 @@ exports.createPremiumToCompareMember = async(req, res) => {
         res.status(err.statusCode || 500).json({ message: err.message })
     } finally {
         client.release()
+    }
+}
+
+//ดึงข้อมูลทำ preview ให้ลูกค้าดู
+exports.previewCompare = async(req, res) => {
+    try {
+        const { id } = req.params
+
+        const premiumResult = await db.query(
+            `
+            SELECT
+                poc.compare_id,
+
+                -- premium
+                ipm.id AS index_premium,
+                ipm.selling_price,
+                ipm.car_lost_fire,
+                ipm.repair_fund_int,
+
+                -- package
+                ipk.id AS index_package,
+                ipk.repair_type,
+                ipk.car_own_damage,
+                ipk.car_own_damage_deductible,
+                ipk.thirdparty_injury_death_per_person,
+                ipk.thirdparty_injury_death_per_accident,
+                ipk.thirdparty_property,
+                ipk.additional_medical_expense_cover,
+                ipk.additional_bail_bond,
+                ipk.additional_personal_permanent_driver_number,
+                ipk.additional_personal_permanent_driver_cover,
+
+                -- company
+                icp.logo_url,
+
+                -- type
+                it.nametype AS insurance_type
+
+            FROM premium_on_cart poc
+            JOIN insurance_premium ipm 
+                ON poc.premium_id = ipm.id
+            JOIN insurance_package ipk 
+                ON poc.package_id = ipk.id
+            JOIN insurance_company icp 
+                ON ipk.insurance_company = icp.id
+            JOIN insurance_type it 
+                ON ipk.insurance_type = it.id
+            WHERE poc.compare_id = $1
+            ORDER BY poc.id ASC
+            `, [id]
+        )
+
+        if (premiumResult.rows.length === 0) {
+            return res.status(404).json({
+                message: 'ไม่พบข้อมูลเปรียบเทียบ'
+            })
+        }
+
+        res.json({
+            compare_id: id,
+            plans: premiumResult.rows.map(p => ({
+                premium: {
+                    id: p.index_premium,
+                    price: p.selling_price,
+                    logo: p.logo_url,
+                    type: p.insurance_type
+                },
+                coverage: {
+                    total_premium: p.repair_fund_int,
+                    repair: p.repair_type,
+                    deductible: p.car_own_damage_deductible,
+                    car_own_damage: p.car_own_damage,
+                    car_lost_fire: p.car_lost_fire,
+                    medical: p.additional_medical_expense_cover,
+                    bail_bond: p.additional_bail_bond,
+                    driver_number: p.additional_personal_permanent_driver_number,
+                    driver_cover: p.additional_personal_permanent_driver_cover,
+                    driver_cover: p.additional_personal_permanent_driver_cover,
+                    driver_cover: p.additional_personal_permanent_driver_cover,
+                    driver_cover: p.additional_personal_permanent_driver_cover,
+                    third_person: p.thirdparty_injury_death_per_person,
+                    third_accident: p.thirdparty_injury_death_per_accident,
+                    third_prop: p.thirdparty_property
+                }
+            }))
+        })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: err.message})
     }
 }
 
