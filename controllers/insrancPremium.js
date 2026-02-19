@@ -341,14 +341,16 @@ exports.createPremiumToCompareMember = async(req, res) => {
         console.log('isArray:', Array.isArray(req.body.premiums))
         console.log('length:', req.body.premiums?.length)
         console.log(req.body.premiums)
-        
+
         const { premiums, ...compareData } = req.body
+        const member_id = req.user.id
+        console.log(member_id)
 
         validatePremiums(premiums)
 
         const q_id = await createQuotationCompare(client, compareData)
 
-        await processPremiums(client, premiums, q_id, {saveToCart: true})
+        await processPremiums(client, premiums, q_id, {saveToCart: true}, member_id)
 
         await client.query('COMMIT')
 

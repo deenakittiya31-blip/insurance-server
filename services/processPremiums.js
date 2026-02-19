@@ -1,7 +1,7 @@
 const { createQuotation } = require("./createQuotation")
 const { getPremiumDetail } = require("./getPremiumDetail")
 
-exports.processPremiums = async(client, premiums, q_id, options = {}) => {
+exports.processPremiums = async(client, premiums, q_id, options = {}, member_id) => {
     const { saveToCart = false } = options
 
     for(let i = 0; i < premiums.length; i++) {
@@ -38,10 +38,10 @@ exports.processPremiums = async(client, premiums, q_id, options = {}) => {
         if(saveToCart) {
             await client.query(
                 `
-                INSERT INTO premium_on_cart (compare_id, package_id, premium_id) 
-                VALUES ($1, $2, $3)
+                INSERT INTO premium_on_cart (compare_id, package_id, premium_id, member_id) 
+                VALUES ($1, $2, $3, $4)
                 `,
-                [q_id, index_package, index_premium]
+                [q_id, index_package, index_premium, member_id]
             )
         }
     }

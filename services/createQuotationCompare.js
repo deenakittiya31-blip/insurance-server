@@ -19,7 +19,7 @@ exports.createQuotationCompare = async(client, data) => {
                 data.car_model_id ? Number(data.car_model_id) : null,
                 data.car_year_id ? Number(data.car_year_id) : null,
                 data.car_usage_id ? Number(data.car_usage_id) : null,
-                Number(data.offer_id),
+                data.offer_id ? Number(data.offer_id) : null,
                 data.sub_car_model || null,
                 data.import_by
             ]
