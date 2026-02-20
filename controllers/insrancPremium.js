@@ -489,7 +489,8 @@ exports.listPremiumCart = async(req, res) => {
         )
 
         if (premiumResult.rows.length === 0) {
-            return res.status(404).json({
+            return res.status(200).json({
+                data: [],
                 message: 'ไม่พบข้อมูลเปรียบเทียบ'
             })
         }
