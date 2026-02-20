@@ -7,9 +7,9 @@ router.get('/list-compare/page', authCheck, roleCheck(['admin', 'staff']), listC
 router.get('/list-pin/page', authCheck, roleCheck(['admin', 'staff']), listPinCompare)
 router.get('/detail-compare/:id', authCheck, roleCheck(['admin', 'staff']), getDetailCompare)
 router.get('/edit-compare/:id',  detailCompareEdite)
-router.get('/pdf-compare/:id', authCheck, roleCheck(['admin', 'staff']), comparePDF)
+router.get('/pdf-compare/:id', comparePDF)
 router.get('/test-compare/:id',  testData)
-router.get('/jpg-compare/:id', authCheck, roleCheck(['admin', 'staff']), compareJPG)
+router.get('/jpg-compare/:id', compareJPG)
 
 router.post('/search-compare', authCheck, roleCheck(['admin', 'staff']), searchCompare)
 router.post('/create-compare', authCheck, roleCheck(['admin', 'staff']), createCompare)
