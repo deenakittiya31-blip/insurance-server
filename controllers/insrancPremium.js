@@ -451,6 +451,73 @@ exports.previewCompare = async(req, res) => {
     }
 }
 
+exports.listPremiumCart = async(req, res) => {
+    try {
+        const member_id = req.user.id
+
+        const premiumResult = await db.query(
+            `
+            select
+                poc.compare_id,
+                -- premium
+                ipm.id as index_premium,
+                ipm.selling_price,
+                ipm.premium_name,
+                -- package
+                ipk.id as index_package,
+                ipk.repair_type,
+                ipk.package_name,
+                -- company
+                icp.logo_url,
+                -- type
+                it.nametype as insurance_type
+            from
+                premium_on_cart poc
+            join insurance_premium ipm on poc.premium_id = ipm.id
+            join insurance_package ipk on poc.package_id = ipk.id
+            join insurance_company icp on ipk.insurance_company = icp.id
+            join insurance_type it on ipk.insurance_type = it.id
+            where
+                poc.member_id = $1
+            group by
+                poc.compare_id,
+                ipm.id,
+                ipk.id,
+                icp.logo_url,
+                it.nametype
+            `, [member_id]
+        )
+
+        if (premiumResult.rows.length === 0) {
+            return res.status(404).json({
+                message: 'ไม่พบข้อมูลเปรียบเทียบ'
+            })
+        }
+
+
+        res.json({
+            data: premiumResult.rows.map(p => ({
+                compare: {
+                    compare_id: p.co,pare_id
+                },
+                premiums: {
+                    index_premium: p.index_premium,
+                    selling_price: p.selling_price,
+                    premium_name: p.premium_name,
+                    index_package: p.index_package,
+                    repair_type: p.repair_type,
+                    package_name: p.package_name,
+                    logo_url: p.logo_url,
+                    insurance_type: p.insurance_type
+                }
+            }))
+        })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: err.message})
+    }
+}
+
 exports.isActivePremium = async(req, res) => {
     try {
             const { is_active } = req.body
