@@ -496,23 +496,31 @@ exports.listPremiumCart = async(req, res) => {
         }
 
 
-        res.json({
-            data: premiumResult.rows.map(p => ({
-                compare: {
-                    compare_id: p.co,pare_id
-                },
-                premiums: {
-                    index_premium: p.index_premium,
-                    selling_price: p.selling_price,
-                    premium_name: p.premium_name,
-                    index_package: p.index_package,
-                    repair_type: p.repair_type,
-                    package_name: p.package_name,
-                    logo_url: p.logo_url,
-                    insurance_type: p.insurance_type
+        const grouped = {}
+
+        premiumResult.rows.forEach(p => {
+            const cid = p.compare_id
+
+            if (!grouped[cid]) {
+                grouped[cid] = {
+                    compare_id: cid,
+                    premiums: []
                 }
-            }))
+            }
+
+            grouped[cid].premiums.push({
+                index_premium: p.index_premium,
+                selling_price: p.selling_price,
+                premium_name: p.premium_name,
+                index_package: p.index_package,
+                repair_type: p.repair_type,
+                package_name: p.package_name,
+                logo_url: p.logo_url,
+                insurance_type: p.insurance_type
+            })
         })
+
+        res.json({ data: Object.values(grouped) })
     } catch (err) {
         console.log(err)
         res.status(500).json({message: err.message})
