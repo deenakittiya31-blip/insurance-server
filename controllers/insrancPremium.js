@@ -338,9 +338,11 @@ exports.createPremiumToCompareMember = async(req, res) => {
         await client.query('BEGIN')
         const { premiums, ...compareData } = req.body
         const member_id = req.user.id
-        
-        console.log(member_id)
-        console.log(compareData)
+
+        console.log('type:', typeof req.body.premiums)
+        console.log('isArray:', Array.isArray(req.body.premiums))
+        console.log('length:', req.body.premiums?.length)
+        console.log(req.body.premiums)
 
         validatePremiums(premiums)
 
