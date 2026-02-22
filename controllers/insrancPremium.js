@@ -1,6 +1,5 @@
 const db = require('../config/database')
 const { createQuotationCompare } = require('../services/createQuotationCompare')
-const { GET_LIST_PREMIUM } = require('../services/premiumQuery')
 const { processPremiums } = require('../services/processPremiums')
 const { validatePremiums } = require('../services/validatePremiums')
 
@@ -458,7 +457,7 @@ exports.listPremiumCart = async(req, res) => {
         const premiumResult = await db.query(
             `
             select
-                poc.id as cart_id
+                poc.id as cart_id,
                 poc.compare_id,
                 -- premium
                 ipm.id as index_premium,
@@ -482,6 +481,7 @@ exports.listPremiumCart = async(req, res) => {
                 poc.member_id = $1
             group by
                 poc.compare_id,
+                poc.id,
                 ipm.id,
                 ipk.id,
                 icp.logo_url,
