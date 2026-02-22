@@ -30,7 +30,7 @@ exports.lineBotReply = async(req, res) => {
                         is_registered,
                         group_id
                     )
-                    VALUES ($1, $2, $3, true, false, 1)
+                    VALUES ($1, $2, $3, true, false, M001)
                     ON CONFLICT (user_id) DO UPDATE
                     SET 
                         is_friend = true,
@@ -86,7 +86,7 @@ exports.lineBotReply = async(req, res) => {
                                 is_registered,
                                 group_id
                                 )
-                            VALUES ($1, $2, $3, true, false, 1)
+                            VALUES ($1, $2, $3, true, false, 'M001')
                         `, [userId, displayName, pictureUrl])
 
                         await sendRegisterButton(replyToken)

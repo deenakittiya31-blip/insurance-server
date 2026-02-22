@@ -26,7 +26,7 @@ exports.registerMember = async(req, res) => {
                 phone          = $5, 
                 picture_url    = $6,
                 is_registered  = true,
-                group_id       = M002,
+                group_id       = 'M002',
                 consent_accepted    = true,
                 consent_accepted_at = NOW()
             where user_id = $1
