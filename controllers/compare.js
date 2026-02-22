@@ -219,6 +219,34 @@ exports.removeCompare = async(req, res) => {
     }
 }
 
+exports.removeCompareMember = async(req, res) => {
+    try {
+        const {id} = req.params
+
+        // เช็คว่า compare_id นี้เป็นของ member คนนี้ไหม
+        const check = await db.query(
+            `SELECT poc.compare_id 
+             FROM premium_on_cart poc
+             WHERE poc.compare_id = $1 AND poc.member_id = $2
+             LIMIT 1`,
+            [id, req.user.id]
+        )
+
+        if (!check.rows[0]) {
+            return res.status(403).json({ message: 'ไม่มีสิทธิ์ลบรายการนี้' })
+        }
+
+
+        await db.query('DELETE FROM premium_on_cart where compare_id = $1', [id])
+        await db.query('DELETE FROM quotation_compare WHERE q_id = $1', [id])
+
+        res.json({msg: 'ลบสำเร็จ'})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'}) 
+    }
+}
+
 exports.getDetailCompare = async(req, res) => {
     try {
         const { id } = req.params

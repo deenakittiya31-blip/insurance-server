@@ -35,9 +35,9 @@ async function generateJPG({ carData, insurances, qId }) {
     ctx.font = '32px Sarabun-Bold';
     ctx.fillText(`เรียน : ${carData.to_name || 'คุณลูกค้า'}`, 120, 410);// space 30
     ctx.fillText(`รายละเอียด : ${carData.details || '-'}`, 120, 470);
-    ctx.fillText(`ยี่ห้อรถยนต์ : ${carData.car_brand}`, 120, 540);
-    ctx.fillText(`รุ่นรถยนต์ : ${carData.car_model}`, 120, 600);
-    ctx.fillText(`ปีรถยนต์ : ${carData.year_ad} (พ.ศ. ${carData.year_be})`, 120, 660);
+    ctx.fillText(`ยี่ห้อรถยนต์ : ${carData.car_brand || '-'}`, 120, 540);
+    ctx.fillText(`รุ่นรถยนต์ : ${carData.car_model || '-'}`, 120, 600);
+    ctx.fillText(`ปีรถยนต์ : ${carData.year_ad || '-'} (พ.ศ. ${carData.year_be || '-'})`, 120, 660);
 
     // Logos
     const logoStartX = 1080;

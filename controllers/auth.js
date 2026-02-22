@@ -127,7 +127,7 @@ exports.lineLogin = async (req, res) => {
     }
 
     // สร้าง jwt ของระบบคุณเอง
-    jwt.sign({ id: member.rows[0].id }, process.env.SECRET, {expiresIn: '7d'}, (err, token) => {
+    jwt.sign({ id: member.rows[0].id }, process.env.SECRET, {expiresIn: '1d'}, (err, token) => {
             if(err){
                 return res.status(500).json({message: 'server errer jwt'})
             }

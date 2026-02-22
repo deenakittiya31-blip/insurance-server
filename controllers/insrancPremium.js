@@ -458,6 +458,7 @@ exports.listPremiumCart = async(req, res) => {
         const premiumResult = await db.query(
             `
             select
+                poc.id as cart_id
                 poc.compare_id,
                 -- premium
                 ipm.id as index_premium,
@@ -500,10 +501,12 @@ exports.listPremiumCart = async(req, res) => {
 
         premiumResult.rows.forEach(p => {
             const cid = p.compare_id
+            const cartId = p.cart_id
 
             if (!grouped[cid]) {
                 grouped[cid] = {
                     compare_id: cid,
+                    cart_id: cartId,
                     premiums: []
                 }
             }
