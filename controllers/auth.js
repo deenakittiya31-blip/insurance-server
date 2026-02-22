@@ -123,8 +123,14 @@ exports.lineLogin = async (req, res) => {
 
     console.log("member rows:", member.rows);
 
+    // เช็คก่อนว่ามี member ในระบบไหม
+    if (!member.rows[0]) {
+        return res.status(404).json({ message: "not found" })
+    }
+
+    // ถ้ามีแต่ยังไม่ได้ลงทะเบียน
     if (!member.rows[0].is_registered) {
-      return res.status(401).json({ message: "not registered" });
+        return res.status(403).json({ message: "not registered" })
     }
 
     // สร้าง jwt ของระบบคุณเอง
