@@ -123,7 +123,7 @@ exports.lineLogin = async (req, res) => {
 
     console.log("member rows:", member.rows);
 
-    if (!member.rows[0]) {
+    if (!member.rows[0].is_registered) {
       return res.status(401).json({ message: "not registered" });
     }
 

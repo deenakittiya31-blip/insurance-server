@@ -5,10 +5,15 @@ const { uploadToCloudinary } = require('./image');
 
 exports.registerMember = async(req, res) => {
     try {
-        const { user_id, first_name, last_name, phone, display_name, picture_url } = req.body;
+        const { user_id, first_name, last_name, phone, display_name, picture_url, consent_accepted  } = req.body;
 
         if(!user_id || !phone){
             return res.status(400).json({message: 'ข้อมูลไม่ถูกต้อง'})
+        }
+
+          // ถ้าไม่ยินยอม ไม่ให้ลงทะเบียน
+        if (!consent_accepted) {
+            return res.status(400).json({ message: 'กรุณายินยอมนโยบายความเป็นส่วนตัว' })
         }
 
         await db.query(
@@ -21,7 +26,9 @@ exports.registerMember = async(req, res) => {
                 phone          = $5, 
                 picture_url    = $6,
                 is_registered  = true,
-                group_id       = 5
+                group_id       = M002,
+                consent_accepted    = true,
+                consent_accepted_at = NOW()
             where user_id = $1
             `,
             [ user_id, display_name, first_name, last_name, phone, picture_url ]
