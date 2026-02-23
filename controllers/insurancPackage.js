@@ -52,7 +52,10 @@ exports.create = async(req, res) => {
                 payment_method_id,
                 discount_percent = 0,
                 discount_amount = 0,
-                first_payment_amount = null
+                first_payment_amount = null,
+                charge = null,
+                installment_min = null,
+                installment_max = null
             } = p
 
             const paymentSql = `
@@ -62,9 +65,12 @@ exports.create = async(req, res) => {
                     payment_method_id,
                     discount_percent,
                     discount_amount,
-                    first_payment_amount
+                    first_payment_amount,
+                    charge,
+                    installment_min,
+                    installment_max
                 )
-                VALUES ($1, $2, $3, $4, $5)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                 `
 
             await client.query(paymentSql, [
@@ -72,7 +78,10 @@ exports.create = async(req, res) => {
                 payment_method_id,
                 discount_percent,
                 discount_amount,
-                first_payment_amount
+                first_payment_amount,
+                charge,
+                installment_min,
+                installment_max
                 ])
         }
 
@@ -296,7 +305,10 @@ exports.read = async(req, res) => {
                             'payment_name', pm.name_payment,
                             'discount_percent', pp.discount_percent,
                             'discount_amount', pp.discount_amount,
-                            'first_payment_amount', pp.first_payment_amount
+                            'first_payment_amount', pp.first_payment_amount,
+                            'charge', pp.charge,
+                            'installment_min', pp.installment_min,
+                            'installment_max', pp.installment_max
                         )
                     ) FILTER (WHERE pp.payment_method_id IS NOT NULL),
                     '[]'::jsonb
@@ -409,7 +421,10 @@ exports.readEdit = async(req, res) => {
                             'payment_name', pm.name_payment,
                             'discount_percent', pp.discount_percent,
                             'discount_amount', pp.discount_amount,
-                            'first_payment_amount', pp.first_payment_amount
+                            'first_payment_amount', pp.first_payment_amount,
+                            'charge', pp.charge,
+                            'installment_min', pp.installment_min,
+                            'installment_max', pp.installment_max
                         )
                     ) FILTER (WHERE pp.payment_method_id IS NOT NULL),
                     '[]'::jsonb
@@ -499,14 +514,36 @@ exports.update = async(req, res) => {
                         payment_method_id,
                         discount_percent = 0,
                         discount_amount = 0,
-                        first_payment_amount = null
+                        first_payment_amount = null,
+                        charge = null,
+                        installment_min = null,
+                        installment_max = null
                     } = p
 
-                    await client.query(`
+                    await client.query(
+                        `
                         INSERT INTO package_payment
-                        (package_id, payment_method_id, discount_percent, discount_amount, first_payment_amount)
-                        VALUES ($1, $2, $3, $4, $5)
-                    `, [id, payment_method_id, discount_percent, discount_amount, first_payment_amount])
+                        (
+                            package_id, 
+                            payment_method_id,
+                            discount_percent, 
+                            discount_amount, 
+                            first_payment_amount,
+                            charge,
+                            installment_min,
+                            installment_max
+                        )
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                    `, [
+                        id, 
+                        payment_method_id, 
+                        discount_percent, 
+                        discount_amount, 
+                        first_payment_amount,
+                        charge = null,
+                        installment_min,
+                        installment_max
+                    ])
                 }
             }
         }
@@ -634,7 +671,10 @@ exports.copy = async(req, res) => {
                 payment_method_id,
                 discount_percent = 0,
                 discount_amount = 0,
-                first_payment_amount = null
+                first_payment_amount = null,
+                 charge = null,
+                installment_min = null,
+                installment_max = null
             } = p
 
             const paymentSql = `
@@ -644,9 +684,12 @@ exports.copy = async(req, res) => {
                     payment_method_id,
                     discount_percent,
                     discount_amount,
-                    first_payment_amount
+                    first_payment_amount,
+                    charge,
+                    installment_min,
+                    installment_max
                 )
-                VALUES ($1, $2, $3, $4, $5)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                 `
 
             await db.query(paymentSql, [
@@ -654,7 +697,10 @@ exports.copy = async(req, res) => {
                 payment_method_id,
                 discount_percent,
                 discount_amount,
-                first_payment_amount
+                first_payment_amount,
+                charge = null,
+                installment_min = null,
+                installment_max = null
                 ])
         }
 

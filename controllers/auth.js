@@ -1,10 +1,8 @@
 const db = require('../config/database')
-const { OAuth2Client } = require('google-auth-library')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const axios = require('axios')
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
 
 //ตั้งค่าเปิดปิด
 exports.statusLoginWith = async(req, res) => {
