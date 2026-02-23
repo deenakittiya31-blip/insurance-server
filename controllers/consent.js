@@ -1,5 +1,4 @@
-// controllers/policy.controller.js
-const db = require('../config/db')
+const db = require('../config/database');
 
 exports.getActivePolicy = async (req, res) => {
     try {
@@ -50,7 +49,7 @@ exports.createPolicy = async (req, res) => {
 exports.updatePolicy = async (req, res) => {
     try {
         const { id } = req.params
-        
+
         const { title_th, title_en, content_th, content_en, version } = req.body
         const result = await db.query(
             `UPDATE policy SET title_th=$1, title_en=$2, content_th=$3, content_en=$4, version=$5, updated_at=NOW()
