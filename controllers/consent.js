@@ -1,169 +1,107 @@
-const db = require('../config/database')
-const cloudinary = require('../config/cloudinary')
+// controllers/policy.controller.js
+const db = require('../config/db')
 
-exports.create = async(req, res) => {
+exports.getActivePolicy = async (req, res) => {
     try {
-        const { promotion_name, logo_public_id, logo_url } = req.body
-
-        await db.query('insert into promotion(promotion_name, logo_public_id, logo_url) values($1, $2, $3)', [promotion_name, logo_public_id, logo_url])
-
-        res.json({ msg: 'เพิ่มข้อมูลโปรโมชั่นสำเร็จ' })
-    } catch (err) {
-        console.log(err)
-        res.status(500).json({message: 'Server error'})
-    }
-}
-exports.list = async(req, res) => {
-    try {
-        const {
-            page = 1,
-            limit = 10,
-            sortKey = 'id',
-            sortDirection = 'DESC',
-            search
-        } = req.query
-
-        const allowedSortKeys = [
-            'id',
-            'promotion_name',
-            'created_at'
-        ]
-
-        const pageNum = parseInt(page, 10)
-        const limitNum = parseInt(limit, 10)
-        const offset = (pageNum - 1) * limitNum
-        const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
-        const finalSortKey = allowedSortKeys.includes(sortKey)
-            ? sortKey
-            : 'id'
-
-        let conditions = [];
-        let values = [];
-        let paramIndex = 1;
-
-        if (search) {
-            conditions.push(`(promotion_name ILIKE $${paramIndex})`);
-            values.push(`%${search}%`);
-            paramIndex++;
-        }
-
-        const whereClause =
-            conditions.length > 0
-                ? `WHERE ${conditions.join(' AND ')}`
-                : '';
-
-        const countResult = await db.query(`SELECT COUNT(*)::int as total FROM promotion ${whereClause}`, values)
-
-        const totalItems = countResult.rows[0].total
-        const totalPages = Math.ceil(totalItems / limitNum)
-
+        const { type } = req.params
         const result = await db.query(
-            `
-            SELECT id, promotion_name, logo_url, logo_public_id, is_active 
-            FROM promotion 
-            ${whereClause} 
-            ORDER BY ${finalSortKey} ${validSortDirection} 
-            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
-            `, [...values, limitNum, offset])
-
-
-        res.json({
-            data: result.rows,
-            pagination: {
-                page: pageNum,
-                limit: limitNum,
-                totalItems,
-                totalPages,
-                hasNextPage: pageNum < totalPages,
-                hasPrevPage: pageNum > 1
-            }
-        });
+            `SELECT * FROM policy WHERE policy_type = $1 AND is_active = TRUE`,
+            [type]
+        )
+        res.json({ policy: result.rows[0] || null })
     } catch (err) {
         console.log(err)
-        res.status(500).json({message: 'Server error'})
+        res.status(500).json({ message: 'Server error' })
     }
 }
 
-exports.listSelect = async(req, res) => {
+exports.getPolicyList = async (req, res) => {
     try {
-        const result = await db.query('SELECT id, promotion_name, logo_url FROM promotion WHERE is_active = true ORDER BY id DESC')
-
-        res.json({ data: result.rows })
+        const { type } = req.params
+        const result = await db.query(
+            `SELECT * FROM policy WHERE policy_type = $1 ORDER BY created_at DESC`,
+            [type]
+        )
+        res.json({ policies: result.rows })
     } catch (err) {
         console.log(err)
-        res.status(500).json({message: 'server errer'}) 
+        res.status(500).json({ message: 'Server error' })
     }
 }
 
-exports.read = async(req, res) => {
+exports.createPolicy = async (req, res) => {
     try {
-        const {id} = req.params
+        const { policy_type, title_th, title_en, content_th, content_en, version } = req.body
+        if (!policy_type || !title_th || !content_th || !version) {
+            return res.status(400).json({ message: 'ข้อมูลไม่ครบ' })
+        }
+        const result = await db.query(
+            `INSERT INTO policy (policy_type, title_th, title_en, content_th, content_en, version)
+             VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+            [policy_type, title_th, title_en, content_th, content_en, version]
+        )
+        res.json({ policy: result.rows[0] })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({ message: 'Server error' })
+    }
+}
+
+exports.updatePolicy = async (req, res) => {
+    try {
+        const { id } = req.params
         
-        const query = 'SELECT id, promotion_name, logo_url, logo_public_id FROM promotion WHERE id = $1'
-        const result = await db.query(query, [Number(id)])
-
-         res.json({ data: result.rows[0] })
+        const { title_th, title_en, content_th, content_en, version } = req.body
+        const result = await db.query(
+            `UPDATE policy SET title_th=$1, title_en=$2, content_th=$3, content_en=$4, version=$5, updated_at=NOW()
+             WHERE id = $6 RETURNING *`,
+            [title_th, title_en, content_th, content_en, version, id]
+        )
+        res.json({ policy: result.rows[0] })
     } catch (err) {
         console.log(err)
-        res.status(500).json({message: 'Server error'})
-    }
-}
-exports.update = async(req, res) => {
-    try {
-        const { promotion_name, logo_url, logo_public_id } = req.body
-        const { id } = req.params
-
-        const existing = await db.query('SELECT * FROM  promotion WHERE id = $1',[id])
-
-        const brand = existing.rows[0]
-
-        await db.query('UPDATE promotion SET promotion_name = $1, logo_url = $2, logo_public_id = $3  WHERE id = $4', 
-          [
-            promotion_name            ?? brand.promotion_name,           
-            logo_url        ?? brand.logo_url, 
-            logo_public_id  ?? brand.logo_public_id, 
-            id
-
-          ])
-
-        res.json({msg: 'แก้ไขโปรโมชั่นสำเร็จ'})  
-    } catch (err) {
-        console.log(err)
-        res.status(500).json({message: 'Server error'})
+        res.status(500).json({ message: 'Server error' })
     }
 }
 
-exports.is_active = async(req, res) => {
+exports.publishPolicy = async (req, res) => {
     try {
-        const { is_active } = req.body
         const { id } = req.params
 
-        await db.query('UPDATE promotion SET is_active = $1 WHERE id = $2', [is_active, id])
+        const target = await db.query(`SELECT policy_type FROM policy WHERE id = $1`, [id])
+        if (!target.rows[0]) return res.status(404).json({ message: 'ไม่พบข้อมูล' })
 
-        res.json({msg: 'อัปเดตสถานะโปรโมชั่นสำเร็จ'})  
+        const type = target.rows[0].policy_type
+
+        await db.query('BEGIN')
+        await db.query(`UPDATE policy SET is_active = FALSE WHERE policy_type = $1`, [type])
+        await db.query(`UPDATE policy SET is_active = TRUE, published_at = NOW() WHERE id = $1`, [id])
+        await db.query('COMMIT')
+
+        res.json({ success: true })
     } catch (err) {
+        await db.query('ROLLBACK')
         console.log(err)
-        res.status(500).json({message: 'server errer'})
+        res.status(500).json({ message: 'Server error' })
     }
 }
 
-exports.remove = async(req, res) => {
+exports.deletePolicy = async (req, res) => {
     try {
         const { id } = req.params
 
-        const result = await db.query('select logo_public_id from promotion where id = $1', [id])
+        const check = await db.query(`SELECT is_active FROM policy WHERE id = $1`, [id])
 
-        const { logo_public_id } = result.rows[0]
-        
-        if(logo_public_id) {
-            await cloudinary.uploader.destroy(logo_public_id)
+        if (!check.rows[0]) return res.status(404).json({ message: 'ไม่พบข้อมูล' })
+
+        if (check.rows[0].is_active) {
+            return res.status(400).json({ message: 'ไม่สามารถลบ version ที่ใช้งานอยู่ได้' })
         }
 
-        await db.query('delete from promotion where id = $1', [id])
-
-        res.json({msg: 'ลบข้อมูลโปรโมชั่นสำเร็จ'})
+        await db.query(`DELETE FROM policy WHERE id = $1`, [id])
+        res.json({ success: true })
     } catch (err) {
         console.log(err)
-        res.status(500).json({message: 'Server error'})
+        res.status(500).json({ message: 'Server error' })
     }
 }
