@@ -1,8 +1,8 @@
 // routes/policy.route.js
 const express = require('express')
 const router = express.Router()
-const { getActivePolicy, getPolicyList, createPolicy, updatePolicy, publishPolicy, deletePolicy } = require('../controllers/policy.controller')
 const { authCheck, roleCheck } = require('../middleware/authCheck')
+const { getPolicyList, createPolicy, getActivePolicy, updatePolicy, publishPolicy, deletePolicy } = require('../controllers/consent')
 
 // Public
 router.get('/public-policy/:type', getActivePolicy)
