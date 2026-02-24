@@ -11,7 +11,20 @@ exports.create = async(req, res) => {
 
         const { package_id, premium_discount, premiums } = req.body
 
+        // แปลง "" เป็น null
+        const cleanDiscount = premium_discount === '' ? null : premium_discount
+
         for(const p of premiums){
+            //แยก selling_price ออกมาจาก p ก่อน insert
+            const { selling_prices, ...premiumData } = p
+
+            // แปลงทุก field ใน premiumData ที่เป็น "" → null
+            const cleanedData = Object.fromEntries(
+                Object.entries(premiumData).map(([key, val]) => [
+                    key,
+                    val === '' ? null : val
+                ])
+            )
 
             const result = await client.query(`
                 SELECT premium_id
@@ -21,6 +34,7 @@ exports.create = async(req, res) => {
                 FOR UPDATE
             `);
 
+            //เจนรหัสเบี้ยประกัน
             let nextNumber = 1;
             if (result.rows.length) {
                 const lastCode = result.rows[0].premium_id; // PM00000000012
@@ -30,11 +44,8 @@ exports.create = async(req, res) => {
 
             const premiumCode = `PM${String(nextNumber).padStart(5, '0')}`;
 
-            //แยก selling_price ออกมาจาก p ก่อน insert
-            const { selling_prices, ...premiumData } = p
-
-            const columns = [...Object.keys(premiumData), 'premium_id', 'package_id', 'premium_discount']
-            const values = [...Object.values(premiumData), premiumCode, package_id, premium_discount]
+            const columns = [...Object.keys(cleanedData), 'premium_id', 'package_id', 'premium_discount']
+            const values = [...Object.values(cleanedData), premiumCode, package_id, cleanDiscount]
             //สร้าง($1, $2, $3 ...)
             const placeholders = columns.map((_, i) => `$${i + 1}`)
 
@@ -51,7 +62,7 @@ exports.create = async(req, res) => {
             for(const sp of selling_prices) {
                 await db.query(
                     `
-                    INSERT INTI premium_selling_price (premium_id, payment_method_id, selling_price)
+                    INSERT INTO premium_selling_price (premium_id, payment_method_id, selling_price)
                     VALUES ($1, $2, $3)
                     `, [premiumId, sp.payment_method_id, sp.selling_price]
                 )
