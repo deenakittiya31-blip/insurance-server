@@ -30,17 +30,32 @@ exports.create = async(req, res) => {
 
             const premiumCode = `PM${String(nextNumber).padStart(5, '0')}`;
 
-            const columns = [...Object.keys(p), 'premium_id', 'package_id', 'premium_discount']
-            const values = [...Object.values(p), premiumCode, package_id, premium_discount]
+            //แยก selling_price ออกมาจาก p ก่อน insert
+            const { selling_prices, ...premiumData } = p
+
+            const columns = [...Object.keys(premiumData), 'premium_id', 'package_id', 'premium_discount']
+            const values = [...Object.values(premiumData), premiumCode, package_id, premium_discount]
             //สร้าง($1, $2, $3 ...)
             const placeholders = columns.map((_, i) => `$${i + 1}`)
 
-            await client.query(
+            const insertResult = await client.query(
                 `
                 INSERT INTO insurance_premium (${columns.join(', ')})
                 VALUES (${placeholders.join(', ')})
+                RETURNING id
                 `, values
             )
+
+            const premiumId = insertResult.rows[0].id
+
+            for(const sp of selling_prices) {
+                await db.query(
+                    `
+                    INSERT INTI premium_selling_price (premium_id, payment_method_id, selling_price)
+                    VALUES ($1, $2, $3)
+                    `, [premiumId, sp.payment_method_id, sp.selling_price]
+                )
+            }
         }
 
         await client.query('COMMIT')
