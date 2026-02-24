@@ -34,7 +34,7 @@ exports.registerMember = async(req, res) => {
             [ user_id, display_name, first_name, last_name, phone, picture_url ]
         )
 
-         // ส่ง Flex Message ต้อนรับ
+        // ส่ง Flex Message ต้อนรับ
         await pushWelcomeFlex(user_id, display_name, picture_url)
 
         res.json({ success: true })
@@ -124,24 +124,31 @@ exports.listMember = async(req, res) => {
         
         const result = await db.query(
             `
-            SELECT 
-                m.id, 
-                m.user_id, 
-                m.display_name, 
-                m.first_name, 
-                m.last_name, 
-                m.phone, 
-                m.picture_url, 
-                m.created_at, 
+            select
+                m.id,
+                m.user_id,
+                m.display_name,
+                m.first_name,
+                m.last_name,
+                m.phone,
+                m.picture_url,
+                m.created_at,
                 m.note,
                 m.group_id,
                 gm.group_name,
-                COALESCE(ARRAY_AGG(DISTINCT t.tag_name) FILTER (WHERE tm.tag_id IS NOT NULL), '{}') AS tags,
+                COALESCE(
+                    ARRAY_AGG(distinct t.tag_name) filter (
+                    where
+                        tm.tag_id is not null
+                    ),
+                    '{}'
+                ) as tags,
                 m.is_active
-            FROM member m
-            LEFT JOIN group_member gm ON m.group_id = gm.id
-            LEFT JOIN tag_member tm ON tm.member_id = m.user_id
-            LEFT JOIN tag t ON t.id = tm.tag_id
+            from
+                member m
+            left join group_member gm on m.group_id = gm.group_code
+            left join tag_member tm on tm.member_id = m.user_id
+            left join tag t on t.id = tm.tag_id
             ${whereClause}
             GROUP BY m.id, gm.group_name
             ORDER BY ${finalSortKey} ${validSortDirection}

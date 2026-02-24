@@ -15,12 +15,10 @@ exports.create = async(req, res) => {
         const cleanDiscount = premium_discount === '' ? null : premium_discount
 
         for(const p of premiums){
-            //แยก selling_price ออกมาจาก p ก่อน insert
-            const { selling_prices, ...premiumData } = p
 
             // แปลงทุก field ใน premiumData ที่เป็น "" → null
             const cleanedData = Object.fromEntries(
-                Object.entries(premiumData).map(([key, val]) => [
+                Object.entries(p).map(([key, val]) => [
                     key,
                     val === '' ? null : val
                 ])
@@ -49,24 +47,12 @@ exports.create = async(req, res) => {
             //สร้าง($1, $2, $3 ...)
             const placeholders = columns.map((_, i) => `$${i + 1}`)
 
-            const insertResult = await client.query(
+            await client.query(
                 `
                 INSERT INTO insurance_premium (${columns.join(', ')})
                 VALUES (${placeholders.join(', ')})
-                RETURNING id
                 `, values
             )
-
-            const premiumId = insertResult.rows[0].id
-
-            for(const sp of selling_prices) {
-                await client.query(
-                    `
-                    INSERT INTO premium_selling_price (premium_id, payment_method_id, selling_price)
-                    VALUES ($1, $2, $3)
-                    `, [premiumId, sp.payment_method_id, sp.selling_price]
-                )
-            }
         }
 
         await client.query('COMMIT')

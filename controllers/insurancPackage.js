@@ -252,35 +252,17 @@ exports.listSelect = async(req, res) => {
     try {
         const result = await db.query(
             `
-            select
+            SELECT
                 ip.id,
                 ip.package_id,
                 ip.package_name,
-                json_agg(
-                    json_build_object(
-                    'payment_method_id',
-                    pp.payment_method_id,
-                    'discount_percent',
-                    pp.discount_percent,
-                    'discount_amount',
-                    pp.discount_amount,
-                    'first_payment_amount',
-                    pp.first_payment_amount,
-                    'charge',
-                    pp.charge,
-                    'installment_min',
-                    pp.installment_min,
-                    'installment_max',
-                    pp.installment_max
-                    )
-                ) as payments
-            from
-                insurance_package ip
-                left join package_payment pp on pp.package_id = ip.id
-            group by
-                ip.id
-            order by
-                ip.id desc
+                pp.discount_percent,
+                pp.discount_amount
+            FROM insurance_package ip
+            LEFT JOIN package_payment pp 
+                ON pp.package_id = ip.id
+                AND pp.payment_method_id = 1 
+            ORDER BY ip.id DESC 
             ` 
         )
 
