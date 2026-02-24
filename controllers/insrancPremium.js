@@ -60,7 +60,7 @@ exports.create = async(req, res) => {
             const premiumId = insertResult.rows[0].id
 
             for(const sp of selling_prices) {
-                await db.query(
+                await client.query(
                     `
                     INSERT INTO premium_selling_price (premium_id, payment_method_id, selling_price)
                     VALUES ($1, $2, $3)
