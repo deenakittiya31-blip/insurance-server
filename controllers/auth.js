@@ -142,8 +142,13 @@ exports.lineLogin = async (req, res) => {
   } catch (err) {
     console.log("LINE error status:", err.response?.status);
     console.log("LINE error data:", err.response?.data); // ✅ ดู error จาก LINE
-     if (err.response?.status === 400) {
-        return res.status(400).json({ message: "invalid line token" });
+    if (err.response?.status === 400) {
+        const errorDesc = err.response?.data?.error_description || ''
+        
+        if (errorDesc.includes('expired')) {
+            return res.status(401).json({ message: "line token expired" })
+        }
+        return res.status(400).json({ message: "invalid line token" })
     }
     res.status(500).json({ message: "server error" });
   }
