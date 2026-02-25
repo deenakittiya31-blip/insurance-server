@@ -7,7 +7,7 @@ exports.create = async(req, res) => {
     try {
         await client.query('BEGIN')
 
-        const { payments, car_brand_id, car_model_id, car_usage_type_id,
+        const { payments, groups, car_brand_id, car_model_id, car_usage_type_id,
         compulsory_id, ...packageData } = req.body
 
         if (!packageData.package_name) {
@@ -82,6 +82,27 @@ exports.create = async(req, res) => {
                 charge,
                 installment_min,
                 installment_max
+                ])
+        }
+
+        //insert discount level
+        for (const g of groups) {
+            const { group_id, discount_percent = 0 } = g
+
+            const groupSql = `
+                INSERT INTO package_group_discount
+                (
+                    package_id,
+                    group_id,
+                    discount_percent
+                )
+                VALUES ($1, $2, $3)
+                `
+
+            await client.query(groupSql, [
+                packageId,
+                group_id,
+                Number(discount_percent)
                 ])
         }
 
@@ -321,6 +342,15 @@ exports.read = async(req, res) => {
                     ) FILTER (WHERE pp.payment_method_id IS NOT NULL),
                     '[]'::jsonb
                 ) AS payments,
+                  COALESCE(
+                    JSONB_AGG(
+                        DISTINCT JSONB_BUILD_OBJECT(
+                            'group_id', pg.group_id,
+                            'discount_percent', pg.discount_percent,
+                        )
+                    ) FILTER (WHERE pg.group_id IS NOT NULL),
+                    '[]'::jsonb
+                ) AS groups,
                 COALESCE(
                     JSONB_AGG(
                         DISTINCT JSONB_BUILD_OBJECT(
@@ -382,6 +412,7 @@ exports.read = async(req, res) => {
             LEFT JOIN payment_methods AS pm ON pp.payment_method_id = pm.id
 
             LEFT JOIN promotion AS pt ON ip.promotion_id = pt.id
+            LEFT JOIN package_group_discount AS pg ON ip.id = pg.package_id
             WHERE ip.id = $1
             GROUP BY 
                 ip.id,
@@ -437,6 +468,15 @@ exports.readEdit = async(req, res) => {
                     ) FILTER (WHERE pp.payment_method_id IS NOT NULL),
                     '[]'::jsonb
                 ) AS payments,
+                COALESCE(
+                    JSONB_AGG(
+                        DISTINCT JSONB_BUILD_OBJECT(
+                            'group_id', pg.group_id,
+                            'discount_percent', pg.discount_percent,
+                        )
+                    ) FILTER (WHERE pg.group_id IS NOT NULL),
+                    '[]'::jsonb
+                ) AS groups,
                 COALESCE(ARRAY_AGG(DISTINCT pcb.car_brand_id) FILTER (WHERE pcb.car_brand_id IS NOT NULL), '{}') AS car_brand_id,
                 COALESCE(ARRAY_AGG(DISTINCT pcm.car_model_id) FILTER (WHERE pcm.car_model_id IS NOT NULL), '{}') AS car_model_id,
                 COALESCE(ARRAY_AGG(DISTINCT put.car_usage_type_id) FILTER (WHERE put.car_usage_type_id IS NOT NULL), '{}') AS car_usage_type_id,
@@ -461,6 +501,8 @@ exports.readEdit = async(req, res) => {
 
             LEFT JOIN package_payment AS pp ON ip.id = pp.package_id
             LEFT JOIN payment_methods AS pm ON pp.payment_method_id = pm.id
+
+            LEFT JOIN package_group_discount AS pg ON ip.id = pg.package_id
             WHERE ip.id = $1
             GROUP BY ip.id
             `
@@ -480,7 +522,7 @@ exports.update = async(req, res) => {
     try {
         await client.query('BEGIN')
 
-        const { payments, car_brand_id, car_model_id, car_usage_type_id,
+        const { payments, groups, car_brand_id, car_model_id, car_usage_type_id,
             compulsory_id, ...packageData } = req.body
 
         // 1. เช็คว่า package มีอยู่จริง
@@ -552,6 +594,27 @@ exports.update = async(req, res) => {
                         installment_min,
                         installment_max
                     ])
+                }
+            }
+        }
+
+        if (groups !== undefined) {
+             await client.query('DELETE FROM package_payment WHERE package_id = $1', [id])
+            if (groups.length > 0) {
+                for (const g of groups) {
+                    const { group_id, discount_percent = 0 } = g
+
+                    await client.query(
+                        `
+                        INSERT INTO package_group_discount
+                        (
+                            package_id,
+                            group_id,
+                            discount_percent
+                        )
+                        VALUES ($1, $2, $3)
+                        `, [ id, group_id, Number(discount_percent)]
+                    )
                 }
             }
         }
