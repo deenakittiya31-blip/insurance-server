@@ -234,6 +234,7 @@ exports.searchPremiumMember = async(req, res) => {
                 it.nametype,
                 ipk.repair_type,
                 ipm.total_premium,
+                ipm.repair_fund_int,
                 ipm.net_income,
                 ipm.selling_price,
                 ipm.premium_discount,

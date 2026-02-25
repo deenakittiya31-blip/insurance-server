@@ -61,7 +61,7 @@ exports.lineBotReply = async(req, res) => {
 
                 if(checkStatusRegister.rowCount > 0 && checkStatusRegister.rows[0].status) {
                     //ดึงข้อมูล user
-                    const result = await db.query(`select is_registered from member where user_id = $1`, [userId])
+                    const result = await db.query(`select is_friend, is_registered from member where user_id = $1`, [userId])
 
                     //ไม่พบ user
                     if(result.rowCount === 0) {
@@ -101,6 +101,13 @@ exports.lineBotReply = async(req, res) => {
                         })
                         return
                     }  
+
+                    if(!result.rows[0].is_friend) {
+                        await reply(replyToken, {
+                            type: 'text',
+                            text: 'กรุณาเพิ่มเพื่อนก่อนลงทะเบียนนะคะ'
+                        })
+                    }
                 
                     //ยังไม่ลงทะเบียนให้ส่ง LIFF ไปให้
                     await sendRegisterButton(replyToken)

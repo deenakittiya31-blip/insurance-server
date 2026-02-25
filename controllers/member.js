@@ -16,6 +16,22 @@ exports.registerMember = async(req, res) => {
             return res.status(400).json({ message: 'กรุณายินยอมนโยบายความเป็นส่วนตัว' })
         }
 
+        const result = await db.query(`select is_registered from member where user_id = $1`, [user_id])
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: 'ไม่พบข้อมูลผู้ใช้ กรุณาเพิ่มเพื่อนก่อนลงทะเบียน' })
+        }
+
+        if(result.rows[0].is_registered) {
+            return res.status(400).json({ message: 'คุณลงทะเบียนแล้ว กรุณาล็อกอินเพื่อเข้าใช้งาน' })
+        }
+
+        const phoneCheck = await db.query(`select user_id from member where phone = $1 and user_id != $2`, [phone, user_id])
+        
+        if (phoneCheck.rowCount > 0) {
+            return res.status(400).json({ message: 'เบอร์โทรนี้ถูกใช้งานแล้ว' })
+        }
+
         await db.query(
             `
             update member 
@@ -111,7 +127,7 @@ exports.listMember = async(req, res) => {
             `
             SELECT COUNT(DISTINCT m.id) as total
             FROM member m
-            LEFT JOIN group_member gm ON m.group_id = gm.id
+            LEFT join group_member gm on m.group_id = gm.group_code
             LEFT JOIN tag_member tm ON tm.member_id = m.user_id
             LEFT JOIN tag t ON t.id = tm.tag_id
             ${whereClause}
