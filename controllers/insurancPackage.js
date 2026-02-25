@@ -346,7 +346,7 @@ exports.read = async(req, res) => {
                     JSONB_AGG(
                         DISTINCT JSONB_BUILD_OBJECT(
                             'group_id', pg.group_id,
-                            'discount_percent', pg.discount_percent,
+                            'discount_percent', pg.discount_percent
                         )
                     ) FILTER (WHERE pg.group_id IS NOT NULL),
                     '[]'::jsonb
@@ -472,7 +472,7 @@ exports.readEdit = async(req, res) => {
                     JSONB_AGG(
                         DISTINCT JSONB_BUILD_OBJECT(
                             'group_id', pg.group_id,
-                            'discount_percent', pg.discount_percent,
+                            'discount_percent', pg.discount_percent
                         )
                     ) FILTER (WHERE pg.group_id IS NOT NULL),
                     '[]'::jsonb
