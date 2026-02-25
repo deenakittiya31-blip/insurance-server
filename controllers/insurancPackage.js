@@ -590,7 +590,7 @@ exports.update = async(req, res) => {
                         discount_percent, 
                         discount_amount, 
                         first_payment_amount,
-                        charge = null,
+                        charge,
                         installment_min,
                         installment_max
                     ])
@@ -599,7 +599,7 @@ exports.update = async(req, res) => {
         }
 
         if (groups !== undefined) {
-             await client.query('DELETE FROM package_payment WHERE package_id = $1', [id])
+             await client.query('DELETE FROM package_group_discount WHERE package_id = $1', [id])
             if (groups.length > 0) {
                 for (const g of groups) {
                     const { group_id, discount_percent = 0 } = g
