@@ -249,7 +249,7 @@ exports.list = async(req, res) => {
                 FROM package_group_discount
                 GROUP BY package_id
             ) pgd ON pgd.package_id = ip.id
-             
+
             ${whereClause} 
             ORDER BY ${finalSortKey} ${validSortDirection} 
             LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
@@ -704,7 +704,39 @@ exports.update = async(req, res) => {
     } finally {
         client.release()
     }
-}     
+}  
+
+exports.updateGroupDiscount = async (req, res) => {
+    try {
+        const { package_id, group_code, discount_percent } = req.body
+
+        const exist = await db.query(
+            `SELECT id FROM package_group_discount
+             WHERE package_id = $1 AND group_code = $2`,
+            [package_id, group_code]
+        )
+
+        if (exist.rows.length > 0) {
+            await db.query(
+                `UPDATE package_group_discount
+                 SET discount_percent = $3
+                 WHERE package_id = $1 AND group_code = $2`,
+                [package_id, group_code, discount_percent]
+            )
+        } else {
+            await db.query(
+                `INSERT INTO package_group_discount
+                 (package_id, group_code, discount_percent)
+                 VALUES ($1, $2, $3)`,
+                [package_id, group_code, discount_percent]
+            )
+        }
+
+        res.json({ msg: 'แก้ไขสำเร็จ' })
+    } catch (err) {
+        res.status(500).json({ message: 'server error' })
+    }
+}
 
 exports.copy = async(req, res) => {
     try {
