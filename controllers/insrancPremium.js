@@ -217,11 +217,15 @@ exports.list = async(req, res) => {
 //ฟังก์ชันดึงข้อมูลเบี้ยประกันของลูกค้า
 exports.searchPremiumMember = async(req, res) => {
     try {
-        const { insurance_type_id, insurance_company,  car_usage_type_id, repair_type } = req.body;
+        const { insurance_type_id, insurance_company,  car_usage_type_id, repair_type, group_code } = req.body;
 
         let values = [];
         let conditions = [];
         let index = 1;
+
+        values.push(group_code || null);
+        const groupCodeIndex = index; // = 1
+        index++;
 
         let query = `
             select
@@ -240,6 +244,14 @@ exports.searchPremiumMember = async(req, res) => {
                 ipm.premium_discount,
                 ipk.car_own_damage_deductible,
                 ipk.additional_personal_permanent_driver_number,
+
+                COALESCE(pp.payments, '{}') as payments,
+                -- ส่วนลดวิธีชำระเงิน (เงินสด = payment_method_id = 1)
+                COALESCE(pp_cash.discount_percent, 0) as payment_discount_percent,
+                COALESCE(pp_cash.discount_amount, 0) as payment_discount_amount,
+                -- ส่วนลดเลเวลของลูกค้าคนนี้
+                COALESCE(pgd.discount_percent, 0) as level_discount_percent,
+
                 
                 COALESCE(pp.payments, '{}') AS payments,
 
@@ -274,12 +286,19 @@ exports.searchPremiumMember = async(req, res) => {
             LEFT JOIN (
                 SELECT
                 ipp.package_id,
-                ARRAY_AGG(DISTINCT pm.id) AS payments
-                FROM package_payment ipp
-                JOIN payment_methods pm 
-                ON ipp.payment_method_id = pm.id
-                GROUP BY ipp.package_id
+                ARRAY_AGG(distinct pm.id) AS payments
+                from
+                package_payment ipp
+                join payment_methods pm ON ipp.payment_method_id = pm.id
+                GROUP BY
+                ipp.package_id
             ) pp ON ipk.id = pp.package_id
+            -- join ส่วนลดเงินสด
+            LEFT JOIN package_payment pp_cash ON ipk.id = pp_cash.package_id
+            AND pp_cash.payment_method_id = 1
+            -- join ส่วนลดเลเวลลูกค้า
+            LEFT JOIN package_group_discount pgd ON ipk.id = pgd.package_id
+            AND pgd.group_code = $${groupCodeIndex}
         `;
 
         //เงื่อนไขพื้นฐาน (ต้องมีเสมอ)
@@ -325,17 +344,36 @@ exports.searchPremiumMember = async(req, res) => {
 
         const result = await db.query(query, values);
 
-        if(result.rows.length === 0){
-            return res.status(200).json({
-                data: [],
-                total: 0,
-                message: 'ไม่พบข้อมูลเบี้ย'
-            })
+        if (result.rows.length === 0) {
+            return res.status(200).json({ data: [], total: 0, message: 'ไม่พบข้อมูลเบี้ย' })
         }
 
+        // คำนวณ selling_price_final
+        const data = result.rows.map(row => {
+            const premium      = parseFloat(row.total_premium) || 0
+            const net_total    = premium * 0.9309
+            const extra_discount = net_total * ((parseFloat(row.premium_discount) || 0) / 100)
+
+            const pay_discount =
+                (net_total * ((parseFloat(row.payment_discount_percent) || 0) / 100)) +
+                (parseFloat(row.payment_discount_amount) || 0)
+
+            const level_discount = net_total * ((parseFloat(row.level_discount_percent) || 0) / 100)
+
+            const applied_discount = pay_discount > 0 ? pay_discount : level_discount
+
+            const selling_price_final = (premium - (extra_discount + applied_discount)).toFixed(2)
+
+            return {
+                ...row,
+                selling_price_final,
+                discount_used: pay_discount > 0 ? 'payment' : 'level'
+            }
+        })
+
         res.json({ 
-            data: result.rows,
-            total: result.rows.length
+            data,
+            total: data.length
          });
     } catch (err) {
         console.log(err)
