@@ -245,15 +245,48 @@ exports.searchPremiumMember = async(req, res) => {
                 ipk.car_own_damage_deductible,
                 ipk.additional_personal_permanent_driver_number,
 
-                COALESCE(pp.payments, '{}') as payments,
-                -- ส่วนลดวิธีชำระเงิน (เงินสด = payment_method_id = 1)
+                -- ส่วนลดเลเวลของลูกค้าคนนี้ (ใช้คำนวณ selling_price_final)
                 COALESCE(pp_cash.discount_percent, 0) as payment_discount_percent,
                 COALESCE(pp_cash.discount_amount, 0) as payment_discount_amount,
                 -- ส่วนลดเลเวลของลูกค้าคนนี้
                 COALESCE(pgd.discount_percent, 0) as level_discount_percent,
 
-                
-                COALESCE(pp.payments, '{}') AS payments,
+                COALESCE(
+                    (
+                        SELECT JSONB_AGG(
+                            JSONB_BUILD_OBJECT(
+                                'payment_method_id', ipp.payment_method_id,
+                                'payment_name',      pm.name_payment,
+                                'discount_percent',  ipp.discount_percent,
+                                'discount_amount',   ipp.discount_amount,
+                                'first_payment_amount', ipp.first_payment_amount,
+                                'charge',            ipp.charge,
+                                'installment_min',   ipp.installment_min,
+                                'installment_max',   ipp.installment_max
+                            )
+                        )
+                        FROM package_payment ipp
+                        JOIN payment_methods pm ON ipp.payment_method_id = pm.id
+                        WHERE ipp.package_id = ipk.id
+                    ),
+                    '[]'::jsonb
+                ) AS payments,
+
+                -- ทุก group discount ของแพ็กเกจนี้
+                COALESCE(
+                    (
+                        SELECT JSONB_AGG(
+                            JSONB_BUILD_OBJECT(
+                                'group_name',       gm.group_name,
+                                'discount_percent', pgd.discount_percent
+                            )
+                        )
+                        FROM package_group_discount pgd
+                        JOIN group_member gm ON pgd.group_code = gm.group_code
+                        WHERE pgd.package_id = ipk.id
+                    ),
+                    '[]'::jsonb
+                ) AS groups,
 
                 JSONB_BUILD_OBJECT(
                     'car_own_damage_deductible', ipk.car_own_damage_deductible,
@@ -293,10 +326,12 @@ exports.searchPremiumMember = async(req, res) => {
                 GROUP BY
                 ipp.package_id
             ) pp ON ipk.id = pp.package_id
-            -- join ส่วนลดเงินสด
+
+            -- join ส่วนลดเงินสด (ใช้คำนวณ)
             LEFT JOIN package_payment pp_cash ON ipk.id = pp_cash.package_id
             AND pp_cash.payment_method_id = 1
-            -- join ส่วนลดเลเวลลูกค้า
+
+            -- join ส่วนลดเลเวลลูกค้า (ใช้คำนวณ)
             LEFT JOIN package_group_discount pgd ON ipk.id = pgd.package_id
             AND pgd.group_code = $${groupCodeIndex}
         `;
