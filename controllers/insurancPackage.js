@@ -228,11 +228,28 @@ exports.list = async(req, res) => {
                   FROM insurance_premium ipm 
                   WHERE ipm.package_id = ip.id
                 ) as premium_count,
+                pgd.l1,
+                pgd.l2,
+                pgd.l3,
+                pgd.l4,
+                pgd.l5,
                 ip.is_active
             FROM insurance_package AS ip
             JOIN insurance_company AS ic ON ip.insurance_company = ic.id
             JOIN insurance_type AS it ON ip.insurance_type = it.id
             LEFT JOIN promotion AS pt ON ip.promotion_id = pt.id
+            LEFT JOIN (
+                SELECT 
+                    package_id,
+                    MAX(CASE WHEN group_code = 'M001' THEN discount_percent ELSE 0 END) AS l1,
+                    MAX(CASE WHEN group_code = 'M002' THEN discount_percent ELSE 0 END) AS l2,
+                    MAX(CASE WHEN group_code = 'M003' THEN discount_percent ELSE 0 END) AS l3,
+                    MAX(CASE WHEN group_code = 'M004' THEN discount_percent ELSE 0 END) AS l4,
+                    MAX(CASE WHEN group_code = 'M005' THEN discount_percent ELSE 0 END) AS l5
+                FROM package_group_discount
+                GROUP BY package_id
+            ) pgd ON pgd.package_id = ip.id
+             
             ${whereClause} 
             ORDER BY ${finalSortKey} ${validSortDirection} 
             LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
