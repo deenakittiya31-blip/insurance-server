@@ -85,25 +85,27 @@ exports.create = async(req, res) => {
                 ])
         }
 
+        const groupsToInsert = groups.filter(g => 
+            g.discount_percent !== null && 
+            g.discount_percent !== undefined && 
+            Number(g.discount_percent) > 0
+        )
+
         //insert discount level
-        for (const g of groups) {
-            const { group_id, discount_percent = 0 } = g
+        for (const g of groupsToInsert) {
+            const { group_code, discount_percent } = g
 
             const groupSql = `
                 INSERT INTO package_group_discount
                 (
                     package_id,
-                    group_id,
+                    group_code,
                     discount_percent
                 )
                 VALUES ($1, $2, $3)
                 `
 
-            await client.query(groupSql, [
-                packageId,
-                group_id,
-                Number(discount_percent)
-                ])
+            await client.query(groupSql, [ packageId, group_code, Number(discount_percent)])
         }
 
         //relation
@@ -345,10 +347,10 @@ exports.read = async(req, res) => {
                   COALESCE(
                     JSONB_AGG(
                         DISTINCT JSONB_BUILD_OBJECT(
-                            'group_id', pg.group_id,
+                            'group_code', pg.group_code,
                             'discount_percent', pg.discount_percent
                         )
-                    ) FILTER (WHERE pg.group_id IS NOT NULL),
+                    ) FILTER (WHERE pg.group_code IS NOT NULL),
                     '[]'::jsonb
                 ) AS groups,
                 COALESCE(
@@ -471,10 +473,10 @@ exports.readEdit = async(req, res) => {
                 COALESCE(
                     JSONB_AGG(
                         DISTINCT JSONB_BUILD_OBJECT(
-                            'group_id', pg.group_id,
+                            'group_code', pg.group_code,
                             'discount_percent', pg.discount_percent
                         )
-                    ) FILTER (WHERE pg.group_id IS NOT NULL),
+                    ) FILTER (WHERE pg.group_code IS NOT NULL),
                     '[]'::jsonb
                 ) AS groups,
                 COALESCE(ARRAY_AGG(DISTINCT pcb.car_brand_id) FILTER (WHERE pcb.car_brand_id IS NOT NULL), '{}') AS car_brand_id,
@@ -602,18 +604,18 @@ exports.update = async(req, res) => {
              await client.query('DELETE FROM package_group_discount WHERE package_id = $1', [id])
             if (groups.length > 0) {
                 for (const g of groups) {
-                    const { group_id, discount_percent = 0 } = g
+                    const { group_code, discount_percent = 0 } = g
 
                     await client.query(
                         `
                         INSERT INTO package_group_discount
                         (
                             package_id,
-                            group_id,
+                            group_code,
                             discount_percent
                         )
                         VALUES ($1, $2, $3)
-                        `, [ id, group_id, Number(discount_percent)]
+                        `, [ id, group_code, Number(discount_percent)]
                     )
                 }
             }
