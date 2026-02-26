@@ -364,10 +364,10 @@ exports.read = async(req, res) => {
                   COALESCE(
                     JSONB_AGG(
                         DISTINCT JSONB_BUILD_OBJECT(
-                            'group_code', pg.group_code,
-                            'discount_percent', pg.discount_percent
+                            'group_name', pg.group_name,
+                            'discount_percent', pgd.discount_percent
                         )
-                    ) FILTER (WHERE pg.group_code IS NOT NULL),
+                    ) FILTER (WHERE pgd.group_code IS NOT NULL),
                     '[]'::jsonb
                 ) AS groups,
                 COALESCE(
@@ -432,6 +432,7 @@ exports.read = async(req, res) => {
 
             LEFT JOIN promotion AS pt ON ip.promotion_id = pt.id
             LEFT JOIN package_group_discount AS pg ON ip.id = pg.package_id
+            LEFT JOIN group_member AS pg ON pgd.group_code = pg.group_code
             WHERE ip.id = $1
             GROUP BY 
                 ip.id,
