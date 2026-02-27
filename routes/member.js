@@ -9,6 +9,6 @@ router.get('/read-member/:id', authCheck , roleCheck(['admin', 'staff']), readMe
 router.patch('/update-member/:id', authCheck , roleCheck(['admin', 'staff']), updateMember)
 router.put('/status-member/:id', authCheck, roleCheck(['admin']), is_active)
 router.delete('/delete-member/:id', authCheck , roleCheck(['admin', 'staff']), removeMember)
-router.post('/sendDocument-tomember', authCheck , roleCheck(['admin', 'staff']), sendDocumentToMember)
+router.post('/sendDocument-tomember', authCheck, sendDocumentToMember)
 
 module.exports = router
