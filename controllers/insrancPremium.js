@@ -386,12 +386,18 @@ exports.searchPremiumMember = async(req, res) => {
         const data = result.rows.map(row => {
             const premium      = parseFloat(row.total_premium) || 0
             const net_total    = premium * 0.9309
-            const extra_discount = ((parseFloat(row.premium_discount) || 0) / 100)
-            const level_discount = ((parseFloat(row.level_discount_percent) || 0) / 100)
-            const pay_discount = ((parseFloat(row.payment_discount_percent) || 0) / 100) + parseFloat(row.payment_discount_amount) || 0
+            const premium_discount        = (parseFloat(row.premium_discount) || 0) / 100
+            const level_discount_percent  = (parseFloat(row.level_discount_percent) || 0) / 100
+            const payment_discount_percent = (parseFloat(row.payment_discount_percent) || 0) / 100
+            const payment_discount_amount = parseFloat(row.payment_discount_amount) || 0
 
 
-            const selling_price_final = (premium - (net_total * (extra_discount + level_discount + pay_discount))).toFixed(2)
+            const selling_price_final = (
+                premium - (
+                    (net_total * (premium_discount + level_discount_percent + payment_discount_percent))
+                    + payment_discount_amount
+                )
+            ).toFixed(2)
 
             return {
                 ...row,
