@@ -237,6 +237,8 @@ exports.searchPremiumMember = async(req, res) => {
                 icp.namecompany,
                 it.nametype,
                 ipk.repair_type,
+                pmt.promotion_name,
+                pmt.logo_url promotion_img,
                 ipm.total_premium,
                 ipm.repair_fund_int,
                 ipm.net_income,
@@ -307,14 +309,11 @@ exports.searchPremiumMember = async(req, res) => {
                 ) AS additional_protect
 
             FROM insurance_premium ipm
-            JOIN insurance_package ipk 
-              ON ipm.package_id = ipk.id
-            JOIN insurance_company icp 
-              ON ipk.insurance_company = icp.id
-            JOIN insurance_type it 
-              ON ipk.insurance_type = it.id
-            JOIN package_usage_type pcut 
-              ON ipk.id = pcut.package_id
+            JOIN insurance_package ipk ON ipm.package_id = ipk.id
+            JOIN promotion pmt ON ipk.promotion_id = pmt.id
+            JOIN insurance_company icp ON ipk.insurance_company = icp.id
+            JOIN insurance_type it ON ipk.insurance_type = it.id
+            JOIN package_usage_type pcut ON ipk.id = pcut.package_id
 
             LEFT JOIN (
                 SELECT
@@ -387,22 +386,16 @@ exports.searchPremiumMember = async(req, res) => {
         const data = result.rows.map(row => {
             const premium      = parseFloat(row.total_premium) || 0
             const net_total    = premium * 0.9309
-            const extra_discount = net_total * ((parseFloat(row.premium_discount) || 0) / 100)
+            const extra_discount = ((parseFloat(row.premium_discount) || 0) / 100)
+            const level_discount = ((parseFloat(row.level_discount_percent) || 0) / 100)
+            const pay_discount = ((parseFloat(row.payment_discount_percent) || 0) / 100) + parseFloat(row.payment_discount_amount) || 0
 
-            const pay_discount =
-                (net_total * ((parseFloat(row.payment_discount_percent) || 0) / 100)) +
-                (parseFloat(row.payment_discount_amount) || 0)
 
-            const level_discount = net_total * ((parseFloat(row.level_discount_percent) || 0) / 100)
-
-            const applied_discount = pay_discount > 0 ? pay_discount : level_discount
-
-            const selling_price_final = (premium - (extra_discount + applied_discount)).toFixed(2)
+            const selling_price_final = (premium - (net_total * (extra_discount + level_discount + pay_discount))).toFixed(2)
 
             return {
                 ...row,
                 selling_price_final,
-                discount_used: pay_discount > 0 ? 'payment' : 'level'
             }
         })
 
