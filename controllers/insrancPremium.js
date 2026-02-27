@@ -757,7 +757,7 @@ exports.searchPremiumToCompare = async(req, res) => {
               inner join insurance_type as it on ipk.insurance_type = it.id
         `
 
-        let whereClause = 'where ipk.is_active = true'
+        let whereClause = 'where ipk.is_active = true and ipm.is_active = true'
         let values = []
 
         if(hasAllFilters){
