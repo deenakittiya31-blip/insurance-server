@@ -9,6 +9,7 @@ exports.getPremiumDetail = async(client, index_premium) => {
             it.nametype as insurance_type,
             ipk.repair_type,
             ipk.package_id,
+            ipk.car_own_damage,
             ipk.car_own_damage_deductible,
             ipk.thirdparty_injury_death_per_person,
             ipk.thirdparty_injury_death_per_accident,

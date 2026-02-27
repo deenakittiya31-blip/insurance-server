@@ -268,26 +268,40 @@ exports.removeMember = async(req, res) => {
 
 exports.sendDocumentToMember = async(req, res) => {
     try {
-        const { members, q_id } = req.body;
+        const { members, q_id, mode } = req.body;
         const sender_id = req.user.id
 
         if (!Array.isArray(members)) {
             return res.status(400).json({ message: 'member ต้องเป็น array' })
         }
 
-        //1. สร้างเลขเอกสรส่งลูกค้า
-        const publicCompare = await createPublicCompare(q_id)
+        let publicCompare
+        let imgUrl
 
-        //2. สร้างรูปภาพ
-        const buffer = await generateCompareJPG(q_id, publicCompare)
+        if (mode) {
+            const buffer = await generateCompareJPG(q_id, publicCompare, true)
+            imgUrl = await uploadToCloudinary(buffer)
 
-        //2. อัปโหลดรูปลง cloudinary ได้ url
-        const imgUrl = await uploadToCloudinary(buffer)
+            for (const userId of members) {
+                await sendImage(userId, imgUrl)
+            }
+           
+        } else {
+            publicCompare = await createPublicCompare(q_id)
+            const buffer = await generateCompareJPG(q_id, publicCompare)
+            imgUrl = await uploadToCloudinary(buffer)
 
-        for(const userId of members) {           
-            await sendImage(userId, imgUrl)     
+            for (const userId of members) {
+                await sendImage(userId, imgUrl)
 
-            await db.query(`insert into quotation_send_history (compare_id, member_id, public_compare_no, sender_id, image_url) values ($1, $2, $3, $4, $5)`, [q_id, userId, publicCompare, sender_id, imgUrl])
+                await db.query(
+                    `INSERT INTO quotation_send_history 
+                     (compare_id, member_id, public_compare_no, sender_id, image_url) 
+                     VALUES ($1, $2, $3, $4, $5)`,
+                    [q_id, userId, publicCompare, sender_id, imgUrl]
+                )
+            }
+
         }
 
         res.json({msg: 'ส่งใบเสนอราคาเรียบร้อย'})
