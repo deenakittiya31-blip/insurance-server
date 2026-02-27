@@ -158,6 +158,7 @@ exports.list = async(req, res) => {
                 icp.namecompany,
                 it.nametype,
                 ipm.total_premium,
+                ipm.is_active,
                 ipm.net_income,
                 ipm.selling_price,
                 ipk.start_date,

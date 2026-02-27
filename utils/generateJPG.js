@@ -29,7 +29,7 @@ async function generateJPG({ carData, insurances, qId }) {
     // Header
     ctx.fillStyle = '#fff';
     ctx.font = '34px Sarabun-Bold';
-    ctx.fillText(`หมายเลขใบเสนอราคา : ${qId} | ประเภท : ${carData.usage}`, 120, 315);
+    ctx.fillText(`หมายเลขใบเสนอราคา : ${qId} | ประเภท : ${carData.usage || '-'}`, 120, 315);
 
     ctx.fillStyle = '#000';
     ctx.font = '32px Sarabun-Bold';
