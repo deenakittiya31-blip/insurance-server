@@ -245,6 +245,7 @@ exports.searchPremiumMember = async(req, res) => {
                 ipm.selling_price,
                 ipm.premium_discount,
                 ipk.car_own_damage_deductible,
+                ipk.thirdparty_property,
                 ipk.additional_personal_permanent_driver_number,
 
                 -- ส่วนลดเลเวลของลูกค้าคนนี้ (ใช้คำนวณ selling_price_final)
@@ -313,7 +314,6 @@ exports.searchPremiumMember = async(req, res) => {
             JOIN promotion pmt ON ipk.promotion_id = pmt.id
             JOIN insurance_company icp ON ipk.insurance_company = icp.id
             JOIN insurance_type it ON ipk.insurance_type = it.id
-            JOIN package_usage_type pcut ON ipk.id = pcut.package_id
 
             LEFT JOIN (
                 SELECT
@@ -398,6 +398,8 @@ exports.searchPremiumMember = async(req, res) => {
                     + payment_discount_amount
                 )
             ).toFixed(2)
+
+            const month_pay = parseFloat(row.payment_discount_amount) || 0
 
             return {
                 ...row,
