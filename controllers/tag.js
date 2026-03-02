@@ -234,7 +234,7 @@ exports.listMemberByTag = async(req, res) => {
             from
                 tag_member tm
                 join member m on tm.member_id = m.user_id
-                left join group_member gm on m.group_id = gm.id
+                left join group_member gm on m.group_id = gm.group_code
             ${whereClause}
             order by m.id DESC
             `,
