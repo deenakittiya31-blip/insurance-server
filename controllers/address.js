@@ -16,7 +16,7 @@ exports.list = async(req, res) => {
     try {
         const result = await db.query(
             `
-            SELECT id, full_name, address_line, phone, subdistrict, district, province, zipcode, member_id
+            SELECT id, full_name, address_line, phone, subdistrict, district, province, zipcode
             FROM address 
            WHERE member_id = $1
             `, [req.user.id])

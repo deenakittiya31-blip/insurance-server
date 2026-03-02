@@ -589,17 +589,16 @@ exports.listPremiumCart = async(req, res) => {
 
         premiumResult.rows.forEach(p => {
             const cid = p.compare_id
-            const cartId = p.cart_id
 
             if (!grouped[cid]) {
                 grouped[cid] = {
                     compare_id: cid,
-                    cart_id: cartId,
                     premiums: []
                 }
             }
 
             grouped[cid].premiums.push({
+                cart_id: p.cart_id,
                 index_premium: p.index_premium,
                 selling_price: p.selling_price,
                 premium_name: p.premium_name,
