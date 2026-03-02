@@ -1,14 +1,15 @@
 const db = require('../config/database')
 
-exports.create = async(req, res) => {
-    try {
-        const { promotion_name, logo_public_id, logo_url } = req.body
+exports.create = async (req, res) => {
+    const { compare_id, package_id, premium_id, member_id } = req.body
 
-        await db.query('insert into promotion(promotion_name, logo_public_id, logo_url) values($1, $2, $3)', [promotion_name, logo_public_id, logo_url])
+    const result = await db.query(
+        `INSERT INTO premium_on_order 
+         (compare_id, package_id, premium_id, member_id, status, expired_at)
+         VALUES ($1, $2, $3, $4, 'pending', now() + interval '30 minutes')
+         RETURNING id`,
+        [compare_id, package_id, premium_id, member_id]
+    )
 
-        res.json({ msg: 'เพิ่มข้อมูลโปรโมชั่นสำเร็จ' })
-    } catch (err) {
-        console.log(err)
-        res.status(500).json({message: 'Server error'})
-    }
+    res.json({ order_id: result.rows[0].id })
 }
