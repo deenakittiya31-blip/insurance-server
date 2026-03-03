@@ -1,4 +1,5 @@
 const db = require('../config/database')
+const { sendText } = require('../services/lineService')
 
 exports.create = async (req, res) => {
     try {
@@ -126,6 +127,8 @@ exports.confirmOrder = async (req, res) => {
         snap_charge, snap_first_payment, snap_group_discount
     } = req.body
 
+    //สร้างคำสั่งซื้อ
+
     await db.query(`
         UPDATE premium_on_order SET
             address_id          = $2,
@@ -148,6 +151,43 @@ exports.confirmOrder = async (req, res) => {
         snap_discount_pct, snap_discount_amt,
         snap_charge, snap_first_payment, snap_group_discount
     ])
+
+    const result = await db.query(
+        `
+        select
+            -- premium & package data
+            poo.id as order_id,
+            poo.compare_id,
+            ipm.premium_name,
+            ipm.premium_id,
+            poo.selling_price,
+            ipm.total_premium,
+            ipk.package_name,
+            ipk.package_id,
+            ipk.repair_type,
+            icp.namecompany,
+            it.nametype,
+            -- payment method data
+            pm.name_payment,
+             -- member
+            m.user_id,
+            m.first_name
+        from
+            premium_on_order poo
+        join insurance_premium ipm on poo.premium_id = ipm.id
+        join insurance_package ipk on poo.package_id = ipk.id
+        join insurance_company icp on ipk.insurance_company = icp.id
+        join insurance_type it on ipk.insurance_type = it.id
+        join payment_methods pm on poo.payment_method_id = pm.id
+        join member m on poo.member_id = m.id
+        where
+            poo.id = $1
+        `, [id]
+    )
+
+    const data = result.rows[0]
+
+    await sendText(data.user_id, (`คุณ${data.first_name} ได้สั่งซื้อเบี้ยประกันรถยนต์รหัสที่ ${data.premium_id} ชื่อ ${data.premium_name} จากแพ็กเกจรหัส ${data.package_id} ชื่อ ${data.package_name} รายละเอียดเบี้ยประกันรถยนต์มีดังนี้ 1.บริษัท${data.namecompany} 2.ประเภทประกัน${data.nametype} 3.${data.repair_type} 4.วิธีการชำระเงิน: ${data.name_payment} 5.ราคาเบี้ยเดิม ${data.total_premium} เหลือ ${data.selling_price}`))
 
     res.json({ msg: 'สั่งซื้อสำเร็จ' })
 }
