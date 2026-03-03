@@ -116,3 +116,38 @@ exports.getOrderDetail = async(req, res) => {
         res.status(500).json({message: 'Server error'})
     }
 }
+
+exports.confirmOrder = async (req, res) => {
+    const { id } = req.params
+    const {
+        address_id, payment_method_id, installment,
+        selling_price, discount_price,
+        snap_discount_pct, snap_discount_amt,
+        snap_charge, snap_first_payment, snap_group_discount
+    } = req.body
+
+    await db.query(`
+        UPDATE premium_on_order SET
+            address_id          = $2,
+            payment_method_id   = $3,
+            installment         = $4,
+            selling_price       = $5,
+            discount_price      = $6,
+            snap_discount_pct   = $7,
+            snap_discount_amt   = $8,
+            snap_charge         = $9,
+            snap_first_payment  = $10,
+            snap_group_discount = $11,
+            status              = 'confirmed',
+            expired_at          = NULL
+        WHERE id = $1
+    `, [
+        id,
+        address_id, payment_method_id, installment,
+        selling_price, discount_price,
+        snap_discount_pct, snap_discount_amt,
+        snap_charge, snap_first_payment, snap_group_discount
+    ])
+
+    res.json({ msg: 'สั่งซื้อสำเร็จ' })
+}
