@@ -1,5 +1,5 @@
 const db = require('../config/database')
-const { sendText } = require('../services/lineService')
+const { sendText, pushOrderFlex } = require('../services/lineService')
 
 exports.create = async (req, res) => {
     try {
@@ -119,75 +119,104 @@ exports.getOrderDetail = async(req, res) => {
 }
 
 exports.confirmOrder = async (req, res) => {
-    const { id } = req.params
-    const {
-        address_id, payment_method_id, installment,
-        selling_price, discount_price,
-        snap_discount_pct, snap_discount_amt,
-        snap_charge, snap_first_payment, snap_group_discount
-    } = req.body
+     const client = await db.connect()
+
+    try {
+        await client.query('BEGIN')
+
+        const { id } = req.params
+
+        const {
+            address_id, payment_method_id, installment,
+            selling_price, discount_price,
+            snap_discount_pct, snap_discount_amt,
+            snap_charge, snap_first_payment, snap_group_discount
+        } = req.body
 
     //สร้างคำสั่งซื้อ
+        const orderResult = await client.query(`
+            SELECT order_id
+            FROM premium_on_order
+            ORDER BY id DESC
+            LIMIT 1
+            FOR UPDATE
+        `);
 
-    await db.query(`
-        UPDATE premium_on_order SET
-            address_id          = $2,
-            payment_method_id   = $3,
-            installment         = $4,
-            selling_price       = $5,
-            discount_price      = $6,
-            snap_discount_pct   = $7,
-            snap_discount_amt   = $8,
-            snap_charge         = $9,
-            snap_first_payment  = $10,
-            snap_group_discount = $11,
-            status              = 'confirmed',
-            expired_at          = NULL
-        WHERE id = $1
-    `, [
-        id,
-        address_id, payment_method_id, installment,
-        selling_price, discount_price,
-        snap_discount_pct, snap_discount_amt,
-        snap_charge, snap_first_payment, snap_group_discount
-    ])
+        let nextNumber = 1;
+        if (orderResult.rows.length) {
+            const lastCode = result.rows[0].order_id; 
+            const lastNumber = parseInt(lastCode.replace('PO', ''), 5);
+            nextNumber = lastNumber + 1;
+        }
 
-    const result = await db.query(
-        `
-        select
-            -- premium & package data
-            poo.id as order_id,
-            poo.compare_id,
-            ipm.premium_name,
-            ipm.premium_id,
-            poo.selling_price,
-            ipm.total_premium,
-            ipk.package_name,
-            ipk.package_id,
-            ipk.repair_type,
-            icp.namecompany,
-            it.nametype,
-            -- payment method data
-            pm.name_payment,
-             -- member
-            m.user_id,
-            m.first_name
-        from
-            premium_on_order poo
-        join insurance_premium ipm on poo.premium_id = ipm.id
-        join insurance_package ipk on poo.package_id = ipk.id
-        join insurance_company icp on ipk.insurance_company = icp.id
-        join insurance_type it on ipk.insurance_type = it.id
-        join payment_methods pm on poo.payment_method_id = pm.id
-        join member m on poo.member_id = m.id
-        where
-            poo.id = $1
-        `, [id]
-    )
+        const orderCode = `PO${String(nextNumber).padStart(5, '0')}`;
 
-    const data = result.rows[0]
+        await db.query(`
+            UPDATE premium_on_order SET
+                address_id          = $2,
+                payment_method_id   = $3,
+                installment         = $4,
+                selling_price       = $5,
+                discount_price      = $6,
+                snap_discount_pct   = $7,
+                snap_discount_amt   = $8,
+                snap_charge         = $9,
+                snap_first_payment  = $10,
+                snap_group_discount = $11,
+                order_id            = $12,
+                status              = 'confirmed',
+                expired_at          = NULL
+            WHERE id = $1
+            RETURNING order_id
+        `, [
+            id,
+            address_id, payment_method_id, installment,
+            selling_price, discount_price,
+            snap_discount_pct, snap_discount_amt,
+            snap_charge, snap_first_payment, snap_group_discount, orderCode
+        ])
 
-    await sendText(data.user_id, (`คุณ${data.first_name} ได้สั่งซื้อเบี้ยประกันรถยนต์รหัสที่ ${data.premium_id} ชื่อ ${data.premium_name} จากแพ็กเกจรหัส ${data.package_id} ชื่อ ${data.package_name} รายละเอียดเบี้ยประกันรถยนต์มีดังนี้ 1.บริษัท${data.namecompany} 2.ประเภทประกัน${data.nametype} 3.${data.repair_type} 4.วิธีการชำระเงิน: ${data.name_payment} 5.ราคาเบี้ยเดิม ${data.total_premium} เหลือ ${data.selling_price}`))
+        //ดึงข้อมูลส่ง flexcard
+        const result = await db.query(
+            `
+            select
+                -- premium & package data
+                poo.order_id,
+                poo.compare_id,
+                ipm.premium_name,
+                ipm.premium_id,
+                poo.selling_price,
+                ipm.total_premium,
+                ipk.package_name,
+                ipk.package_id,
+                ipk.repair_type,
+                icp.namecompany,
+                it.nametype,
+                -- payment method data
+                pm.name_payment,
+                -- member
+                m.user_id,
+                m.first_name
+            from
+                premium_on_order poo
+            join insurance_premium ipm on poo.premium_id = ipm.id
+            join insurance_package ipk on poo.package_id = ipk.id
+            join insurance_company icp on ipk.insurance_company = icp.id
+            join insurance_type it on ipk.insurance_type = it.id
+            join payment_methods pm on poo.payment_method_id = pm.id
+            join member m on poo.member_id = m.id
+            where
+                poo.id = $1
+            `, [id]
+        )
 
-    res.json({ msg: 'สั่งซื้อสำเร็จ' })
+        const data = result.rows[0]
+
+        await pushOrderFlex(data.user_id, data)
+
+        res.json({ msg: 'สั่งซื้อสำเร็จ' })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'Server error'})
+    }
 }
