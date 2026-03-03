@@ -135,7 +135,7 @@ exports.getProfile = async(userId) => {
 
 exports.pushOrderFlex = async(userId, data) => {
     try {
-        await axios.post(LINE_PUSH_API, {
+        const res = await axios.post(LINE_PUSH_API, {
             to: userId,
             message: [
                 {
@@ -329,6 +329,8 @@ exports.pushOrderFlex = async(userId, data) => {
         },
         { headers: LINE_HEADER }
     )
+
+    return res
     } catch (error) {
         console.error(
             'Line error:',
