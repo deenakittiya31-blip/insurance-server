@@ -24,11 +24,10 @@ exports.getOrderDetail = async(req, res) => {
     try {
         const { id } = req.params
 
-        const result = await db.query(
+        const orderResult  = await db.query(
             `
             select
-                -- premium & package data
-                poo.id as order_id,
+                poo.id,
                 poo.compare_id,
                 ipm.id as premium_id,
                 ipm.premium_name,
@@ -39,28 +38,9 @@ exports.getOrderDetail = async(req, res) => {
                 ipk.repair_type,
                 icp.logo_url,
                 it.nametype as insurance_type,
-                -- payment method data
-                pm.id as payment_method_id,
-                pm.name_payment,
-                pp.discount_percent as payment_discount_percent,
-                pp.discount_amount as payment_discount_amount,
-                pp.charge as payment_charge,
-                pp.first_payment_amount,
-                pp.installment_min,
-                pp.installment_max,
-                -- group discount
                 pgd.discount_percent as group_discount_percent,
-                -- คำนวณราคาแต่ละวิธีชำระ
                 ipm.total_premium * 0.9309 as net_total,
-                ipm.premium_discount,
-                ROUND(
-                    ipm.total_premium - (
-                    (ipm.total_premium * 0.9309) * (
-                        COALESCE(ipm.premium_discount, 0) / 100.0 + COALESCE(pgd.discount_percent, 0) / 100.0 + COALESCE(pp.discount_percent, 0) / 100.0
-                    ) + COALESCE(pp.discount_amount, 0)
-                    ),
-                    2
-                ) as selling_price_final
+                ipm.premium_discount
             from
                 premium_on_order poo
             join insurance_premium ipm on poo.premium_id = ipm.id
@@ -68,36 +48,62 @@ exports.getOrderDetail = async(req, res) => {
             join insurance_company icp on ipk.insurance_company = icp.id
             join insurance_type it on ipk.insurance_type = it.id
             join member m on poo.member_id = m.id
-            -- join ทุก payment method ของ package นี้
-            left join package_payment pp on pp.package_id = ipk.id
-            left join payment_methods pm on pp.payment_method_id = pm.id
-            -- left join เพราะ group อาจไม่มีส่วนลด
             left join package_group_discount pgd on pgd.package_id = ipk.id
-            and pgd.group_code = m.group_id
+                and pgd.group_code = m.group_id
             where
                 poo.id = $1
-            order by pp.payment_method_id asc
             `, [id]
         )
 
-        if (result.rows.length === 0)
-        return res.status(404).json({ message: 'ไม่พบข้อมูล' })
+        const order = orderResult.rows[0]
+
+        //ดึง payment methods ทั้งหมด + ส่วนลดของ package นี้
+        const paymentResult = await db.query(`
+            SELECT
+                pm.id as payment_method_id,
+                pm.name_payment,
+                pp.discount_percent as payment_discount_percent,
+                pp.discount_amount  as payment_discount_amount,
+                pp.charge,
+                pp.first_payment_amount,
+                pp.installment_min,
+                pp.installment_max,
+                ROUND(
+                    $2::numeric - (
+                        ($3::numeric) * (
+                            COALESCE($4::numeric, 0) / 100.0
+                            + COALESCE($5::numeric, 0) / 100.0
+                            + COALESCE(pp.discount_percent, 0) / 100.0
+                        ) + COALESCE(pp.discount_amount, 0)
+                    ), 2
+                ) as selling_price_final
+            FROM payment_methods pm
+            LEFT JOIN package_payment pp
+                ON  pp.payment_method_id = pm.id
+                AND pp.package_id = $1
+            ORDER BY pm.id ASC
+        `, [
+            order.package_id,
+            order.total_premium,
+            order.net_total,
+            order.premium_discount,
+            order.group_discount_percent
+        ])
 
         // แยก info กับ payments
-    const first = result.rows[0]
     const info = {
-        compare_id:            first.compare_id,
-        premium_name:          first.premium_name,
-        total_premium:         first.total_premium,
-        logo_url:              first.logo_url,
-        insurance_type:        first.insurance_type,
-        repair_type:           first.repair_type,
-        package_name:           first.package_name,
-        selling_price:          first.selling_price,
-        premium_discount:          first.premium_discount
+        compare_id:            order.compare_id,
+        premium_name:          order.premium_name,
+        total_premium:         order.total_premium,
+        logo_url:              order.logo_url,
+        insurance_type:        order.insurance_type,
+        repair_type:           order.repair_type,
+        package_name:          order.package_name,
+        selling_price:         order.selling_price,
+        premium_discount:      order.premium_discount
     }
 
-    const payments = result.rows.map(row => ({
+    const payments = paymentResult.rows.map(row => ({
         payment_method_id:        row.payment_method_id,
         name_payment:             row.name_payment,
         payment_discount_percent: row.payment_discount_percent,
