@@ -137,187 +137,191 @@ exports.pushOrderFlex = async(userId, data) => {
     try {
         const res = await axios.post(LINE_PUSH_API, {
             to: userId,
-            message: [
+            messages: [
                 {
-                    type: "bubble",
-                    body: {
-                        type: "box",
-                        layout: "vertical",
-                        contents: [
-                            {
-                                type: "text",
-                                text: "คำสั่งซื้อ",
-                                weight: "bold",
-                                color: "#1DB446",
-                                size: "sm"
-                            },
-                            {
-                                type: "text",
-                                text: `${data.premium_name}`,
-                                weight: "bold",
-                                size: "lg",
-                                margin: "md"
-                            },
-                            {
-                                type: "text",
-                                size: "xs",
-                                color: "#aaaaaa",
-                                wrap: true,
-                                text: `รหัสแพ็กเกจ ${data.package_id}  ${data.package_name}`
-                            },
-                            {
-                                type: "separator",
-                                margin: "xxl"
-                            },
-                            {
-                                type: "box",
-                                layout: "vertical",
-                                margin: "xxl",
-                                spacing: "sm",
-                                contents: [
-                                {
-                                    type: "box",
-                                    layout: "horizontal",
-                                    contents: [
-                                    {
-                                        type: "text",
-                                        text: "บริษัท",
-                                        size: "sm",
-                                        color: "#555555",
-                                        flex: 0
-                                    },
-                                    {
-                                        type: "text",
-                                        text: `${data.namecompany}`,
-                                        size: "sm",
-                                        color: "#111111",
-                                        align: "end"
-                                    }
-                                    ]
-                                },
-                                {
-                                    type: "box",
-                                    layout: "horizontal",
-                                    contents: [
-                                    {
-                                        type: "text",
-                                        text: "ประเภทประกัน",
-                                        size: "sm",
-                                        color: "#555555",
-                                        flex: 0
-                                    },
-                                    {
-                                        type: "text",
-                                        text: `${data.nametype}`,
-                                        size: "sm",
-                                        color: "#111111",
-                                        align: "end"
-                                    }
-                                    ]
-                                },
-                                {
-                                    type: "box",
-                                    layout: "horizontal",
-                                    contents: [
-                                    {
-                                        type: "text",
-                                        text: "ประเภทซ่อม",
-                                        size: "sm",
-                                        color: "#555555",
-                                        flex: 0
-                                    },
-                                    {
-                                        type: "text",
-                                        text: `${data.repair_type}`,
-                                        size: "sm",
-                                        color: "#111111",
-                                        align: "end"
-                                    }
-                                    ]
-                                },
-                                {
-                                    type: "box",
-                                    layout: "horizontal",
-                                    contents: [
-                                    {
-                                        type: "text",
-                                        text: "วิธีการชำระเงิน",
-                                        size: "sm",
-                                        color: "#555555"
-                                    },
-                                    {
-                                        type: "text",
-                                        text: `${data.name_payment}`,
-                                        size: "sm",
-                                        color: "#111111",
-                                        align: "end"
-                                    }
-                                    ]
-                                },
-                                {
-                                    type: "box",
-                                    layout: "horizontal",
-                                    contents: [
-                                    {
-                                        type: "text",
-                                        text: "ราคาเบี้ยเดิม",
-                                        size: "sm",
-                                        color: "#555555"
-                                    },
-                                    {
-                                        type: "text",
-                                        text: `${data.total_premium}`,
-                                        size: "sm",
-                                        color: "#111111",
-                                        align: "end"
-                                    }
-                                    ]
-                                },
-                                {
-                                    type: "box",
-                                    layout: "horizontal",
-                                    contents: [
-                                    {
-                                        type: "text",
-                                        text: "ราคาที่ซื้อ",
-                                        size: "sm",
-                                        color: "#555555"
-                                    },
-                                    {
-                                        type: "text",
-                                        text: `${data.selling_price}`,
-                                        size: "sm"
-                                    }
-                                    ]
-                                }
-                                ]
-                            },
-                            {
-                                type: "separator",
-                                margin: "xxl"
-                            },
-                            {
-                                type: "box",
-                                layout: "horizontal",
-                                margin: "md",
-                                contents: [
+                    type: "flex",     
+                    altText: `คำสั่งซื้อ ${data.order_id}`,
+                    contents: { 
+                        type: "bubble",
+                        body: {
+                            type: "box",
+                            layout: "vertical",
+                            contents: [
                                 {
                                     type: "text",
-                                    text: "ORDER ID",
-                                    size: "xs",
-                                    color: "#aaaaaa",
-                                    flex: 0
+                                    text: "คำสั่งซื้อ",
+                                    weight: "bold",
+                                    color: "#1DB446",
+                                    size: "sm"
                                 },
                                 {
                                     type: "text",
-                                    text: `${data.order_id}`,
-                                    color: "#aaaaaa",
+                                    text: `${data.premium_name}`,
+                                    weight: "bold",
+                                    size: "lg",
+                                    margin: "md"
+                                },
+                                {
+                                    type: "text",
                                     size: "xs",
-                                    align: "end"
+                                    color: "#aaaaaa",
+                                    wrap: true,
+                                    text: `รหัสแพ็กเกจ ${data.package_id}  ${data.package_name}`
+                                },
+                                {
+                                    type: "separator",
+                                    margin: "xxl"
+                                },
+                                {
+                                    type: "box",
+                                    layout: "vertical",
+                                    margin: "xxl",
+                                    spacing: "sm",
+                                    contents: [
+                                    {
+                                        type: "box",
+                                        layout: "horizontal",
+                                        contents: [
+                                        {
+                                            type: "text",
+                                            text: "บริษัท",
+                                            size: "sm",
+                                            color: "#555555",
+                                            flex: 0
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${data.namecompany}`,
+                                            size: "sm",
+                                            color: "#111111",
+                                            align: "end"
+                                        }
+                                        ]
+                                    },
+                                    {
+                                        type: "box",
+                                        layout: "horizontal",
+                                        contents: [
+                                        {
+                                            type: "text",
+                                            text: "ประเภทประกัน",
+                                            size: "sm",
+                                            color: "#555555",
+                                            flex: 0
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${data.nametype}`,
+                                            size: "sm",
+                                            color: "#111111",
+                                            align: "end"
+                                        }
+                                        ]
+                                    },
+                                    {
+                                        type: "box",
+                                        layout: "horizontal",
+                                        contents: [
+                                        {
+                                            type: "text",
+                                            text: "ประเภทซ่อม",
+                                            size: "sm",
+                                            color: "#555555",
+                                            flex: 0
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${data.repair_type}`,
+                                            size: "sm",
+                                            color: "#111111",
+                                            align: "end"
+                                        }
+                                        ]
+                                    },
+                                    {
+                                        type: "box",
+                                        layout: "horizontal",
+                                        contents: [
+                                        {
+                                            type: "text",
+                                            text: "วิธีการชำระเงิน",
+                                            size: "sm",
+                                            color: "#555555"
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${data.name_payment}`,
+                                            size: "sm",
+                                            color: "#111111",
+                                            align: "end"
+                                        }
+                                        ]
+                                    },
+                                    {
+                                        type: "box",
+                                        layout: "horizontal",
+                                        contents: [
+                                        {
+                                            type: "text",
+                                            text: "ราคาเบี้ยเดิม",
+                                            size: "sm",
+                                            color: "#555555"
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${data.total_premium}`,
+                                            size: "sm",
+                                            color: "#111111",
+                                            align: "end"
+                                        }
+                                        ]
+                                    },
+                                    {
+                                        type: "box",
+                                        layout: "horizontal",
+                                        contents: [
+                                        {
+                                            type: "text",
+                                            text: "ราคาที่ซื้อ",
+                                            size: "sm",
+                                            color: "#555555"
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${data.selling_price}`,
+                                            size: "sm"
+                                        }
+                                        ]
+                                    }
+                                    ]
+                                },
+                                {
+                                    type: "separator",
+                                    margin: "xxl"
+                                },
+                                {
+                                    type: "box",
+                                    layout: "horizontal",
+                                    margin: "md",
+                                    contents: [
+                                    {
+                                        type: "text",
+                                        text: "ORDER ID",
+                                        size: "xs",
+                                        color: "#aaaaaa",
+                                        flex: 0
+                                    },
+                                    {
+                                        type: "text",
+                                        text: `${data.order_id}`,
+                                        color: "#aaaaaa",
+                                        size: "xs",
+                                        align: "end"
+                                    }
+                                    ]
                                 }
-                                ]
-                            }
-                        ]
+                            ]
+                        }
                     },
                     styles: {
                         footer: {

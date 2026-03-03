@@ -219,6 +219,8 @@ exports.confirmOrder = async (req, res) => {
 
         const data = result.rows[0]
 
+        console.log(data)
+
         await pushOrderFlex(data.user_id, data)
 
         res.json({ msg: 'สั่งซื้อสำเร็จ' })
