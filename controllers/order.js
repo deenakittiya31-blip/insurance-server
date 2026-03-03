@@ -1,9 +1,9 @@
 const db = require('../config/database')
-const { sendText, pushOrderFlex } = require('../services/lineService')
+const { pushOrderFlex } = require('../services/lineService')
 
 exports.create = async (req, res) => {
     try {
-         const { compare_id, package_id, premium_id, member_id } = req.body
+         const { compare_id = null, package_id, premium_id, member_id } = req.body
 
     const result = await db.query(
         `INSERT INTO premium_on_order 
