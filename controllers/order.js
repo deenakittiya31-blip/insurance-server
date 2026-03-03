@@ -69,8 +69,8 @@ exports.getOrderDetail = async(req, res) => {
             join insurance_type it on ipk.insurance_type = it.id
             join member m on poo.member_id = m.id
             -- join ทุก payment method ของ package นี้
-            join package_payment pp on pp.package_id = ipk.id
-            join payment_methods pm on pp.payment_method_id = pm.id
+            left join package_payment pp on pp.package_id = ipk.id
+            left join payment_methods pm on pp.payment_method_id = pm.id
             -- left join เพราะ group อาจไม่มีส่วนลด
             left join package_group_discount pgd on pgd.package_id = ipk.id
             and pgd.group_code = m.group_id
