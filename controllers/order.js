@@ -144,7 +144,7 @@ exports.confirmOrder = async (req, res) => {
 
         let nextNumber = 1;
         if (orderResult.rows.length) {
-            const lastCode = result.rows[0].order_id; 
+            const lastCode = orderResult.rows[0].order_id; 
             const lastNumber = parseInt(lastCode.replace('PO', ''), 5);
             nextNumber = lastNumber + 1;
         }
