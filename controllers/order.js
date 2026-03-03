@@ -139,14 +139,13 @@ exports.confirmOrder = async (req, res) => {
             snap_charge, snap_first_payment, snap_group_discount
         } = req.body
 
-    //สร้างคำสั่งซื้อ
+        //สร้างคำสั่งซื้อ
         const orderResult = await client.query(`
-            SELECT order_id
-            FROM premium_on_order
-            ORDER BY id DESC
-            LIMIT 1
+            SELECT order_id FROM premium_on_order
+            WHERE order_id IS NOT NULL
+            ORDER BY id DESC LIMIT 1
             FOR UPDATE
-        `);
+        `)
 
         let nextNumber = 1;
         if (orderResult.rows.length) {
