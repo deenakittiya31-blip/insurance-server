@@ -75,6 +75,7 @@ exports.getOrderDetail = async(req, res) => {
             and pgd.group_code = m.group_id
             where
                 poo.id = $1
+            order by pp.payment_method_id asc
             `, [id]
         )
 
