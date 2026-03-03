@@ -114,7 +114,7 @@ exports.getOrderDetail = async(req, res) => {
         installment_max:          row.installment_max,
         selling_price_final:      row.selling_price_final,
         group_discount_percent:   order.group_discount_percent,
-        net_total:                row.net_total
+        net_total:                order.net_total,
     }))
 
     res.json({ info, payments })
@@ -151,13 +151,13 @@ exports.confirmOrder = async (req, res) => {
         let nextNumber = 1;
         if (orderResult.rows.length) {
             const lastCode = orderResult.rows[0].order_id; 
-            const lastNumber = parseInt(lastCode.replace('PO', ''), 5);
+            const lastNumber = parseInt(lastCode.replace('PO', ''), 10);
             nextNumber = lastNumber + 1;
         }
 
         const orderCode = `PO${String(nextNumber).padStart(5, '0')}`;
 
-        await db.query(`
+        await client.query(`
             UPDATE premium_on_order SET
                 address_id          = $2,
                 payment_method_id   = $3,
@@ -181,6 +181,8 @@ exports.confirmOrder = async (req, res) => {
             snap_discount_pct, snap_discount_amt,
             snap_charge, snap_first_payment, snap_group_discount, orderCode
         ])
+
+        await client.query('COMMIT') 
 
         //ดึงข้อมูลส่ง flexcard
         const result = await db.query(
@@ -222,7 +224,10 @@ exports.confirmOrder = async (req, res) => {
 
         res.json({ msg: 'สั่งซื้อสำเร็จ' })
     } catch (err) {
+        await client.query('ROLLBACK')
         console.log(err)
         res.status(500).json({message: 'Server error'})
+    } finally {
+        client.release()
     }
 }
