@@ -51,6 +51,7 @@ exports.getOrderDetail = async(req, res) => {
                 pgd.discount_percent as group_discount_percent,
                 -- คำนวณราคาแต่ละวิธีชำระ
                 ipm.total_premium * 0.9309 as net_total,
+                ipm.premium_discount,
                 ROUND(
                     ipm.total_premium - (
                     (ipm.total_premium * 0.9309) * (
@@ -90,7 +91,8 @@ exports.getOrderDetail = async(req, res) => {
         insurance_type:        first.insurance_type,
         repair_type:           first.repair_type,
         package_name:           first.package_name,
-        selling_price: first.selling_price,
+        selling_price:          first.selling_price,
+        premium_discount:          first.premium_discount
     }
 
     const payments = result.rows.map(row => ({
@@ -103,6 +105,8 @@ exports.getOrderDetail = async(req, res) => {
         installment_min:          row.installment_min,
         installment_max:          row.installment_max,
         selling_price_final:      row.selling_price_final,
+        group_discount_percent:   row.group_discount_percent,
+                net_total:              row.net_total
     }))
 
     res.json({ info, payments })
