@@ -269,7 +269,7 @@ exports.pushOrderFlex = async(userId, data) => {
                                         },
                                         {
                                             type: "text",
-                                            text: `${data.total_premium}`,
+                                            text: `${data.total_premium} บาท`,
                                             size: "sm",
                                             color: "#111111",
                                             align: "end"
@@ -288,8 +288,9 @@ exports.pushOrderFlex = async(userId, data) => {
                                         },
                                         {
                                             type: "text",
-                                            text: `${data.selling_price}`,
-                                            size: "sm"
+                                            text: `${data.selling_price} บาท`,
+                                            size: "sm",
+                                            align: "end"
                                         }
                                         ]
                                     }
