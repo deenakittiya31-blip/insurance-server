@@ -107,7 +107,7 @@ exports.getOrderDetail = async(req, res) => {
         installment_max:          row.installment_max,
         selling_price_final:      row.selling_price_final,
         group_discount_percent:   row.group_discount_percent,
-                net_total:              row.net_total
+        net_total:                row.net_total
     }))
 
     res.json({ info, payments })

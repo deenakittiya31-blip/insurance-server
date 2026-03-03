@@ -12,13 +12,15 @@ exports.create = async(req, res) => {
         res.status(500).json({message: 'Server error'})
     }
 }
+
 exports.list = async(req, res) => {
     try {
         const result = await db.query(
             `
-            SELECT id, full_name, address_line, phone, subdistrict, district, province, zipcode
+            SELECT *
             FROM address 
-           WHERE member_id = $1
+            WHERE member_id = $1
+            ORDER BY is_default desc
             `, [req.user.id])
 
 
@@ -41,6 +43,7 @@ exports.read = async(req, res) => {
         res.status(500).json({message: 'Server error'})
     }
 }
+
 exports.update = async(req, res) => {
     try {
         const { full_name, address_line, phone, subdistrict, district, province, zipcode } = req.body
@@ -66,6 +69,21 @@ exports.update = async(req, res) => {
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'Server error'})
+    }
+}
+
+exports.isDefault = async(req, res) => {
+    try {
+            const {is_default} = req.body
+            const {id} = req.params
+
+            await db.query('UPDATE address SET is_default = $1 WHERE id = $2', 
+            [is_default, id])
+
+        res.status(200)  
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'})
     }
 }
 
