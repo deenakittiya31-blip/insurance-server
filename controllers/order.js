@@ -113,7 +113,7 @@ exports.getOrderDetail = async(req, res) => {
         installment_min:          row.installment_min,
         installment_max:          row.installment_max,
         selling_price_final:      row.selling_price_final,
-        group_discount_percent:   row.group_discount_percent,
+        group_discount_percent:   order.group_discount_percent,
         net_total:                row.net_total
     }))
 
