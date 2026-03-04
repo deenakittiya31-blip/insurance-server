@@ -1,5 +1,5 @@
 const db = require('../config/database');
-const { pushWelcomeFlex, sendImage } = require('../services/lineService');
+const { pushWelcomeFlex, sendImage, switchRishMenu } = require('../services/lineService');
 const { generateCompareJPG } = require('../utils/generateCompareJPG');
 const { uploadToCloudinary } = require('./image');
 
@@ -49,7 +49,8 @@ exports.registerMember = async(req, res) => {
             `,
             [ user_id, display_name, first_name, last_name, phone, picture_url ]
         )
-
+        
+        await switchRishMenu(user_id)
         // ส่ง Flex Message ต้อนรับ
         await pushWelcomeFlex(user_id, display_name, picture_url)
 

@@ -344,3 +344,20 @@ exports.pushOrderFlex = async(userId, data) => {
         );
     }
 }
+
+exports.switchRishMenu = async(userId) => {
+    try {
+        return await axios.post(
+            `https://api.line.me/v2/bot/user/${userId}/richmenu/${process.env.RISH_MENU_LINE}`, 
+            {}, 
+            { headers: LINE_HEADER }
+        )
+    } catch (error) {
+         console.error(
+            'Line error:',
+            error.response?.status,
+            error.response?.data
+        );
+        throw error
+    }
+}
