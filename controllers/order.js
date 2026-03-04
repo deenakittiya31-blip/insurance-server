@@ -374,7 +374,7 @@ exports.listOrder = async(req, res) => {
                 poo.order_id,
                 poo.created_at,
                 poo.selling_price,
-                poo.status as statusOnOrder,
+                poo.status,
                 poo.compare_id,
                 pmt.name_payment,
                 poo.tracking_order_id,
