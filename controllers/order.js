@@ -232,3 +232,63 @@ exports.confirmOrder = async (req, res) => {
         client.release()
     }
 }
+
+exports.getHistoryOrder = async(req, res) => {
+    try {
+        const { id } = req.user
+
+        const result = await db.query(
+            `
+            select
+                poo.order_id,
+                ipm.premium_name,
+                ipk.package_name,
+                it.nametype,
+                ipk.repair_type,
+                icp.logo_url,
+                poo.selling_price,
+                poo.status,
+                poo.tracking_order_id as tracking,
+                poo.id
+            from
+                premium_on_order poo
+            join insurance_package ipk on poo.package_id = ipk.id
+            join insurance_premium ipm on poo.premium_id = ipm.id
+            join insurance_type it on ipk.insurance_type = it.id
+            join insurance_company icp on ipk.insurance_company = icp.id
+            where member_id = $1
+            order by poo.order_id desc
+            `
+            , [id]
+        )
+
+        if(result.rowCount === 0) {
+            return res.status(200).json({data: []})
+        }
+
+        res.json({ data: result.rows })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'Server error'})
+    }
+}
+
+exports.deleteOrder = async(req, res) => {
+    try {
+        const { id } = req.params
+        const userId = req.user.id
+
+        const result = await db.query('select member_id from premium_on_order where id = $1', [id])
+        
+        if(result.rows[0].member_id !== userId) {
+            return res.status(403).json({ message: "คุณไม่มีสิทธิ์ลบ" });
+        }
+
+        await db.query(`delete from premium_on_order where id = $1`, [id])
+
+        res.json({ message: 'ยกเลิกคำสั่งซื้อสำเร็จ' })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'Server error'})
+    }
+}
