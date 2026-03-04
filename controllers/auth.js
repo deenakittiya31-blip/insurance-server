@@ -71,9 +71,11 @@ exports.currentMember = async (req, res) => {
       `SELECT 
           m.id,
           m.user_id,
+          m.display_name,
           m.first_name,
           m.last_name,
           m.picture_url,
+          m.is_registered,
           gm.group_name,
           gm.group_code
        FROM member m
@@ -151,7 +153,7 @@ exports.lineLogin = async (req, res) => {
             (err, token) => err ? reject(err) : resolve(token)
         )
     })
-    
+
     return res.json({ status: 'not_registered', token })
 
   } catch (err) {
