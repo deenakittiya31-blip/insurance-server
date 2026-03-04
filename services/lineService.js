@@ -133,6 +133,20 @@ exports.getProfile = async(userId) => {
     return res.data
 }
 
+exports.getFriendshipStatus  = async(userAccessToken) => {
+    try {
+        const res = await axios.get('https://api.line.me/friendship/v1/status', {
+            headers: {
+                Authorization: `Bearer ${userAccessToken}`
+            }
+        })
+        return res.data.friendFlag  // true = เป็นเพื่อน, false = ไม่ใช่
+    } catch (err) {
+        console.error('friendship error:', err.response?.data)
+        return false
+    }
+}
+
 exports.pushOrderFlex = async(userId, data) => {
     try {
         const res = await axios.post(LINE_PUSH_API, {

@@ -1,31 +1,49 @@
 const db = require('../config/database');
-const { pushWelcomeFlex, sendImage, switchRishMenu } = require('../services/lineService');
+const { pushWelcomeFlex, sendImage, switchRishMenu, getFriendshipStatus, getProfile } = require('../services/lineService');
 const { generateCompareJPG } = require('../utils/generateCompareJPG');
 const { uploadToCloudinary } = require('./image');
 
 exports.registerMember = async(req, res) => {
     try {
-        const { user_id, first_name, last_name, phone, display_name, picture_url, consent_accepted  } = req.body;
+        const { user_id, first_name, last_name, phone, display_name, picture_url, consent_accepted, accessToken  } = req.body;
 
         if(!user_id || !phone){
-            return res.status(400).json({message: 'ข้อมูลไม่ถูกต้อง'})
+            return res.status(400).json({message: 'ข้อมูลไม่ครบ'})
         }
 
-          // ถ้าไม่ยินยอม ไม่ให้ลงทะเบียน
+        // ถ้าไม่ยินยอม ไม่ให้ลงทะเบียน
         if (!consent_accepted) {
             return res.status(400).json({ message: 'กรุณายินยอมนโยบายความเป็นส่วนตัว' })
         }
 
-        const result = await db.query(`select is_registered from member where user_id = $1`, [user_id])
-
-        if (result.rowCount === 0) {
-            return res.status(404).json({ message: 'ไม่พบข้อมูลผู้ใช้ กรุณาเพิ่มเพื่อนก่อนลงทะเบียน' })
+        //เช็คสถานะความเป็นเพื่อน
+        const isFriend = await getFriendshipStatus(accessToken)
+        if(!isFriend){
+              return res.status(404).json({ message: 'กรุณาเพิ่มเพื่อนก่อนลงทะเบียน' })
         }
 
-        if(result.rows[0].is_registered) {
-            return res.status(400).json({ message: 'คุณลงทะเบียนแล้ว กรุณาล็อกอินเพื่อเข้าใช้งาน' })
+        const result = await db.query(`select is_friend, is_registered from member where user_id = $1`, [user_id])
+
+        //ถ้าไม่มีข้อมูลให้เพิ่มข้อมูล
+        if(result.rowCount === 0) {
+            const profile = await getProfile(user_id)
+
+            await db.query(`INSERT INTO member (user_id, display_name,  picture_url, is_friend, is_registered, group_id) VALUES ($1, $2, $3, true, false, 'M001')`
+            , [user_id, profile.displayName, profile.pictureUrl])
+        } else {
+            //ถ้ามีข้อมูลก็ให้เช็คก่อน
+
+            if(result.rows[0].is_registered) {
+                return res.status(400).json({ message: 'คุณลงทะเบียนแล้ว กรุณาล็อกอินเพื่อเข้าใช้งาน' })
+            }
+
+            //ลูกค้าเก่าที่ is_friend ยังเป็น false แต่ผ่าน isFriend มาให้อัปเดต is_friend
+            if(!result.rows[0].is_friend){
+                await db.query(`update member set is_friend = true where user_id = $1`, [user_id])
+            }
         }
 
+        //เช็คเบอร์ซ้ำ
         const phoneCheck = await db.query(`select user_id from member where phone = $1 and user_id != $2`, [phone, user_id])
         
         if (phoneCheck.rowCount > 0) {
@@ -50,8 +68,10 @@ exports.registerMember = async(req, res) => {
             [ user_id, display_name, first_name, last_name, phone, picture_url ]
         )
         
+        //เปลี่ยน rish menu
         await switchRishMenu(user_id)
-        // ส่ง Flex Message ต้อนรับ
+
+        //ส่ง Flex Message ต้อนรับ
         await pushWelcomeFlex(user_id, display_name, picture_url)
 
         res.json({ success: true })
