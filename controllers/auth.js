@@ -123,29 +123,42 @@ exports.lineLogin = async (req, res) => {
     console.log("member rows:", member.rows);
 
     // เช็คก่อนว่ามี member ในระบบไหม
-    if (!member.rows[0]) {
-        return res.status(404).json({ message: "not found" })
-    }
-
-    // ถ้ามีแต่ยังไม่ได้ลงทะเบียน
-    if (!member.rows[0].is_registered) {
-        return res.status(403).json({ message: "not registered" })
-    }
-
-    // สร้าง jwt ของระบบคุณเอง
-    jwt.sign({ id: member.rows[0].id }, process.env.SECRET, {expiresIn: '1d'}, (err, token) => {
-            if(err){
-                return res.status(500).json({message: 'server errer jwt'})
-            }
-            res.json({token})
+    if (member.rowCount === 0) {
+        return res.json({ 
+            status: 'guest',
         })
+    }
+
+    //ลงทะเบียนแล้ว
+    if (member.rows[0].is_registered) {
+        const token = await new Promise((resolve, reject) => {
+            jwt.sign(
+                { id: member.rows[0].id, role: 'member' },
+                process.env.SECRET,
+                { expiresIn: '1d' },
+                (err, token) => err ? reject(err) : resolve(token)
+            )
+        })
+        return res.json({ status: 'member', token })
+    }
+
+    //เพิ่มเพื่อนแล้วแต่ยังไม่ลงทะเบียน ออก JWT ให้เหมือนกัน
+    const token = await new Promise((resolve, reject) => {
+        jwt.sign(
+            { id: member.rows[0].id, role: 'not_registered' },
+            process.env.SECRET,
+            { expiresIn: '1d' },
+            (err, token) => err ? reject(err) : resolve(token)
+        )
+    })
+    
+    return res.json({ status: 'not_registered', token })
 
   } catch (err) {
     console.log("LINE error status:", err.response?.status);
     console.log("LINE error data:", err.response?.data); // ✅ ดู error จาก LINE
     if (err.response?.status === 400) {
-        const errorDesc = err.response?.data?.error_description || ''
-        
+        const errorDesc = err.response?.data?.error_description || ''       
         if (errorDesc.includes('expired')) {
             return res.status(401).json({ message: "line token expired" })
         }
