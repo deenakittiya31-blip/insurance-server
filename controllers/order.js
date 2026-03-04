@@ -8,7 +8,7 @@ exports.create = async (req, res) => {
     const result = await db.query(
         `INSERT INTO premium_on_order 
          (compare_id, package_id, premium_id, member_id, status, expired_at)
-         VALUES ($1, $2, $3, $4, 'pending', now() + interval '30 minutes')
+         VALUES ($1, $2, $3, $4, 'รอดำเนินการ', now() + interval '30 minutes')
          RETURNING id`,
         [compare_id, package_id, premium_id, member_id]
     )
@@ -169,8 +169,9 @@ exports.confirmOrder = async (req, res) => {
                 snap_first_payment  = $10,
                 snap_group_discount = $11,
                 order_id            = $12,
-                status              = 'confirmed',
+                status              = 'สั่งซื้อสำเร็จ',
                 expired_at          = NULL
+                created_at          = now()
             WHERE id = $1
             RETURNING order_id
         `, [
@@ -290,5 +291,176 @@ exports.deleteOrder = async(req, res) => {
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'Server error'})
+    }
+}
+
+exports.listOrder = async(req, res) => {
+    try {
+        const {
+            page = 1,
+            limit = 10,
+            sortKey = 'id',
+            sortDirection = 'DESC',
+            search
+        } = req.query;
+
+        const sortColumnMap = {
+            order_id: 'poo.order_id',
+            created_at: 'poo.created_at',
+            first_name: 'm.first_name',
+            compare_id: 'poo.compare_id',
+            premium_id: 'ipm.premium_id',
+            premium_name: 'ipm.premium_name',
+            name_payment: 'pmt.name_payment'
+        };
+
+        const pageNum = parseInt(page, 10)
+        const limitNum = parseInt(limit, 10)
+        const offset = (pageNum - 1) * limitNum
+        const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        const finalSortKey = sortColumnMap[sortKey] || 'poo.order_id';
+
+        let conditions = [];
+        let values = [];
+        let paramIndex = 1;
+
+        if (search) {
+            conditions.push(`
+                (
+                poo.order_id ILIKE $${paramIndex}
+                OR ipk.package_name ILIKE $${paramIndex}
+                OR TO_CHAR(poo.created_at, 'DD/MM/YYYY') ILIKE $${paramIndex} 
+                OR m.first_name ILIKE $${paramIndex} 
+                OR poo.compare_id ILIKE $${paramIndex} 
+                OR ipm.premium_id ILIKE $${paramIndex} 
+                OR ipm.premium_name ILIKE $${paramIndex} 
+                OR pmt.name_payment ILIKE $${paramIndex}
+                OR ipk.package_id ILIKE $${paramIndex}
+                OR poo.status ILIKE $${paramIndex}
+                OR poo.selling_price::text ILIKE $${paramIndex}
+                OR poo.tracking_order_id ILIKE $${paramIndex}
+                )
+            `);
+            values.push(`%${search}%`);
+            paramIndex++;
+        }
+
+        const whereClause =
+            conditions.length > 0
+                ? `WHERE ${conditions.join(' AND ')}`
+                : '';
+
+        const countResult = await db.query(
+            `
+            SELECT COUNT(*)::int as total 
+            FROM premium_on_order poo 
+            join insurance_package ipk on poo.package_id = ipk.id
+            join insurance_premium ipm on poo.premium_id = ipm.id
+            join insurance_type it on ipk.insurance_type = it.id
+            join insurance_company icp on ipk.insurance_company = icp.id
+            join payment_methods pmt on poo.payment_method_id = pmt.id
+            join member m on poo.member_id = m.id
+            left join address ad on ad.id = poo.address_id
+            ${whereClause}`, values)
+
+        const totalItems = countResult.rows[0].total
+        const totalPages = Math.ceil(totalItems / limitNum)
+
+
+        const result = await db.query(
+            `
+            select
+                poo.id,
+                poo.order_id,
+                poo.created_at,
+                poo.selling_price,
+                poo.status,
+                poo.compare_id,
+                pmt.name_payment,
+                poo.tracking_order_id,
+                --premium and package
+                ipm.premium_name,
+                ipm.premium_id,
+                ipk.package_name,
+                ipk.package_id,
+                ipk.repair_type,
+                it.nametype,
+                icp.logo_url,
+                --member
+                m.first_name,
+                m.picture_url,
+                --snapshot price
+                poo.installment,
+                poo.discount_price,
+                poo.snap_discount_pct,
+                poo.snap_discount_amt,
+                poo.snap_charge,
+                poo.snap_first_payment,
+                poo.snap_group_discount,
+                --address member
+                ad.address_line,
+                ad.subdistrict,
+                ad.district,
+                ad.province,
+                ad.zipcode,
+                ad.phone,
+                ad.full_name
+            from
+                premium_on_order poo
+            join insurance_package ipk on poo.package_id = ipk.id
+            join insurance_premium ipm on poo.premium_id = ipm.id
+            join insurance_type it on ipk.insurance_type = it.id
+            join insurance_company icp on ipk.insurance_company = icp.id
+            join payment_methods pmt on poo.payment_method_id = pmt.id
+            join member m on poo.member_id = m.id
+            left join address ad on ad.id = poo.address_id
+            ${whereClause} 
+            ORDER BY ${finalSortKey} ${validSortDirection} 
+            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+            `
+            , [...values, limitNum, offset])
+
+        res.json({
+            data: result.rows,
+            pagination: {
+                page: pageNum,
+                limit: limitNum,
+                totalItems,
+                totalPages,
+                hasNextPage: pageNum < totalPages,
+                hasPrevPage: pageNum > 1
+            }
+        });
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'}) 
+    }
+}
+
+exports.changeStatusOrder = async(req, res) => {
+    try {
+        const { id } = req.params
+        const { status } = req.body
+
+        await db.query('update premium_on_order set status = $2 where id = $1', [id, status])
+
+        res.status(200).json({ msg: 'อัปเดตสถานะสำเร็จ' })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'Server error'})
+    }
+}
+
+exports.updateTrackingOrder = async(req, res) => {
+    try {
+        const { tracking } = req.body;
+        const { id } = req.params;
+
+        await db.query('update premium_on_order SET tracking_order_id = $2 WHERE id = $1', [id, tracking])
+
+        res.json({msg: 'เพิ่มเลขพัสดุสำเร็จ'})  
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'}) 
     }
 }
