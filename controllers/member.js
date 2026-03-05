@@ -267,6 +267,15 @@ exports.updateMember = async(req, res) => {
         const { id } = req.params
         const { first_name, last_name, group_id, phone, note, member_code } = req.body
 
+        const result = await db.query(
+            'SELECT member_code FROM member WHERE member_code = $1 AND id != $2',
+            [member_code, id]
+        )
+
+        if (result.rows.length > 0) {
+            return res.status(400).json({ message: 'รหัสผู้ใช้ซ้ำ กรุณากรอกรหัสใหม่' })
+        }
+
         await db.query(
             `update member set first_name = coalesce ($1, first_name), last_name = coalesce ($2, last_name), group_id = coalesce ($3, group_id), phone = coalesce ($4, phone), note = coalesce ($5, note), member_code = coalesce ($6, member_code) where id = $7`,
             [
