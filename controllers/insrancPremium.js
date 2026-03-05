@@ -400,8 +400,6 @@ exports.searchPremiumMember = async(req, res) => {
                 )
             ).toFixed(2)
 
-            const month_pay = parseFloat(row.payment_discount_amount) || 0
-
             return {
                 ...row,
                 selling_price_final,
@@ -558,7 +556,17 @@ exports.listPremiumCart = async(req, res) => {
                 -- company
                 icp.logo_url,
                 -- type
-                it.nametype as insurance_type
+                it.nametype as insurance_type,
+                --have on order
+                exists (
+                    select
+                    1
+                    from
+                    premium_on_order poo
+                    where
+                    poo.premium_id = poc.premium_id
+                    and poo.member_id = poc.member_id
+                ) as is_ordered
             from
                 premium_on_cart poc
             join insurance_premium ipm on poc.premium_id = ipm.id
@@ -606,7 +614,8 @@ exports.listPremiumCart = async(req, res) => {
                 repair_type: p.repair_type,
                 package_name: p.package_name,
                 logo_url: p.logo_url,
-                insurance_type: p.insurance_type
+                insurance_type: p.insurance_type,
+                is_ordered: p.is_ordered
             })
         })
 
