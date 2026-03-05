@@ -177,11 +177,10 @@ exports.listMember = async(req, res) => {
                 m.group_id,
                 gm.group_name,
                 COALESCE(
-                    ARRAY_AGG(distinct t.tag_name) filter (
-                    where
-                        tm.tag_id is not null
-                    ),
-                    '{}'
+                    JSONB_AGG(
+                        distinct JSONB_BUILD_OBJECT('tag_member_id', tm.id, 'tag_name', t.tag_name)
+                    ) FILTER (WHERE tm.tag_id IS NOT NULL),
+                    '[]'::jsonb
                 ) as tags,
                 m.is_active
             from
