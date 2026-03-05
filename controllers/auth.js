@@ -76,6 +76,7 @@ exports.currentMember = async (req, res) => {
           m.last_name,
           m.picture_url,
           m.is_registered,
+          m.member_code,
           gm.group_name,
           gm.group_code
        FROM member m
