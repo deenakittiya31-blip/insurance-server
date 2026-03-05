@@ -170,7 +170,7 @@ exports.confirmOrder = async (req, res) => {
                 snap_group_discount = $11,
                 order_id            = $12,
                 status              = 'สั่งซื้อสำเร็จ',
-                expired_at          = NULL
+                expired_at          = NULL,
                 created_at          = now()
             WHERE id = $1
             RETURNING order_id
