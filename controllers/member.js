@@ -252,7 +252,8 @@ exports.readMember = async(req, res) => {
                 gm.group_name,
                 m.phone,
                 m.note,
-                m.member_code
+                m.member_code,
+                m.picture_url
             `
             , [id])
 
