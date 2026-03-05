@@ -221,28 +221,38 @@ exports.readMember = async(req, res) => {
 
         const result = await db.query(
             `
-            select 
-                m.first_name, 
-                m.last_name, 
-                m.group_id, 
-                gm.group_name,  
-                m.phone, 
+            select
+                m.first_name,
+                m.last_name,
+                m.group_id,
+                gm.group_name,
+                m.phone,
                 m.note,
+                m.member_code,
                 COALESCE(
                     JSONB_AGG(
-                        DISTINCT JSONB_BUILD_OBJECT(
-                            'tag_member_id', tm.id,
-                            'tag_name', tag.tag_name
-                        )
-                    ) FILTER (WHERE tm.id IS NOT NULL),
+                    distinct JSONB_BUILD_OBJECT('tag_member_id', tm.id, 'tag_name', tag.tag_name)
+                    ) filter (
+                    where
+                        tm.id is not null
+                    ),
                     '[]'::jsonb
-                ) AS tags
-            from member as m
-            left join group_member as gm on m.group_id = gm.id 
+                ) as tags
+            from
+                member as m
+            left join group_member as gm on m.group_id = gm.group_code
             left join tag_member as tm on m.user_id = tm.member_id
             left join tag on tm.tag_id = tag.id
-            where m.id = $1
-            group by m.first_name, m.last_name, m.group_id, gm.group_name,  m.phone, m.note
+            where
+                m.id = $1
+            group by
+                m.first_name,
+                m.last_name,
+                m.group_id,
+                gm.group_name,
+                m.phone,
+                m.note,
+                m.member_code
             `
             , [id])
 
@@ -256,16 +266,17 @@ exports.readMember = async(req, res) => {
 exports.updateMember = async(req, res) => {
     try {
         const { id } = req.params
-        const { first_name, last_name, group_id, phone, note } = req.body
+        const { first_name, last_name, group_id, phone, note, member_code } = req.body
 
         await db.query(
-            `update member set first_name = coalesce ($1, first_name), last_name = coalesce ($2, last_name), group_id = coalesce ($3, group_id), phone = coalesce ($4, phone), note = coalesce ($5, note) where id = $6`,
+            `update member set first_name = coalesce ($1, first_name), last_name = coalesce ($2, last_name), group_id = coalesce ($3, group_id), phone = coalesce ($4, phone), note = coalesce ($5, note), member_code = coalesce ($6, member_code) where id = $7`,
             [
-                first_name  ?? null, 
-                last_name   ?? null, 
-                group_id    ??  null, 
-                phone       ?? null, 
-                note        ?? null, 
+                first_name   ?? null, 
+                last_name    ?? null, 
+                group_id     ?? null, 
+                phone        ?? null, 
+                note         ?? null, 
+                member_code  ?? null, 
                 id
             ]
         )
