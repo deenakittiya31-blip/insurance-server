@@ -321,7 +321,7 @@ exports.pushOrderFlex = async(userId, data) => {
                                     contents: [
                                     {
                                         type: "text",
-                                        text: "ORDER ID",
+                                        text: "เลขคำสั่งซื้อ",
                                         size: "xs",
                                         color: "#aaaaaa",
                                         flex: 0

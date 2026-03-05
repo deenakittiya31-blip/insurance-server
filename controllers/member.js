@@ -95,6 +95,7 @@ exports.listMember = async(req, res) => {
         const allowedSortKeys = [
             'id',
             'display_name',
+            'member_code',
             'first_name',
             'last_name',
             'phone',
@@ -119,6 +120,7 @@ exports.listMember = async(req, res) => {
             conditions.push(`
                 (
                     m.display_name ILIKE $${paramIndex}
+                    m.member_code ILIKE $${paramIndex}
                     OR m.first_name ILIKE $${paramIndex}
                     OR m.last_name ILIKE $${paramIndex}
                     OR m.phone ILIKE $${paramIndex}
@@ -164,6 +166,7 @@ exports.listMember = async(req, res) => {
             select
                 m.id,
                 m.user_id,
+                m.member_code,
                 m.display_name,
                 m.first_name,
                 m.last_name,
