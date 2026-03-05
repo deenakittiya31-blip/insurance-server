@@ -228,6 +228,7 @@ exports.readMember = async(req, res) => {
                 m.phone,
                 m.note,
                 m.member_code,
+                m.picture_url,
                 COALESCE(
                     JSONB_AGG(
                     distinct JSONB_BUILD_OBJECT('tag_member_id', tm.id, 'tag_name', tag.tag_name)
