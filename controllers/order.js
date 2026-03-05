@@ -307,6 +307,8 @@ exports.listOrder = async(req, res) => {
         const sortColumnMap = {
             order_id: 'poo.order_id',
             created_at: 'poo.created_at',
+            status: 'poo.status',
+            selling_price: 'poo.selling_price',
             first_name: 'm.first_name',
             compare_id: 'poo.compare_id',
             premium_id: 'ipm.premium_id',

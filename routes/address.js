@@ -1,13 +1,13 @@
 const express = require('express')
 const { authCheck, roleCheck } = require('../middleware/authCheck')
-const { create, list, read, update, remove, isDefault } = require('../controllers/address')
+const { create, list, read, update, remove, toggleDefualtAddress } = require('../controllers/address')
 const router = express.Router()
 
 router.post('/create-address', authCheck, create)
 router.get('/list-address', authCheck, list)
 router.get('/read-address/:id', authCheck, read)
 router.put('/update-address/:id', authCheck, update)
-router.put('/toggle-address/:id', authCheck, isDefault)
+router.patch('/address/:id/default', authCheck, toggleDefualtAddress)
 router.delete('/delete-address/:id', authCheck, remove)
 
 module.exports = router

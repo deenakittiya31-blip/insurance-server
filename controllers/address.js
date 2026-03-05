@@ -72,18 +72,27 @@ exports.update = async(req, res) => {
     }
 }
 
-exports.isDefault = async(req, res) => {
+exports.toggleDefualtAddress = async (req, res) => {
     try {
-            const {is_default} = req.body
-            const {id} = req.params
+        const { id } = req.params
+    const memberId = req.user.id
 
-            await db.query('UPDATE address SET is_default = $1 WHERE id = $2', 
-            [is_default, id])
+    //Set ทุก address ของ member นี้เป็น false ก่อน
+    await db.query(
+        `UPDATE address SET is_default = false WHERE member_id = $1`,
+        [memberId]
+    )
 
-        res.status(200)  
+    //Set อันที่เลือกเป็น true
+    await db.query(
+        `UPDATE address SET is_default = true WHERE id = $1 AND member_id = $2`,
+        [id, memberId]
+    )
+
+    res.json({ msg: 'เปลี่ยนที่อยู่เริ่มต้นสำเร็จ' })
     } catch (err) {
-        console.log(err)
-        res.status(500).json({message: 'server errer'})
+          console.log(err)
+        res.status(500).json({message: 'Server error'})
     }
 }
 
