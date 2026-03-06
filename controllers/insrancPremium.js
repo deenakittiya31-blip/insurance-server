@@ -396,6 +396,7 @@ exports.searchPremiumMember = async(req, res) => {
             return res.status(200).json({ data: [], total: 0, message: 'ไม่พบข้อมูลเบี้ย' })
         }
 
+
         // คำนวณ selling_price_final
         const data = result.rows.map(row => {
             const premium      = parseFloat(row.total_premium) || 0
@@ -434,17 +435,26 @@ exports.createPremiumToCompareMember = async(req, res) => {
     const client = await db.connect()
     try {
         await client.query('BEGIN')
-        const { premiums, ...compareData } = req.body
+        const { insurance_type_id, insurance_company, car_usage_type_id, repair_type, premiums, ...compareData } = req.body
         const member_id = req.user.id
 
-        console.log('type:', typeof req.body.premiums)
-        console.log('isArray:', Array.isArray(req.body.premiums))
-        console.log('length:', req.body.premiums?.length)
-        console.log(req.body.premiums)
 
         validatePremiums(premiums)
 
         const q_id = await createQuotationCompare(client, compareData)
+
+        await client.query(
+            `
+            insert into filter_premium_member (insurance_type_id, insurance_company, car_usage_type_id, repair_type, compare_id)
+            values ($1, $2, $3, $4, $5)`
+            , [
+                insurance_type_id ? Number(insurance_type_id) : null,
+                insurance_company?.length > 0 ? insurance_company.map(Number) : null, //array of int
+                car_usage_type_id ? Number(car_usage_type_id) : null,
+                repair_type || null,
+                q_id
+              ]
+        )
 
         await processPremiums(client, premiums, q_id, {saveToCart: true}, member_id)
 
