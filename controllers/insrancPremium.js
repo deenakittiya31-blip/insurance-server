@@ -288,21 +288,10 @@ exports.searchPremiumMember = async(req, res) => {
                     '[]'::jsonb
                 ) AS payments,
 
-                -- ทุก group discount ของแพ็กเกจนี้
-                COALESCE(
-                    (
-                        SELECT JSONB_AGG(
-                            JSONB_BUILD_OBJECT(
-                                'group_name',       gm.group_name,
-                                'discount_percent', pgd.discount_percent
-                            )
-                        )
-                        FROM package_group_discount pgd
-                        JOIN group_member gm ON pgd.group_code = gm.group_code
-                        WHERE pgd.package_id = ipk.id
-                    ),
-                    '[]'::jsonb
-                ) AS groups,
+                JSONB_BUILD_OBJECT(
+                    'group_name', gm.group_name,
+                    'discount_percent', pgd.discount_percent
+                ) AS group_discount,
 
                 JSONB_BUILD_OBJECT(
                     'car_own_damage_deductible', ipk.car_own_damage_deductible,
@@ -347,6 +336,7 @@ exports.searchPremiumMember = async(req, res) => {
             -- join ส่วนลดเลเวลลูกค้า (ใช้คำนวณ)
             LEFT JOIN package_group_discount pgd ON ipk.id = pgd.package_id
             AND pgd.group_code = $${groupCodeIndex}
+            LEFT JOIN group_member gm ON pgd.group_code = gm.group_code
         `;
 
         //เงื่อนไขพื้นฐาน (ต้องมีเสมอ)
