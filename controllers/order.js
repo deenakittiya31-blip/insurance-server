@@ -108,7 +108,7 @@ exports.getOrderDetail = async(req, res) => {
         name_payment:             row.name_payment,
         payment_discount_percent: row.payment_discount_percent,
         payment_discount_amount:  row.payment_discount_amount,
-        charge:                   row.payment_charge,
+        charge:                   row.charge,
         first_payment_amount:     row.first_payment_amount,
         installment_min:          row.installment_min,
         installment_max:          row.installment_max,
