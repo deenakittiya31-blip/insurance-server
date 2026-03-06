@@ -75,7 +75,8 @@ exports.getOrderDetail = async(req, res) => {
                             + COALESCE($5::numeric, 0) / 100.0
                             + COALESCE(pp.discount_percent, 0) / 100.0
                         ) + COALESCE(pp.discount_amount, 0)
-                    ), 2
+                    ) + COALESCE(pp.charge, 0),
+                    2
                 ) as selling_price_final
             FROM payment_methods pm
             LEFT JOIN package_payment pp
