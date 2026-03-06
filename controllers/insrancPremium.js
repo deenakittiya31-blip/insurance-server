@@ -580,7 +580,7 @@ exports.listPremiumCart = async(req, res) => {
                 icp.logo_url,
                 -- type
                 it.nametype as insurance_type,
-                --have on order
+                -- have on order
                 exists (
                     select
                     1
@@ -589,22 +589,27 @@ exports.listPremiumCart = async(req, res) => {
                     where
                     poo.premium_id = poc.premium_id
                     and poo.member_id = poc.member_id
-                ) as is_ordered
+                ) as is_ordered,
+                -- filter premium 
+                fpm.repair_type as filter_repair_type,
+                fit.nametype as filter_insurance_type,
+                ct.type as filter_car_type, 
+                cu.usage_name as filter_car_usage
             from
                 premium_on_cart poc
             join insurance_premium ipm on poc.premium_id = ipm.id
             join insurance_package ipk on poc.package_id = ipk.id
             join insurance_company icp on ipk.insurance_company = icp.id
             join insurance_type it on ipk.insurance_type = it.id
+            left join filter_premium_member fpm on poc.compare_id = fpm.compare_id
+            left join insurance_type fit on fpm.insurance_type_id = fit.id
+            left join car_usage_type cut on fpm.car_usage_type_id = cut.id
+            left join car_type ct on cut.car_type_id = ct.id
+            left join car_usage cu on cut.car_usage_id = cu.id
             where
                 poc.member_id = $1
-            group by
-                poc.compare_id,
-                poc.id,
-                ipm.id,
-                ipk.id,
-                icp.logo_url,
-                it.nametype
+            order by
+                poc.id desc
             `, [member_id]
         )
 
@@ -624,6 +629,12 @@ exports.listPremiumCart = async(req, res) => {
             if (!grouped[cid]) {
                 grouped[cid] = {
                     compare_id: cid,
+                    filter: {
+                        repair_type: p.filter_repair_type,
+                        insurance_type: p.filter_insurance_type,
+                        car_type: p.filter_car_type,
+                        car_usage: p.filter_car_usage
+                    },
                     premiums: []
                 }
             }
