@@ -327,6 +327,7 @@ exports.searchPremiumMember = async(req, res) => {
             JOIN promotion pmt ON ipk.promotion_id = pmt.id
             JOIN insurance_company icp ON ipk.insurance_company = icp.id
             JOIN insurance_type it ON ipk.insurance_type = it.id
+            LEFT JOIN package_car_usage_type pcut ON ipk.id = pcut.package_id
 
             LEFT JOIN (
                 SELECT
