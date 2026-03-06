@@ -220,6 +220,18 @@ exports.searchPremiumMember = async(req, res) => {
     try {
         const { insurance_type_id, insurance_company,  car_usage_type_id, repair_type, group_code } = req.body;
 
+        // ตรวจสอบว่าเลือกครบหรือไม่เลือกเลย
+        const hasFilter = insurance_type_id || car_usage_type_id || 
+                         (insurance_company && insurance_company.length > 0) || repair_type
+
+        if (!hasFilter) {
+            return res.status(400).json({ message: 'กรุณาระบุเงื่อนไขการค้นหาอย่างน้อย 1 รายการ' })
+        }
+
+        if (!car_usage_type_id) {
+            return res.status(400).json({ message: 'กรุณาระบุประเภทรถยนต์' })
+        }
+
         let values = [];
         let conditions = [];
         let index = 1;
