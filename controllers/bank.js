@@ -188,3 +188,30 @@ exports.remove = async(req, res) => {
         res.status(500).json({message: 'server errer'}) 
     }
 }
+
+exports.createInstallment = async(req, res) => {
+    const client = await db.connect()
+    
+    try {
+        const {bank_id, installments} = req.body
+
+        if(!bank_id || (installments.length === 0)) {
+            return res.status(400).json({message: 'กรุณากรอกข้อมูลให้ครบ'})
+        }
+
+        await client.query('BEGIN')
+
+        for(let i = 0; i < installments.length; i++) {
+            await client.query('insert into bank_installment (bank_id, installment_month) values($1, $2)', [bank_id, installments[i]])
+        }
+       
+        await client.query('COMMIT')
+        res.json({msg: 'บันทึกสำเร็จ'})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'}) 
+    } finally {
+        client.release()
+    }
+}
+

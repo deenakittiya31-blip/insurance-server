@@ -1,9 +1,10 @@
 const express = require('express')
 const { authCheck, roleCheck } = require('../middleware/authCheck')
-const { create, list, listSelect, read, update, is_active, remove } = require('../controllers/bank')
+const { create, list, listSelect, read, update, is_active, remove, createInstallment } = require('../controllers/bank')
 const router = express.Router()
 
 router.post('/create-bank', authCheck, roleCheck(['admin']), create)
+router.post('/create-bank-installment', authCheck, roleCheck(['admin']), createInstallment)
 router.get('/list-bank', list)
 router.get('/list-bank-select',listSelect)
 router.get('/read-bank/:id', authCheck, roleCheck(['admin']),read)
