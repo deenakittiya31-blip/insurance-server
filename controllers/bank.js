@@ -5,7 +5,7 @@ exports.create = async(req, res) => {
     try {
         const { bank_name, logo_url, logo_public_id } = req.body
 
-      await db.query(
+      const result = await db.query(
       `INSERT INTO bank (bank_name, logo_url, logo_public_id, is_active)
        VALUES ($1, $2, $3, true) RETURNING *`,
       [bank_name, logo_url, logo_public_id]
@@ -152,7 +152,7 @@ exports.is_active = async(req, res) => {
             const {is_active} = req.body
             const {id} = req.params
 
-            await db.query('UPDATE bank SET is_active = $1 WHERE id = $2 RETURNING *', 
+            const result = await db.query('UPDATE bank SET is_active = $1 WHERE id = $2 RETURNING *', 
             [is_active, id])
 
           res.json({
