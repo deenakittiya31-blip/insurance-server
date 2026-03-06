@@ -7,11 +7,14 @@ exports.create = async(req, res) => {
 
       await db.query(
       `INSERT INTO bank (bank_name, logo_url, logo_public_id, is_active)
-       VALUES ($1, $2, $3, true)`,
+       VALUES ($1, $2, $3, true) RETURNING *`,
       [bank_name, logo_url, logo_public_id]
     )
 
-    res.json({ msg: 'เพิ่มธนาคารสำเร็จ' })
+       res.json({ 
+            msg: 'เพิ่มธนาคารสำเร็จ',
+            data: result.rows[0] 
+        })
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
@@ -125,7 +128,7 @@ exports.update = async(req, res) => {
 
         const bank = existing.rows[0]
 
-        await db.query('UPDATE bank SET name = $1, logo_url = $2, logo_public_id = $3  WHERE id = $4', 
+        const resultUpdate = await db.query('UPDATE bank SET name = $1, logo_url = $2, logo_public_id = $3  WHERE id = $4 RETURNING *', 
           [
             bank_name            ?? bank.bank_name,           
             logo_url        ?? bank.logo_url, 
@@ -133,8 +136,11 @@ exports.update = async(req, res) => {
             id
 
           ])
-
-        res.json({msg: 'แก้ไขธนาคารสำเร็จ'})  
+ 
+         res.json({
+            msg: 'แก้ไขธนาคารสำเร็จ',
+            data: resultUpdate.rows[0] 
+        })  
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
@@ -146,10 +152,13 @@ exports.is_active = async(req, res) => {
             const {is_active} = req.body
             const {id} = req.params
 
-            await db.query('UPDATE bank SET is_active = $1 WHERE id = $2', 
+            await db.query('UPDATE bank SET is_active = $1 WHERE id = $2 RETURNING *', 
             [is_active, id])
 
-        res.json({msg: 'อัปเดตสถานะสำเร็จ'})  
+          res.json({
+            msg: 'อัปเดตสถานะสำเร็จ',
+            data: result.rows[0] 
+        })  
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'})
