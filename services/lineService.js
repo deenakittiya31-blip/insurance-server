@@ -277,7 +277,7 @@ exports.pushOrderFlex = async(userId, data) => {
                                         contents: [
                                         {
                                             type: "text",
-                                            text: "ราคาเบี้ยเดิม",
+                                            text: "ราคาเบี้ยเต็ม",
                                             size: "sm",
                                             color: "#555555"
                                         },
@@ -296,7 +296,7 @@ exports.pushOrderFlex = async(userId, data) => {
                                         contents: [
                                         {
                                             type: "text",
-                                            text: "ราคาที่ซื้อ",
+                                            text: "ราคาหักส่วนลด",
                                             size: "sm",
                                             color: "#555555"
                                         },
