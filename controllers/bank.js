@@ -128,13 +128,12 @@ exports.update = async(req, res) => {
 
         const bank = existing.rows[0]
 
-        const resultUpdate = await db.query('UPDATE bank SET name = $1, logo_url = $2, logo_public_id = $3  WHERE id = $4 RETURNING *', 
+        const resultUpdate = await db.query('UPDATE bank SET bank_name = $1, logo_url = $2, logo_public_id = $3  WHERE id = $4 RETURNING *', 
           [
-            bank_name            ?? bank.bank_name,           
+            bank_name       ?? bank.bank_name,           
             logo_url        ?? bank.logo_url, 
             logo_public_id  ?? bank.logo_public_id, 
             id
-
           ])
  
          res.json({
