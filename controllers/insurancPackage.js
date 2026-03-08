@@ -487,6 +487,7 @@ exports.readEdit = async(req, res) => {
                             'charge', pp.charge,
                             'installment_min', pp.installment_min,
                             'installment_max', pp.installment_max
+                            'credit_group_id', pp.credit_group_id
                         )
                     ) FILTER (WHERE pp.payment_method_id IS NOT NULL),
                     '[]'::jsonb
@@ -590,7 +591,8 @@ exports.update = async(req, res) => {
                         first_payment_amount = null,
                         charge = null,
                         installment_min = null,
-                        installment_max = null
+                        installment_max = null,
+                        credit_group_id = null
                     } = p
 
                     await client.query(
@@ -604,9 +606,10 @@ exports.update = async(req, res) => {
                             first_payment_amount,
                             charge,
                             installment_min,
-                            installment_max
+                            installment_max,
+                            credit_group_id 
                         )
-                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                     `, [
                         id, 
                         payment_method_id, 
@@ -615,7 +618,8 @@ exports.update = async(req, res) => {
                         first_payment_amount,
                         charge,
                         installment_min,
-                        installment_max
+                        installment_max,
+                        credit_group_id 
                     ])
                 }
             }
