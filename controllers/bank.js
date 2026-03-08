@@ -299,12 +299,24 @@ exports.listSelectGroupCredit = async(req, res) => {
     }
 }
 
-exports.readGroupCredit = async(req, res) => {
+exports.readToSeeGroup = async(req, res) => {
     try {  
         const {id} = req.params
         
-        const query = 'SELECT id, bank_name, logo_url, logo_public_id FROM bank WHERE id = $1'
-        const result = await db.query(query, [Number(id)])
+        const result = await db.query(
+            `
+            select
+                g.group_name,
+                b.bank_name,
+                b.logo_url,
+                cii.installment_month
+            from
+                credit_installment_item cii
+                join credit_installment_group g on cii.group_id = g.id
+                join bank b on cii.bank_id = b.id
+            where
+                cii.group_id = $1
+            `, [Number(id)])
 
          res.json({ data: result.rows[0] })
     } catch (err) {
