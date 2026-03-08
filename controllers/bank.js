@@ -189,6 +189,8 @@ exports.remove = async(req, res) => {
     }
 }
 
+
+//group credit card
 exports.createGroupCredit = async(req, res) => {
     const client = await db.connect()
     

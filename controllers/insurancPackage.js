@@ -174,7 +174,6 @@ exports.list = async(req, res) => {
                 OR TO_CHAR(ip.end_date, 'DD/MM/YYYY') ILIKE $${paramIndex} 
                 OR TO_CHAR(ip.created_at, 'DD/MM/YYYY') ILIKE $${paramIndex} 
                 OR ip.repair_type ILIKE $${paramIndex} 
-                OR ip.promotion ILIKE $${paramIndex} 
                 OR ic.namecompany ILIKE $${paramIndex} 
                 OR pt.promotion_name ILIKE $${paramIndex} 
                 OR it.nametype ILIKE $${paramIndex}
