@@ -55,7 +55,8 @@ exports.create = async(req, res) => {
                 first_payment_amount = null,
                 charge = null,
                 installment_min = null,
-                installment_max = null
+                installment_max = null,
+                credit_group_id = null  
             } = p
 
             const paymentSql = `
@@ -68,9 +69,10 @@ exports.create = async(req, res) => {
                     first_payment_amount,
                     charge,
                     installment_min,
-                    installment_max
+                    installment_max,
+                    credit_group_id 
                 )
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 `
 
             await client.query(paymentSql, [
@@ -81,7 +83,8 @@ exports.create = async(req, res) => {
                 first_payment_amount,
                 charge,
                 installment_min,
-                installment_max
+                installment_max,
+                credit_group_id    
                 ])
         }
 
@@ -204,6 +207,7 @@ exports.list = async(req, res) => {
             FROM insurance_package AS ip 
             JOIN insurance_company AS ic ON ip.insurance_company = ic.id
             JOIN insurance_type AS it ON ip.insurance_type = it.id
+            LEFT JOIN promotion AS pt ON ip.promotion_id = pt.id
             ${whereClause}`, values)
 
         const totalItems = countResult.rows[0].total

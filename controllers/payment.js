@@ -2,7 +2,7 @@ const db = require('../config/database')
 
 exports.listPayment = async(req, res) => {
     try {
-        const result = await db.query('select * from payment_methods')
+        const result = await db.query('select * from payment_methods order by id')
 
         res.json({data: result.rows})
     } catch (err) {
