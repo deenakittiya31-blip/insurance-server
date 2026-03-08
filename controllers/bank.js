@@ -305,17 +305,28 @@ exports.readToSeeGroup = async(req, res) => {
         
         const result = await db.query(
             `
-            select
+            SELECT
                 g.group_name,
-                b.bank_name,
-                b.logo_url,
-                cii.installment_month
-            from
-                credit_installment_item cii
-                join credit_installment_group g on cii.group_id = g.id
-                join bank b on cii.bank_id = b.id
-            where
-                cii.group_id = $1
+                JSON_AGG(
+                    JSON_BUILD_OBJECT(
+                        'bank_name', bank_data.bank_name,
+                        'logo_url', bank_data.logo_url,
+                        'installment_month', bank_data.months
+                    )
+                ) AS bankInGroup
+            FROM credit_installment_group g
+            JOIN (
+                SELECT
+                    cii.group_id,
+                    b.bank_name,
+                    b.logo_url,
+                    ARRAY_AGG(cii.installment_month ORDER BY cii.installment_month) AS months
+                FROM credit_installment_item cii
+                JOIN bank b ON cii.bank_id = b.id
+                GROUP BY cii.group_id, b.id, b.bank_name, b.logo_url
+            ) bank_data ON g.id = bank_data.group_id
+            WHERE g.id = $1
+            GROUP BY g.group_name
             `, [Number(id)])
 
          res.json({ data: result.rows[0] })
