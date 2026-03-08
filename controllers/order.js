@@ -68,6 +68,7 @@ exports.getOrderDetail = async(req, res) => {
                 pp.first_payment_amount,
                 pp.installment_min,
                 pp.installment_max,
+                pp.credit_group_id,
                 ROUND(
                     $2::numeric - (
                         ($3::numeric) * (
@@ -75,7 +76,7 @@ exports.getOrderDetail = async(req, res) => {
                             + COALESCE($5::numeric, 0) / 100.0
                             + COALESCE(pp.discount_percent, 0) / 100.0
                         ) + COALESCE(pp.discount_amount, 0)
-                    ) + COALESCE(pp.charge, 0),
+                    ),
                     2
                 ) as selling_price_final
             FROM payment_methods pm
@@ -90,6 +91,33 @@ exports.getOrderDetail = async(req, res) => {
             order.premium_discount,
             order.group_discount_percent
         ])
+
+    // หา credit_group_id ของ payment_method_id = 4
+    const creditPayment = paymentResult.rows.find(p => p.payment_method_id === 4)
+    const creditGroupId = creditPayment?.credit_group_id
+
+    let creditGroup = null
+
+    if (creditGroupId) {
+    const creditResult = await db.query(`
+        SELECT
+            b.id AS bank_id,
+            b.bank_name,
+            b.logo_url,
+            JSON_AGG(
+                JSON_BUILD_OBJECT(
+                    'installment_month', ci.installment_month
+                ) ORDER BY ci.installment_month
+            ) AS installments
+        FROM credit_installment_item ci
+        JOIN bank b ON ci.bank_id = b.id
+        WHERE ci.group_id = $1
+        GROUP BY b.id, b.bank_name, b.logo_url
+        ORDER BY b.id
+    `, [creditGroupId])
+
+    creditGroup = creditResult.rows
+    }
 
         // แยก info กับ payments
     const info = {
@@ -116,6 +144,7 @@ exports.getOrderDetail = async(req, res) => {
         selling_price_final:      row.selling_price_final,
         group_discount_percent:   order.group_discount_percent,
         net_total:                order.net_total,
+        credit_banks: row.payment_method_id === 4 ? creditGroup : null
     }))
 
     res.json({ info, payments })
