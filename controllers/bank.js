@@ -310,7 +310,7 @@ exports.readToSeeGroup = async(req, res) => {
                 g.group_name,
                 JSON_AGG(
                     JSON_BUILD_OBJECT(
-                        'bank_id', bank_data.bank_id,      -- ✅ เพิ่ม
+                        'bank_id', bank_data.bank_id,  
                         'bank_name', bank_data.bank_name,
                         'logo_url', bank_data.logo_url,
                         'installment_month', bank_data.months
@@ -320,7 +320,7 @@ exports.readToSeeGroup = async(req, res) => {
             JOIN (
                 SELECT
                     cii.group_id,
-                    b.id AS bank_id,                       -- ✅ เพิ่ม
+                    b.id AS bank_id,                  
                     b.bank_name,
                     b.logo_url,
                     ARRAY_AGG(cii.installment_month ORDER BY cii.installment_month) AS months
@@ -390,16 +390,13 @@ exports.updateGroupCredit = async(req, res) => {
 
 exports.isActiveGroupCredit = async(req, res) => {
     try {
-            const {is_active} = req.body
-            const {id} = req.params
+        const {is_active} = req.body
+        const {id} = req.params
 
-            const result = await db.query('UPDATE bank SET is_active = $1 WHERE id = $2 RETURNING *', 
-            [is_active, id])
+        await db.query('UPDATE credit_installment_group SET is_active = $1 WHERE id = $2', 
+        [is_active, id])
 
-          res.json({
-            msg: 'อัปเดตสถานะสำเร็จ',
-            data: result.rows[0] 
-        })  
+        res.json({ msg: 'อัปเดตสถานะสำเร็จ' })  
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'server errer'})
