@@ -486,7 +486,7 @@ exports.readEdit = async(req, res) => {
                             'first_payment_amount', pp.first_payment_amount,
                             'charge', pp.charge,
                             'installment_min', pp.installment_min,
-                            'installment_max', pp.installment_max
+                            'installment_max', pp.installment_max,
                             'credit_group_id', pp.credit_group_id
                         )
                     ) FILTER (WHERE pp.payment_method_id IS NOT NULL),
