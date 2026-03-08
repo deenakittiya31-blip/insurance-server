@@ -1,6 +1,6 @@
 const express = require('express')
 const { authCheck, roleCheck } = require('../middleware/authCheck')
-const { create, list, listSelect, read, update, is_active, remove, createGroupCredit, listGroupCredit, listSelectGroupCredit, updateGroupCredit, isActiveGroupCredit, removeGroupCredit, readToSeeGroup } = require('../controllers/bank')
+const { create, list, listSelect, read, update, is_active, remove, createGroupCredit, listGroupCredit, listSelectGroupCredit, updateGroupCredit, isActiveGroupCredit, removeGroupCredit, readToSeeGroup, editGroupCredit } = require('../controllers/bank')
 const router = express.Router()
 
 router.post('/create-bank', authCheck, roleCheck(['admin']), create)

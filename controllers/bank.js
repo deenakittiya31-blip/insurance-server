@@ -305,10 +305,12 @@ exports.readToSeeGroup = async(req, res) => {
         
         const result = await db.query(
             `
-            SELECT
+             SELECT
+                g.id,
                 g.group_name,
                 JSON_AGG(
                     JSON_BUILD_OBJECT(
+                        'bank_id', bank_data.bank_id,      -- ✅ เพิ่ม
                         'bank_name', bank_data.bank_name,
                         'logo_url', bank_data.logo_url,
                         'installment_month', bank_data.months
@@ -318,6 +320,7 @@ exports.readToSeeGroup = async(req, res) => {
             JOIN (
                 SELECT
                     cii.group_id,
+                    b.id AS bank_id,                       -- ✅ เพิ่ม
                     b.bank_name,
                     b.logo_url,
                     ARRAY_AGG(cii.installment_month ORDER BY cii.installment_month) AS months
@@ -326,7 +329,7 @@ exports.readToSeeGroup = async(req, res) => {
                 GROUP BY cii.group_id, b.id, b.bank_name, b.logo_url
             ) bank_data ON g.id = bank_data.group_id
             WHERE g.id = $1
-            GROUP BY g.group_name
+            GROUP BY g.id, g.group_name
             `, [Number(id)])
 
          res.json({ data: result.rows[0] })
@@ -337,29 +340,51 @@ exports.readToSeeGroup = async(req, res) => {
 }
 
 exports.updateGroupCredit = async(req, res) => {
-    const { bank_name, logo_url, logo_public_id } = req.body;
-    const { id } = req.params;
+    const client = await db.connect()
 
     try {
-        const existing = await db.query('SELECT * FROM  bank WHERE id = $1',[id])
+        const { id } = req.params
+        const { group_name, ins_bank } = req.body
 
-        const bank = existing.rows[0]
 
-        const resultUpdate = await db.query('UPDATE bank SET bank_name = $1, logo_url = $2, logo_public_id = $3  WHERE id = $4 RETURNING *', 
-          [
-            bank_name       ?? bank.bank_name,           
-            logo_url        ?? bank.logo_url, 
-            logo_public_id  ?? bank.logo_public_id, 
-            id
-          ])
- 
-         res.json({
-            msg: 'แก้ไขธนาคารสำเร็จ',
-            data: resultUpdate.rows[0] 
-        })  
+        if (!group_name) {
+            return res.status(400).json({ message: 'กรุณากรอกชื่อชุด' })
+        }
+
+        await client.query('BEGIN')
+
+        //อัปเดตชื่อชุด
+        await client.query(
+            'UPDATE credit_installment_group SET group_name = $1 WHERE id = $2',
+            [group_name, id]
+        )
+
+        //ลบ items เดิมทั้งหมดแล้ว insert ใหม่
+        await client.query(
+            'DELETE FROM credit_installment_item WHERE group_id = $1',
+            [id]
+        )
+
+        for (let i = 0; i < ins_bank.length; i++) {
+            const bankId = ins_bank[i].bank_id
+            const months = ins_bank[i].ins_month
+
+            for (let j = 0; j < months.length; j++) {
+                await client.query(
+                    'INSERT INTO credit_installment_item (group_id, bank_id, installment_month) VALUES ($1, $2, $3)',
+                    [id, bankId, months[j]]
+                )
+            }
+        }
+
+        await client.query('COMMIT')
+        res.json({ msg: 'แก้ไขชุดบัตรเครดิตสำเร็จ' })
     } catch (err) {
+          await client.query('ROLLBACK')
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
+    }  finally {
+        client.release()
     }
 }
 
