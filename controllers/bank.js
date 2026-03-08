@@ -189,20 +189,29 @@ exports.remove = async(req, res) => {
     }
 }
 
-exports.createInstallment = async(req, res) => {
+exports.createGroupCredit = async(req, res) => {
     const client = await db.connect()
     
     try {
-        const {bank_id, installments} = req.body
+        const {group_name, ins_bank} = req.body
 
-        if(!bank_id || (installments.length === 0)) {
+        if(!group_name) {
             return res.status(400).json({message: 'กรุณากรอกข้อมูลให้ครบ'})
         }
 
         await client.query('BEGIN')
 
-        for(let i = 0; i < installments.length; i++) {
-            await client.query('insert into bank_installment (bank_id, installment_month) values($1, $2)', [bank_id, installments[i]])
+        const inSertGroup = await client.query('insert into credit_installment_group (group_name) values ($1) returning id', [group_name])
+
+        const groupId = inSertGroup.rows[0].id
+
+        for(let i = 0; i < ins_bank.length; i++) {
+            const bankId = ins_bank[i].bank_id
+            // month = []
+            const month = ins_bank[i].ins_month
+
+            for(let j = 0; j < month.length; j++)
+            await client.query('insert into credit_installment_item (group_id, bank_id, installment_month) values($1, $2, $3)', [groupId, bankId, month[j]])
         }
        
         await client.query('COMMIT')
@@ -215,3 +224,149 @@ exports.createInstallment = async(req, res) => {
     }
 }
 
+exports.listGroupCredit = async(req, res) => {
+    try {
+        const {
+            page = 1,
+            limit = 10,
+            search
+        } = req.query;
+
+
+        const pageNum = parseInt(page, 10)
+        const limitNum = parseInt(limit, 10)
+        const offset = (pageNum - 1) * limitNum
+
+
+        let conditions = [];
+        let values = [];
+        let paramIndex = 1;
+
+         if (search) {
+            conditions.push(`group_name ILIKE $${paramIndex}`);
+            values.push(`%${search}%`);
+            paramIndex++;
+        }
+
+        const whereClause =
+            conditions.length > 0
+                ? `WHERE ${conditions.join(' AND ')}`
+                : '';
+
+        const countResult = await db.query(
+            `
+            SELECT COUNT(*)::int as total 
+            FROM credit_installment_group 
+            ${whereClause}
+            `, values)
+
+        const totalItems = parseInt(countResult.rows[0].total)
+        const totalPages = Math.ceil(totalItems / limitNum)
+
+        const result = await db.query(`
+            SELECT id, group_name, is_active 
+            FROM credit_installment_group  
+            ${whereClause} 
+            ORDER BY id DESC
+            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+            `, [...values, limitNum, offset])
+
+        res.json({
+            data: result.rows,
+            pagination: {
+                page: pageNum,
+                limit: limitNum,
+                totalItems,
+                totalPages,
+                hasNextPage: pageNum < totalPages,
+                hasPrevPage: pageNum > 1
+            }
+        });
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'}) 
+    }
+}
+
+exports.listSelectGroupCredit = async(req, res) => {
+    try {
+        const result = await db.query('SELECT id, group_name FROM credit_installment_group  WHERE is_active = true ORDER BY id DESC')
+
+        res.json({ data: result.rows })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'}) 
+    }
+}
+
+exports.readGroupCredit = async(req, res) => {
+    try {  
+        const {id} = req.params
+        
+        const query = 'SELECT id, bank_name, logo_url, logo_public_id FROM bank WHERE id = $1'
+        const result = await db.query(query, [Number(id)])
+
+         res.json({ data: result.rows[0] })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'}) 
+    }
+}
+
+exports.updateGroupCredit = async(req, res) => {
+    const { bank_name, logo_url, logo_public_id } = req.body;
+    const { id } = req.params;
+
+    try {
+        const existing = await db.query('SELECT * FROM  bank WHERE id = $1',[id])
+
+        const bank = existing.rows[0]
+
+        const resultUpdate = await db.query('UPDATE bank SET bank_name = $1, logo_url = $2, logo_public_id = $3  WHERE id = $4 RETURNING *', 
+          [
+            bank_name       ?? bank.bank_name,           
+            logo_url        ?? bank.logo_url, 
+            logo_public_id  ?? bank.logo_public_id, 
+            id
+          ])
+ 
+         res.json({
+            msg: 'แก้ไขธนาคารสำเร็จ',
+            data: resultUpdate.rows[0] 
+        })  
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'}) 
+    }
+}
+
+exports.isActiveGroupCredit = async(req, res) => {
+    try {
+            const {is_active} = req.body
+            const {id} = req.params
+
+            const result = await db.query('UPDATE bank SET is_active = $1 WHERE id = $2 RETURNING *', 
+            [is_active, id])
+
+          res.json({
+            msg: 'อัปเดตสถานะสำเร็จ',
+            data: result.rows[0] 
+        })  
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'})
+    }
+}
+
+exports.removeGroupCredit = async(req, res) => {
+    try {
+        const {id} = req.params
+        
+        await db.query('DELETE FROM credit_installment_group WHERE id = $1', [id])
+
+        res.json({msg: 'ลบชุดข้อมูลบัตรสำเร็จ'})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: 'server errer'}) 
+    }
+}
