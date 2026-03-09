@@ -228,6 +228,7 @@ exports.confirmOrder = async (req, res) => {
                 ipm.premium_name,
                 ipm.premium_id,
                 poo.selling_price,
+                poo.discount_price,
                 ipm.total_premium,
                 ipk.package_name,
                 ipk.package_id,
