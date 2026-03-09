@@ -1,5 +1,6 @@
 const axios = require('axios');
 const db = require('../config/database');
+const { getOcrSecret } = require('../services/getSecret');
 
 const api = 'https://backend.aksonocr.com/api/v1/key-extract-url'
 
@@ -58,9 +59,12 @@ exports.akson = async(req, res) => {
             additionalInstructions
         }
 
+        const secret = await getOcrSecret()  
+        const ocr_key = secret.secret_config 
+
         const ocrRes = await axios.post(api, payload, {
             headers: {
-                "X-API-Key": process.env.AKSON_KEY,
+                "X-API-Key": ocr_key,
                 "Content-Type": "application/json"
             },
             timeout: 60000

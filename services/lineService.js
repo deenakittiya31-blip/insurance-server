@@ -1,12 +1,12 @@
 const axios = require('axios');
+const { getLineSecret } = require('./getSecret');
 
 const LINE_PUSH_API = 'https://api.line.me/v2/bot/message/push'
-const LINE_HEADER = {
-  "Content-Type": "application/json",
-  Authorization: `Bearer ${process.env.CHANNEL_ACCESS_TOKEN}`
-};
 
 exports.pushWelcomeFlex = async(userId, display_name, picture_url) => {
+    const secret = await getLineSecret()  
+    const channel_access_token = secret.secret_config 
+
     return axios.post(LINE_PUSH_API,
         {
             to: userId,
@@ -73,12 +73,20 @@ exports.pushWelcomeFlex = async(userId, display_name, picture_url) => {
                 }
             ]
         },
-        { headers: LINE_HEADER }
+        { 
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${channel_access_token}`
+            }
+        }
     )
 }
 
 exports.sendText = async(userId, text) => {
     try {
+        const secret = await getLineSecret()  
+        const channel_access_token = secret.secret_config 
+
         const res = await axios.post(LINE_PUSH_API, 
             {
                 to: userId,
@@ -89,7 +97,11 @@ exports.sendText = async(userId, text) => {
                     }
                 ]
             },
-            { headers: LINE_HEADER }
+            { headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${channel_access_token}`
+                } 
+            }
         )
 
         console.log('send image success:', userId)
@@ -101,7 +113,9 @@ exports.sendText = async(userId, text) => {
 
 exports.sendImage = async(userId, imageUrl ) => {
     try {
-        console.log('send image url:', imageUrl);
+        const secret = await getLineSecret()  
+        const channel_access_token = secret.secret_config 
+
         const res = await axios.post(LINE_PUSH_API, 
             {
                 to: userId,
@@ -113,7 +127,12 @@ exports.sendImage = async(userId, imageUrl ) => {
                     }
                 ]
             },
-            { headers: LINE_HEADER }
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${channel_access_token}`
+                }
+            }
         )
 
         return res
@@ -127,8 +146,14 @@ exports.sendImage = async(userId, imageUrl ) => {
 }
 
 exports.getProfile = async(userId) => {
+    const secret = await getLineSecret()  
+    const channel_access_token = secret.secret_config 
+
     const res = await axios.get(`https://api.line.me/v2/bot/profile/${userId}`, {
-        headers: LINE_HEADER
+        headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${channel_access_token}`
+        }
     })
     return res.data
 }
@@ -149,6 +174,9 @@ exports.getFriendshipStatus  = async(userAccessToken) => {
 
 exports.pushOrderFlex = async(userId, data) => {
     try {
+        const secret = await getLineSecret()  
+        const channel_access_token = secret.secret_config 
+
         const res = await axios.post(LINE_PUSH_API, {
             to: userId,
             messages: [
@@ -365,7 +393,12 @@ exports.pushOrderFlex = async(userId, data) => {
                 }
             ]
         },
-        { headers: LINE_HEADER }
+        { 
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${channel_access_token}`
+            }
+        }
     )
 
     return res
