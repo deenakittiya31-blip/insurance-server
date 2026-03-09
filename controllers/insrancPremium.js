@@ -522,7 +522,9 @@ exports.previewCompare = async(req, res) => {
                     id: p.index_premium,
                     price: p.selling_price,
                     logo: p.logo_url,
-                    type: p.insurance_type
+                    type: p.insurance_type,
+                    index_premium: p.index_premium,
+                    index_package: p.index_package,
                 },
                 coverage: {
                     total_premium: p.repair_fund_int,
