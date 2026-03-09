@@ -166,7 +166,8 @@ exports.confirmOrder = async (req, res) => {
             address_id, payment_method_id, installment,
             selling_price, discount_price,
             snap_discount_pct, snap_discount_amt,
-            snap_charge, snap_first_payment, snap_group_discount
+            snap_charge, snap_first_payment, snap_group_discount,
+            bank_id, credit_installment
         } = req.body
 
         //สร้างคำสั่งซื้อ
@@ -199,6 +200,8 @@ exports.confirmOrder = async (req, res) => {
                 snap_first_payment  = $10,
                 snap_group_discount = $11,
                 order_id            = $12,
+                bank_id             = $13,
+                credit_installment  = $14,
                 status              = 'สั่งซื้อสำเร็จ',
                 expired_at          = NULL,
                 created_at          = now()
@@ -209,7 +212,8 @@ exports.confirmOrder = async (req, res) => {
             address_id, payment_method_id, installment,
             selling_price, discount_price,
             snap_discount_pct, snap_discount_amt,
-            snap_charge, snap_first_payment, snap_group_discount, orderCode
+            snap_charge, snap_first_payment, snap_group_discount, orderCode,
+            bank_id || null, credit_installment || null
         ])
 
         await client.query('COMMIT') 
@@ -280,15 +284,28 @@ exports.getHistoryOrder = async(req, res) => {
                 poo.selling_price,
                 poo.status,
                 poo.tracking_order_id as tracking,
-                poo.id
+                poo.id,
+                JSONB_BUILD_OBJECT(
+                    'address_id', a.id,
+                    'address_line', a.address_line,
+                    'subdistrict', a.subdistrict,
+                    'district', a.district,
+                    'province', a.province,
+                    'zipcode', a.zipcode,
+                    'phone', a.phone,
+                    'full_name', a.full_name
+                ) as address
             from
                 premium_on_order poo
-            join insurance_package ipk on poo.package_id = ipk.id
-            join insurance_premium ipm on poo.premium_id = ipm.id
-            join insurance_type it on ipk.insurance_type = it.id
-            join insurance_company icp on ipk.insurance_company = icp.id
-            where member_id = $1
-            order by poo.order_id desc
+                join insurance_package ipk on poo.package_id = ipk.id
+                join insurance_premium ipm on poo.premium_id = ipm.id
+                join insurance_type it on ipk.insurance_type = it.id
+                join insurance_company icp on ipk.insurance_company = icp.id
+                left join address a on poo.address_id = a.id
+            where
+                poo.member_id = $1
+            order by
+                poo.order_id desc
             `
             , [id]
         )

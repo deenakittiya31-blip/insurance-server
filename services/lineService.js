@@ -296,6 +296,25 @@ exports.pushOrderFlex = async(userId, data) => {
                                         contents: [
                                         {
                                             type: "text",
+                                            text: "ส่วนลด",
+                                            size: "sm",
+                                            color: "#555555"
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${data.discount_price} บาท`,
+                                            size: "sm",
+                                            color: "#111111",
+                                            align: "end"
+                                        }
+                                        ]
+                                    },
+                                    {
+                                        type: "box",
+                                        layout: "horizontal",
+                                        contents: [
+                                        {
+                                            type: "text",
                                             text: "ราคาหักส่วนลด",
                                             size: "sm",
                                             color: "#555555"
