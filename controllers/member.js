@@ -120,7 +120,7 @@ exports.listMember = async(req, res) => {
             conditions.push(`
                 (
                     m.display_name ILIKE $${paramIndex}
-                    m.member_code ILIKE $${paramIndex}
+                    OR m.member_code ILIKE $${paramIndex}
                     OR m.first_name ILIKE $${paramIndex}
                     OR m.last_name ILIKE $${paramIndex}
                     OR m.phone ILIKE $${paramIndex}
@@ -136,7 +136,7 @@ exports.listMember = async(req, res) => {
         //Group filter
         if (group_id) {
             conditions.push(`m.group_id = ANY($${paramIndex})`);
-            values.push(group_id.split(',').map(Number));
+            values.push(group_id.split(','));
             paramIndex++;
         }
 
