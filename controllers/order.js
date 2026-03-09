@@ -389,6 +389,7 @@ exports.listOrder = async(req, res) => {
                 OR poo.status ILIKE $${paramIndex}
                 OR poo.selling_price::text ILIKE $${paramIndex}
                 OR poo.tracking_order_id ILIKE $${paramIndex}
+                OR b.bank_name ILIKE $${paramIndex}
                 )
             `);
             values.push(`%${search}%`);
@@ -411,6 +412,7 @@ exports.listOrder = async(req, res) => {
             join payment_methods pmt on poo.payment_method_id = pmt.id
             join member m on poo.member_id = m.id
             left join address ad on ad.id = poo.address_id
+            left join bank b on poo.bank_id = b.id
             ${whereClause}`, values)
 
         const totalItems = countResult.rows[0].total
@@ -447,23 +449,29 @@ exports.listOrder = async(req, res) => {
                 poo.snap_charge,
                 poo.snap_first_payment,
                 poo.snap_group_discount,
+                poo.credit_installment,
+                b.bank_name,
                 --address member
-                ad.address_line,
-                ad.subdistrict,
-                ad.district,
-                ad.province,
-                ad.zipcode,
-                ad.phone,
-                ad.full_name
+                JSONB_BUILD_OBJECT(
+                    'address_id', ad.id,
+                    'address_line', ad.address_line,
+                    'subdistrict', ad.subdistrict,
+                    'district', ad.district,
+                    'province', ad.province,
+                    'zipcode', ad.zipcode,
+                    'phone', ad.phone,
+                    'full_name', ad.full_name
+                ) as address
             from
                 premium_on_order poo
-            join insurance_package ipk on poo.package_id = ipk.id
-            join insurance_premium ipm on poo.premium_id = ipm.id
-            join insurance_type it on ipk.insurance_type = it.id
-            join insurance_company icp on ipk.insurance_company = icp.id
-            join payment_methods pmt on poo.payment_method_id = pmt.id
-            join member m on poo.member_id = m.id
-            left join address ad on ad.id = poo.address_id
+                join insurance_package ipk on poo.package_id = ipk.id
+                join insurance_premium ipm on poo.premium_id = ipm.id
+                join insurance_type it on ipk.insurance_type = it.id
+                join insurance_company icp on ipk.insurance_company = icp.id
+                join payment_methods pmt on poo.payment_method_id = pmt.id
+                join member m on poo.member_id = m.id
+                left join address ad on ad.id = poo.address_id
+                left join bank b on poo.bank_id = b.id
             ${whereClause} 
             ORDER BY ${finalSortKey} ${validSortDirection} 
             LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
