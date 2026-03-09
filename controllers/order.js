@@ -304,7 +304,7 @@ exports.getHistoryOrder = async(req, res) => {
                 join insurance_company icp on ipk.insurance_company = icp.id
                 left join address a on poo.address_id = a.id
             where
-                poo.member_id = $1
+                poo.member_id = $1 and poo.status != 'รอดำเนินการ'
             order by
                 poo.order_id desc
             `
