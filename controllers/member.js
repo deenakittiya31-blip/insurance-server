@@ -135,7 +135,7 @@ exports.listMember = async(req, res) => {
         console.log(group_id)
         //Group filter
         if (group_id) {
-            conditions.push(`m.group_id = ANY($${paramIndex}::int[])`);
+            conditions.push(`m.group_id = ANY($${paramIndex})`);
             values.push(group_id.split(',').map(Number));
             paramIndex++;
         }
