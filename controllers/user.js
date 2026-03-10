@@ -49,6 +49,10 @@ exports.list = async(req, res) => {
             paramIndex++;
         }
 
+        conditions.push(`user_id != $${paramIndex}`);
+        values.push(req.user.id);
+        paramIndex++;
+
         const whereClause =
             conditions.length > 0
                 ? `WHERE ${conditions.join(' AND ')}`
@@ -61,16 +65,7 @@ exports.list = async(req, res) => {
 
         const result = await db.query(
             `
-            SELECT 
-              user_id,
-              name, 
-              email,
-              first_name,
-              last_name,
-              phone,
-              role,
-              created_at,
-              is_active
+            SELECT user_id, name, email, first_name, last_name, phone, role, created_at, is_active
             FROM users 
             ${whereClause} 
             ORDER BY ${finalSortKey} ${validSortDirection} 
