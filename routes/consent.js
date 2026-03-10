@@ -1,4 +1,3 @@
-// routes/policy.route.js
 const express = require('express')
 const router = express.Router()
 const { authCheck, roleCheck } = require('../middleware/authCheck')
