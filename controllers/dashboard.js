@@ -2,7 +2,7 @@ const db = require('../config/database')
 
 exports.dashboard = async (req, res) => {
     try {
-        const [customers, sales] = await Promise.all([
+        const [customers, sales, monthlySales, summary] = await Promise.all([
             db.query(`
                 SELECT
                 COUNT(*) FILTER (WHERE is_friend = true)     AS friends,
@@ -52,6 +52,7 @@ exports.dashboard = async (req, res) => {
             ]);
 
             const raw = customers.rows[0];
+            const rawSummary = summary.rows[0];
 
             res.json({
             customers: {
