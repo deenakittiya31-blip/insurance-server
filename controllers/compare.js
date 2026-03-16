@@ -54,14 +54,73 @@ exports.createCompare = async(req, res) => {
 
 exports.listCompare = async(req, res) => {
     try {
-        const page = Number(req.query.page || 1);
-        const per_page = Number(req.query.per_page || 5);
-        const sortKey = req.query.sortKey || 'id';
-        const sortDirection = req.query.sortDirection || 'DESC';
-        const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        const {
+            page = 1,
+            limit = 10,
+            sortKey = 'id',
+            sortDirection = 'DESC',
+            search
+        } = req.query;
+
+        const sortColumnMap = {
+            q_id: 'qc.q_id',
+            created_at: 'qc.created_at',
+            to_name: 'qc.to_name',
+            details: 'qc.details',
+            car_barnd: 'cb.name',
+            car_model: 'cm.name',
+            car_usage: 'cu.usage_name'
+        };
+
         const user_id = req.user.id
 
-        const offset = (page - 1) * per_page;
+        const pageNum = parseInt(page, 10)
+        const limitNum = parseInt(limit, 10)
+        const offset = (pageNum - 1) * limitNum
+        const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        const finalSortKey = sortColumnMap[sortKey] || 'qc.id';
+
+        let conditions = [];
+        let values = [];
+        let paramIndex = 1;
+
+        conditions.push(`qc.offer_id = $${paramIndex}`);
+        values.push(user_id);
+        paramIndex++;
+
+        if(search) {
+            conditions.push(
+                `
+                (
+                qc.q_id ILIKE $${paramIndex}
+                OR qc.to_name ILIKE $${paramIndex}
+                OR CAST(qc.created_at AS TEXT) ILIKE $${paramIndex}
+                OR qc.details ILIKE $${paramIndex}
+                OR cb.name ILIKE $${paramIndex}
+                OR cu.usage_name ILIKE $${paramIndex}
+                OR cm.name ILIKE $${paramIndex}
+                )`
+            );
+            values.push(`%${search}%`);
+            paramIndex++;
+        }
+
+        const whereClause =
+            conditions.length > 0
+                ? `WHERE ${conditions.join(' AND ')}`
+                : '';
+
+        const countResult = await db.query(
+            `
+            SELECT COUNT(*)::int as total 
+            FROM quotation_compare AS qc
+            LEFT JOIN car_brand AS cb ON qc.car_brand_id = cb.id
+            LEFT JOIN car_model AS cm ON qc.car_model_id = cm.id
+            LEFT JOIN car_usage AS cu ON qc.car_usage_id = cu.id
+            ${whereClause}`, values)
+
+        const totalItems = countResult.rows[0].total
+        const totalPages = Math.ceil(totalItems / limitNum)
 
         const result = await db.query(
             `
@@ -97,17 +156,27 @@ exports.listCompare = async(req, res) => {
             LEFT JOIN quotation_send_history AS hq ON qc.q_id = hq.compare_id
             LEFT JOIN member AS m ON hq.member_id = m.user_id
             LEFT JOIN pin_quotation AS pq ON qc.id = pq.compare_id
-            WHERE qc.offer_id = $1
+            ${whereClause} 
             GROUP BY qc.id, qc.q_id, qc.created_at, qc.to_name, qc.details, 
             cu.usage_name, cy.year_be, cy.year_ad, cb.name, cm.name, qc.sub_car_model, pq.id
-            ORDER BY ${sortKey} ${validSortDirection} 
-            LIMIT $2 OFFSET $3
-            `,[user_id, per_page, offset]
+            ORDER BY ${finalSortKey} ${validSortDirection} 
+            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+            `,[...values, limitNum, offset]
         )
 
-        const countResult = await db.query('SELECT COUNT(*)::int as total FROM quotation_compare WHERE offer_id = $1', [user_id])
 
-        res.json({ data: result.rows, total: countResult.rows[0].total })
+
+        res.json({
+            data: result.rows,
+            pagination: {
+                page: pageNum,
+                limit: limitNum,
+                totalItems,
+                totalPages,
+                hasNextPage: pageNum < totalPages,
+                hasPrevPage: pageNum > 1
+            }
+        });
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'Server error'})
@@ -116,14 +185,74 @@ exports.listCompare = async(req, res) => {
 
 exports.listPinCompare = async(req, res) => {
     try {
-        const page = Number(req.query.page || 1);
-        const per_page = Number(req.query.per_page || 5);
-        const sortKey = req.query.sortKey || 'id';
-        const sortDirection = req.query.sortDirection || 'DESC';
-        const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        const {
+            page = 1,
+            limit = 10,
+            sortKey = 'id',
+            sortDirection = 'DESC',
+            search
+        } = req.query;
+
+        const sortColumnMap = {
+            q_id: 'qc.q_id',
+            created_at: 'qc.created_at',
+            to_name: 'qc.to_name',
+            details: 'qc.details',
+            car_barnd: 'cb.name',
+            car_model: 'cm.name',
+            car_usage: 'cu.usage_name'
+        };
+
         const user_id = req.user.id
 
-        const offset = (page - 1) * per_page;
+        const pageNum = parseInt(page, 10)
+        const limitNum = parseInt(limit, 10)
+        const offset = (pageNum - 1) * limitNum
+        const validSortDirection = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        const finalSortKey = sortColumnMap[sortKey] || 'pq.id';
+
+        let conditions = [];
+        let values = [];
+        let paramIndex = 1;
+
+        conditions.push(`qc.offer_id = $${paramIndex}`);
+        values.push(user_id);
+        paramIndex++;
+
+        if(search) {
+            conditions.push(
+                `
+                (
+                qc.q_id ILIKE $${paramIndex}
+                OR qc.to_name ILIKE $${paramIndex}
+                OR CAST(qc.created_at AS TEXT) ILIKE $${paramIndex}
+                OR qc.details ILIKE $${paramIndex}
+                OR cb.name ILIKE $${paramIndex}
+                OR cu.usage_name ILIKE $${paramIndex}
+                OR cm.name ILIKE $${paramIndex}
+                )`
+            );
+            values.push(`%${search}%`);
+            paramIndex++;
+        }
+
+        const whereClause =
+            conditions.length > 0
+                ? `WHERE ${conditions.join(' AND ')}`
+                : '';
+
+        const countResult = await db.query(
+            `
+            SELECT COUNT(*)::int as total 
+            FROM pin_quotation AS pq
+            JOIN quotation_compare AS qc ON pq.compare_id = qc.id
+            LEFT JOIN car_brand AS cb ON qc.car_brand_id = cb.id
+            LEFT JOIN car_model AS cm ON qc.car_model_id = cm.id
+            LEFT JOIN car_usage AS cu ON qc.car_usage_id = cu.id
+            ${whereClause}`, values)
+
+        const totalItems = countResult.rows[0].total
+        const totalPages = Math.ceil(totalItems / limitNum)
 
         const result = await db.query(
             `
@@ -159,17 +288,25 @@ exports.listPinCompare = async(req, res) => {
             LEFT JOIN car_year AS cy ON qc.car_year_id = cy.id 
             LEFT JOIN quotation_send_history AS hq ON qc.q_id = hq.compare_id
             LEFT JOIN member AS m ON hq.member_id = m.user_id
-            WHERE qc.offer_id = $1
+            ${whereClause} 
             GROUP BY pq.id, qc.id, qc.q_id, qc.created_at, qc.to_name, qc.details, 
             cu.usage_name, cy.year_be, cy.year_ad, cb.name, cm.name, qc.sub_car_model
-            ORDER BY ${sortKey} ${validSortDirection} 
-            LIMIT $2 OFFSET $3
-            `,[user_id, per_page, offset]
+            ORDER BY ${finalSortKey} ${validSortDirection} 
+            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+            `,[...values, limitNum, offset]
         )
 
-        const countResult = await db.query('SELECT COUNT(*)::int as total FROM quotation_compare WHERE offer_id = $1', [user_id])
-
-        res.json({ data: result.rows, total: countResult.rows[0].total })
+        res.json({
+            data: result.rows,
+            pagination: {
+                page: pageNum,
+                limit: limitNum,
+                totalItems,
+                totalPages,
+                hasNextPage: pageNum < totalPages,
+                hasPrevPage: pageNum > 1
+            }
+        });
     } catch (err) {
         console.log(err)
         res.status(500).json({message: 'Server error'})
@@ -344,63 +481,6 @@ exports.comparePDF = async(req, res) => {
        
            //สร้าง PDF
         await generatePDF(res, carData, grouped.insurances, id);
-
-    } catch (err) {
-        console.log(err)
-        if (!res.headersSent) {
-            res.status(500).json({ msg: 'Server error' });
-        }
-    }
-}
-
-exports.testData = async(req, res) => {
-    try {
-        const { id } = req.params;
-
-        //รอบแรก query ข้อมูลรถ
-        // const carResult = await db.query(`
-        //     select 
-        //       qc.q_id, 
-        //       qc.to_name, 
-        //       qc.details, 
-        //       us.name as offer, 
-        //       qc.created_at AT TIME ZONE 'Asia/Bangkok' AS created_at_th,
-        //       cb.name as car_brand,
-        //       COALESCE(cm.name, qc.sub_car_model) as car_model,
-        //       cu.usage_name as usage, 
-        //       cy.year_be, cy.year_ad
-        //     from quotation_compare as qc 
-        //     left join car_brand as cb on qc.car_brand_id = cb.id 
-        //     left join car_model as cm on qc.car_model_id = cm.id
-        //     left join car_usage as cu on qc.car_usage_id = cu.id 
-        //     left join car_year as cy on qc.car_year_id = cy.id
-        //     left join users as us on qc.offer_id = us.user_id
-        //     where qc.q_id = $1`, [id])
-
-        // if (!carResult.rows.length) {
-        //     return res.status(404).send('ไม่พบข้อมูลรถ' );
-        // }
-
-        //รอบสอง query ข้อมูลเอกสาร
-        const quotationResult = await db.query(`select q.id AS quotation_id, q.company_id, ic.namecompany AS company_name, ic.logo_url AS company_logo, qf.field_code, qf.field_value from quotation_compare as qc INNER JOIN quotation AS q ON qc.q_id = q.compare_id left join quotation_field as qf on q.id = qf.quotation_id LEFT JOIN insurance_company AS ic ON q.company_id = ic.id where qc.q_id = $1 ORDER BY q.id ASC, qf.field_code ASC`, [id])
-
-         // ตรวจสอบว่ามีข้อมูลไหม
-        if (!quotationResult.rows.length) {
-            return res.status(404).send('ไม่พบข้อมูลบริษัทประกัน');
-        }
-
-        //จัดกรุ๊ปข้อมูล
-        const grouped = groupQuotationData(quotationResult.rows);
-        // const carData = carResult.rows[0];
-
-        console.log(JSON.stringify(grouped.insurances[0].fields, null, 2));
-
-        res.json({
-            groupedData: grouped
-        })
-       
-           //สร้าง PDF
-        // await generatePDF(res, carData, grouped.insurances, id);
 
     } catch (err) {
         console.log(err)

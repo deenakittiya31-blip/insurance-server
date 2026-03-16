@@ -1,6 +1,6 @@
 const express = require('express');
 const { authCheck, roleCheck } = require('../middleware/authCheck');
-const { createCompare, getDetailCompare, comparePDF, compareJPG, listCompare, removeCompare, detailCompareEdite, searchCompare, listPinCompare, copyCompare, testData, removeCompareMember } = require('../controllers/compare');
+const { createCompare, getDetailCompare, comparePDF, compareJPG, listCompare, removeCompare, detailCompareEdite, searchCompare, listPinCompare, copyCompare, removeCompareMember } = require('../controllers/compare');
 const router = express.Router();
 
 router.get('/list-compare/page', authCheck, roleCheck(['admin', 'staff']), listCompare)
@@ -8,7 +8,6 @@ router.get('/list-pin/page', authCheck, roleCheck(['admin', 'staff']), listPinCo
 router.get('/detail-compare/:id', authCheck, roleCheck(['admin', 'staff']), getDetailCompare)
 router.get('/edit-compare/:id', authCheck, detailCompareEdite)
 router.get('/pdf-compare/:id', authCheck, comparePDF)
-router.get('/test-compare/:id',  authCheck, testData)
 router.get('/jpg-compare/:id', authCheck, compareJPG)
 
 router.post('/search-compare', authCheck, roleCheck(['admin', 'staff']), searchCompare)

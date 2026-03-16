@@ -1,12 +1,9 @@
 const axios = require('axios');
 const db = require('../config/database');
 const { getProfile } = require('../services/lineService');
+const { getLineSecret } = require('../services/getSecret');
 
 const LINE_MESSAGING_API = "https://api.line.me/v2/bot/message/reply";
-const LINE_HEADER = {
-  "Content-Type": "application/json",
-  Authorization: `Bearer ${process.env.CHANNEL_ACCESS_TOKEN}`
-};
 
 exports.lineBotReply = async(req, res) => {
     const event = req.body.events?.[0]
@@ -139,13 +136,19 @@ exports.lineBotReply = async(req, res) => {
 }
 
 const reply = async(replyToken, msgObj) => {
-  const res = await axios.post(LINE_MESSAGING_API, 
+    const secret = await getLineSecret()  
+    const channel_access_token = secret.secret_config 
+
+    const res = await axios.post(LINE_MESSAGING_API, 
         { 
             replyToken: replyToken, 
             messages: [msgObj] 
         }, 
         { 
-            headers: LINE_HEADER 
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${channel_access_token}`
+            }
         }
     )
     console.log('LINE reply success')
