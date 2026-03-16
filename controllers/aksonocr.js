@@ -6,7 +6,7 @@ const api = 'https://backend.aksonocr.com/api/v1/key-extract-url'
 
 exports.akson = async(req, res) => {
     try {
-        const {image, company_id, compare_id, doc_id, pdf_url} = req.body;
+        const {image, company_id, compare_id, doc_id, pdf_url, pdf_public_id} = req.body;
 
         //ตรวจสอบว่ามีเอกสารอยู่กี่ฉบับถ้าเกิน 3 res.status ออก
         const quotationCheck = await db.query('select * from quotation where compare_id = $1', [compare_id])
@@ -25,12 +25,13 @@ exports.akson = async(req, res) => {
         const document_id = `${compare_id}-${doc_id}`
 
         //สร้าง quotation ว่าเป็นของบริษัทไหนอยู่ในใบเสนอราคาที่เท่าไหร่
-        const insertResult = await db.query('INSERT INTO quotation(company_id, compare_id, doc_id, pdf_url) VALUES ($1, $2, $3, $4) RETURNING id',
+        const insertResult = await db.query('INSERT INTO quotation(company_id, compare_id, doc_id, pdf_url, pdf_public_id) VALUES ($1, $2, $3, $4, $5) RETURNING id',
             [
                 Number(company_id),
                 compare_id,
                 document_id,
-                pdf_url
+                pdf_url,
+                pdf_public_id
             ]
         )
 
