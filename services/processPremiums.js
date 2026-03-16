@@ -17,7 +17,9 @@ exports.processPremiums = async(client, premiums, q_id, options = {}, member_id)
         const quotation_id = await createQuotation(client, index_company, q_id, i)
 
         //ได้ object มาก่อนหนึ่ง
+        console.log('index_premium:', index_premium)
         const premiumData = await getPremiumDetail(client, index_premium)
+        console.log('premiumData:', premiumData)
 
         // บันทึกแต่ละ field แยกเป็น row
         for (const [key, value] of Object.entries(premiumData)) {

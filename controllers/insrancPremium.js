@@ -835,6 +835,7 @@ exports.createPremiumToCompare = async(req, res) => {
         await client.query('BEGIN')
         
         const { premiums, ...compareData } = req.body
+        console.log('premiums:', JSON.stringify(premiums, null, 2)) 
 
         validatePremiums(premiums)
 
@@ -843,7 +844,6 @@ exports.createPremiumToCompare = async(req, res) => {
         await processPremiums(client, premiums, q_id, {})
 
         await client.query('COMMIT')
-
         res.json({msg: 'สร้างใบเสนอราคาจากแพ็กเกจสำเร็จ'})
     } catch (err) {
         await client.query('ROLLBACK')
