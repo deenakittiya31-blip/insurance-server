@@ -835,19 +835,19 @@ exports.copy = async(req, res) => {
 
         //relation
         for(const brandId of car_brand_id){
-                await db.query('INSERT INTO package_car_brand (package_id, car_brand_id) VALUES ($1, $2)', [newPackageId, brandId])
+                await client.query('INSERT INTO package_car_brand (package_id, car_brand_id) VALUES ($1, $2)', [newPackageId, brandId])
         }
 
         for(const modelId of car_model_id){
-                await db.query('INSERT INTO package_car_model (package_id, car_model_id) VALUES ($1, $2)', [newPackageId, modelId])
+                await client.query('INSERT INTO package_car_model (package_id, car_model_id) VALUES ($1, $2)', [newPackageId, modelId])
         }
 
         for(const usageId of car_usage_type_id){
-                await db.query('INSERT INTO package_usage_type (package_id, car_usage_type_id) VALUES ($1, $2)', [newPackageId, usageId])
+                await client.query('INSERT INTO package_usage_type (package_id, car_usage_type_id) VALUES ($1, $2)', [newPackageId, usageId])
         }
 
         for(const compulId of compulsory_id){
-                await db.query('INSERT INTO package_compulsory (package_id, compulsory_id) VALUES ($1, $2)', [newPackageId, compulId])
+                await client.query('INSERT INTO package_compulsory (package_id, compulsory_id) VALUES ($1, $2)', [newPackageId, compulId])
         }
 
         await client.query('COMMIT')
