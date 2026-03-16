@@ -802,7 +802,7 @@ exports.copy = async(req, res) => {
                 discount_percent = 0,
                 discount_amount = 0,
                 first_payment_amount = null,
-                 charge = null,
+                charge = null,
                 installment_min = null,
                 installment_max = null
             } = p
