@@ -24,6 +24,30 @@ exports.createImages = async (req, res) => {
   }
 }
 
+exports.createPDF = async (req, res) => {
+  try {
+    const { file } = req.body
+
+    if (!file) {
+      return res.status(400).json({ message: 'No file' })
+    }
+
+    const result = await cloudinary.uploader.upload(file, {
+      public_id: `insur-${Date.now()}`,
+      folder: 'insurance',
+      resource_type: 'raw'
+    })
+
+    res.json({
+      url: result.secure_url,
+      public_id: result.public_id
+    })
+  } catch (err) {
+    console.log(err)
+    res.status(500).json({ message: 'server error' })
+  }
+}
+
 exports.uploadToCloudinary = async (buffer) => {
   return new Promise((resolve, reject) => {
         cloudinary.uploader.upload_stream(

@@ -323,6 +323,7 @@ exports.detailCompareEdite = async(req, res) => {
               q.company_id, 
               ic.namecompany as company_name, 
               ic.logo_url as company_logo, 
+              q.pdf_url,
               qf.field_code, 
               qf.field_value 
             from quotation_compare as qc 
