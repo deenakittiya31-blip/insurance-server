@@ -836,6 +836,7 @@ exports.createPremiumToCompare = async(req, res) => {
         
         const { premiums, ...compareData } = req.body
         console.log('premiums:', JSON.stringify(premiums, null, 2)) 
+        console.log('compareData:', compareData) 
 
         validatePremiums(premiums)
 
