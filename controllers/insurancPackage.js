@@ -828,9 +828,9 @@ exports.copy = async(req, res) => {
                 discount_percent,
                 discount_amount,
                 first_payment_amount,
-                charge = null,
-                installment_min = null,
-                installment_max = null
+                charge,
+                installment_min,
+                installment_max
                 ])
         }
 
