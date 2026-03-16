@@ -60,7 +60,7 @@ exports.list = async(req, res) => {
             conditions.push(`
                 (
                 type ILIKE $${paramIndex}
-                OR code $${paramIndex}
+                OR code ILIKE $${paramIndex}
                 )
             `);
             values.push(`%${search}%`);
