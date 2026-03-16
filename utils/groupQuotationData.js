@@ -16,6 +16,7 @@ function groupQuotationData(rows) {
                 company_id: row.company_id,
                 company_name: row.company_name,
                 company_logo: row.company_logo,
+                pdf_url: row.pdf_url || null,
                 fields: {}
             });
         }
