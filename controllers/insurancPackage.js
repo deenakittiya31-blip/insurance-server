@@ -747,10 +747,13 @@ exports.updateGroupDiscount = async (req, res) => {
 }
 
 exports.copy = async(req, res) => {
-    try {
-        const {id} = req.params
+    const client = await db.connect()  
 
-        const result = await db.query(GET_DETAIL_PACKAGE, [id])
+    try {
+        await client.query('BEGIN') 
+
+        const {id} = req.params
+        const result = await client.query(GET_DETAIL_PACKAGE, [id])
         const oldPackage = result.rows[0]
 
          //destructure 
@@ -758,6 +761,7 @@ exports.copy = async(req, res) => {
             id: oldId,
             package_id,
             payments,
+            groups, 
             car_brand_id,
             car_model_id,
             car_usage_type_id,
@@ -766,29 +770,26 @@ exports.copy = async(req, res) => {
         } = oldPackage
 
          //generate PK running
-        const resultId = await db.query(`
-         SELECT package_id
-         FROM insurance_package
-         ORDER BY id DESC
-         LIMIT 1
-         FOR UPDATE
+        const resultId = await client.query(`
+         SELECT package_id FROM insurance_package
+         ORDER BY id DESC LIMIT 1 FOR UPDATE
         `);
 
         let nextNumber = 1;
         if (resultId.rows.length) {
-            const lastCode = resultId.rows[0].package_id; // PK00000000012
+            const lastCode = resultId.rows[0].package_id; 
             const lastNumber = parseInt(lastCode.replace('PK', ''), 10);
             nextNumber = lastNumber + 1;
         }
 
-        const newPackageCode = `PK${String(nextNumber).padStart(11, '0')}`;
+        const newPackageCode = `PK${String(nextNumber).padStart(5, '0')}`;
 
         //insert package
         const columns = [...Object.keys(packageData), 'package_id']
         const values = [...Object.values(packageData), newPackageCode]
         const placeholders = columns.map((_, i) => `$${i + 1}`)
 
-        const packageResualt = await db.query(`
+        const packageResualt = await client.query(`
             INSERT INTO insurance_package (${columns.join(', ')})
             VALUES (${placeholders.join(', ')})
             RETURNING id
@@ -804,34 +805,32 @@ exports.copy = async(req, res) => {
                 first_payment_amount = null,
                 charge = null,
                 installment_min = null,
-                installment_max = null
+                installment_max = null,
+                credit_group_id = null  
             } = p
 
-            const paymentSql = `
+            await client.query(`
                 INSERT INTO package_payment
-                (
-                    package_id,
-                    payment_method_id,
-                    discount_percent,
-                    discount_amount,
-                    first_payment_amount,
-                    charge,
-                    installment_min,
-                    installment_max
-                )
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-                `
-
-            await db.query(paymentSql, [
-                newPackageId,
-                payment_method_id,
-                discount_percent,
-                discount_amount,
-                first_payment_amount,
-                charge,
-                installment_min,
-                installment_max
+                (package_id, payment_method_id, discount_percent, discount_amount, first_payment_amount, charge, installment_min, installment_max, credit_group_id )
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                `, [ newPackageId, payment_method_id, discount_percent, discount_amount, first_payment_amount, charge, installment_min, installment_max, credit_group_id 
                 ])
+        }
+
+        const groupsToInsert = (groups || []).filter(g =>
+            g.discount_percent !== null &&
+            g.discount_percent !== undefined &&
+            Number(g.discount_percent) > 0
+        )
+
+        //insert discount level
+        for (const g of groupsToInsert) {
+            const { group_code, discount_percent } = g
+
+            await client.query(`
+                INSERT INTO package_group_discount (package_id, group_code, discount_percent)
+                VALUES ($1, $2, $3)
+                `, [ newPackageId, group_code, Number(discount_percent)])
         }
 
         //relation
@@ -851,13 +850,17 @@ exports.copy = async(req, res) => {
                 await db.query('INSERT INTO package_compulsory (package_id, compulsory_id) VALUES ($1, $2)', [newPackageId, compulId])
         }
 
+        await client.query('COMMIT')
         res.json({
             msg: 'คัดลอกแพ็กเกจสำเร็จ',
             id: newPackageId 
         })
     } catch (err) {
+        await client.query('ROLLBACK')
         console.log(err)
         res.status(500).json({message: 'server errer'}) 
+    } finally {
+        client.release() 
     }
 }
 
