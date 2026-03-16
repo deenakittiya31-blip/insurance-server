@@ -32,7 +32,9 @@ exports.createPDF = async (req, res) => {
       return res.status(400).json({ message: 'No file' })
     }
 
-    const result = await cloudinary.uploader.upload(file, {
+    const base64PDF = `data:application/pdf;base64,${file}`
+
+    const result = await cloudinary.uploader.upload(base64PDF, {
       public_id: `insur-${Date.now()}`,
       folder: 'insurance',
       resource_type: 'raw'
