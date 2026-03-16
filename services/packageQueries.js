@@ -13,6 +13,15 @@ exports.GET_DETAIL_PACKAGE = `
                     ) FILTER (WHERE pp.payment_method_id IS NOT NULL),
                     '[]'::jsonb
                 ) AS payments,
+                COALESCE(
+                JSONB_AGG(
+                    DISTINCT JSONB_BUILD_OBJECT(
+                        'group_code', pgd.group_code,
+                        'discount_percent', pgd.discount_percent
+                    )
+                ) FILTER (WHERE pgd.group_code IS NOT NULL),
+                '[]'::jsonb
+                ) AS groups,
                 COALESCE(ARRAY_AGG(DISTINCT pcb.car_brand_id) FILTER (WHERE pcb.car_brand_id IS NOT NULL), '{}') AS car_brand_id,
                 COALESCE(ARRAY_AGG(DISTINCT pcm.car_model_id) FILTER (WHERE pcm.car_model_id IS NOT NULL), '{}') AS car_model_id,
                 COALESCE(ARRAY_AGG(DISTINCT put.car_usage_type_id) FILTER (WHERE put.car_usage_type_id IS NOT NULL), '{}') AS car_usage_type_id,
@@ -37,6 +46,8 @@ exports.GET_DETAIL_PACKAGE = `
 
             LEFT JOIN package_payment AS pp ON ip.id = pp.package_id
             LEFT JOIN payment_methods AS pm ON pp.payment_method_id = pm.id
+
+            LEFT JOIN package_group_discount AS pgd ON ip.id = pgd.package_id
             WHERE ip.id = $1
             GROUP BY ip.id
         `
