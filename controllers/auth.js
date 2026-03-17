@@ -2,6 +2,7 @@ const db = require('../config/database')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const axios = require('axios')
+const { getLineChanell } = require('../services/getSecret')
 
 
 //ตั้งค่าเปิดปิด
@@ -97,9 +98,12 @@ exports.lineLogin = async (req, res) => {
 
   try {
 
+    const secret = await getLineChanell()  
+    const line_channel_id = secret.secret_config 
+
     const params = new URLSearchParams({
       id_token: idToken,
-      client_id: process.env.LINE_CHANNEL_ID,
+      client_id: line_channel_id,
     });
 
     console.log("Sending to LINE:", params.toString()); 

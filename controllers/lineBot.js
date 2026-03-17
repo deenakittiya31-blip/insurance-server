@@ -166,7 +166,7 @@ const sendRegisterButton = async (replyToken) => {
                     action: {
                         type: 'uri',
                         label: 'ลงทะเบียนสมาชิก',
-                        uri: 'https://liff.line.me/2008929214-oMQadweJ'
+                        uri: 'https://liff.line.me/1655907951-VyHVQyHl'
                     }
                 }
             ]
