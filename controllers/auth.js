@@ -101,6 +101,8 @@ exports.lineLogin = async (req, res) => {
     const secret = await getLineChanell()  
     const line_channel_id = secret.secret_config 
 
+    console.log(line_channel_id)
+
     const params = new URLSearchParams({
       id_token: idToken,
       client_id: line_channel_id,
