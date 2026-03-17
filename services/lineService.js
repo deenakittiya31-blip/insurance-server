@@ -151,8 +151,8 @@ exports.getProfile = async(userId) => {
 
     const res = await axios.get(`https://api.line.me/v2/bot/profile/${userId}`, {
         headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${channel_access_token}`
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${channel_access_token}`
         }
     })
     return res.data
@@ -413,10 +413,17 @@ exports.pushOrderFlex = async(userId, data) => {
 
 exports.switchRishMenu = async(userId) => {
     try {
+        const secret = await getLineSecret()  
+        const channel_access_token = secret.secret_config 
+
         return await axios.post(
-            `https://api.line.me/v2/bot/user/${userId}/richmenu/${process.env.RISH_MENU_LINE}`, 
-            {}, 
-            { headers: LINE_HEADER }
+            `https://api.line.me/v2/bot/user/${userId}/richmenu/${process.env.RISH_MENU_LINE}`, {}, 
+            { 
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${channel_access_token}`
+                }
+             }
         )
     } catch (error) {
          console.error(
